@@ -11,12 +11,12 @@ virtualenv env
 env/bin/pip install -r requirements.txt
 ```
 
-Run the server:
+Run the server in development mode (template files will be reloaded).
 ```
 make dev
 ```
 
-Or, if you have the Heroku CLI tools installed (can install with `brew install heroku`), run with
+If you have the Heroku CLI tools installed (can install with `brew install heroku`), you can run the server with
 ```
 make heroku-server
 ```
