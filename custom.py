@@ -23,6 +23,41 @@ myauth = PsiTurkAuthorization(config)  # if you want to add a password protect r
 custom_code = Blueprint('custom_code', __name__, template_folder='templates', static_folder='static')
 
 
+@custom_code.route('/testexperiment')
+def testexperiment():
+    data = {
+        key: "{{ " + key + " }}"
+        for key in ['uniqueId', 'condition', 'counterbalance', 'adServerLoc', 'mode']
+    }
+    return render_template('exp.html', **data)
+
+
+@custom_code.route('/complete2', methods=['GET'])
+@nocache
+def debug_complete2():
+    ''' Debugging route for complete. '''
+    assert (
+        'uniqueId' in request.args and
+        request.args['uniqueId'].startswith('debug') and
+        'mode' in request.args and
+        request.args['mode'] == 'debug'
+    ), 'improper_inputs'
+    unique_id = request.args['uniqueId']
+    user = Participant.query.filter(Participant.uniqueid == unique_id).one()
+    fields = [
+        'uniqueid', 'assignmentid', 'workerid', 'hitid', 'ipaddress', 'browser',
+        'platform', 'language', 'cond', 'counterbalance', 'codeversion',
+        'bonus', 'status', 'mode']
+    user_json = {f: getattr(user, f) for f in fields}
+    for dt in ['beginhit', 'beginexp', 'endhit']:
+        user_json[dt] = getattr(user, dt)
+        if user_json[dt]:
+            user_json[dt] = user_json[dt].isoformat()
+    user_json['datastring'] = loads(user.datastring)
+    user_json = dumps(user_json, sort_keys=True, indent=4)
+    return render_template('complete.html', user_json=user_json)
+
+
 def get_participants(codeversion):
     return (
         Participant
@@ -54,7 +89,7 @@ def download_datafiles(codeversion, name):
         except TypeError:
             current_app.logger.error("Error loading {} for {}".format(name, p))
             current_app.logger.error(format_exc())
-            
+
     # current_app.logger.critical('data %s', data)
     ret = "".join(data)
     response = Response(
@@ -74,7 +109,7 @@ def download_datafiles(codeversion, name):
 #----------------------------------------------
 @custom_code.route('/my_custom_view')
 def my_custom_view():
-    current_app.logger.info("Reached /my_custom_view")  # Print message to server.log for debugging 
+    current_app.logger.info("Reached /my_custom_view")  # Print message to server.log for debugging
     try:
         return render_template('custom.html')
     except TemplateNotFound:
@@ -136,4 +171,3 @@ def compute_bonus():
         return jsonify(**resp)
     except:
         abort(404)  # again, bad to display HTML, but...
-

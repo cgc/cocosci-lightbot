@@ -6,6 +6,12 @@
     <title>Cocosci Psychology Experiment</title>
 
     <link rel="stylesheet" type="text/css" href="static/css/style.css" />
+    <script>
+      const newpage = '/complete2';
+      if (location.pathname != newpage) {
+        location.pathname = newpage;
+      }
+    </script>
   </head>
 
   <body>
@@ -15,6 +21,7 @@
 	If this was a real hit, the data would be saved now and the
 	HIT submitted to AMT.
       </p>
+      <pre>{{ user_json }}</pre>
     </div>
   </body>
 </html>
