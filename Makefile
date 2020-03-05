@@ -1,16 +1,5 @@
-local:
-	cp templates/exp.html index.html
-	coffee -o static/js -cb src/*
+heroku-server:
+	heroku local
 
-all: 
-	coffee -o static/js -cb src/*
-
-watch:
-	coffee -o static/js -cbw src/*
-
-clean:
-	rm static/json/*
-
-demo:
-	cp templates/exp.html index.html
-	rsync -av --delete-after --copy-links . cocosci@cocosci-mcrl.dreamhosters.com:/home/cocosci/cocosci.dreamhosters.com/webexpt/webofcash-demo
+dev:
+	python herokuapp.py

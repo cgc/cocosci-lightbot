@@ -1,4 +1,32 @@
-# Psirokuturk
+# cocosci-optdisco
+
+Navigation experiments over graphs to characterize hierarchical structure in behavior.
+
+Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
+
+## Quickstart
+Project uses Python 3. Install dependencies (here, in a virtualenv)
+```
+virtualenv env
+env/bin/pip install -r requirements.txt
+```
+
+Run the server:
+```
+make dev
+```
+
+Or, if you have the Heroku CLI tools installed (can install with `brew install heroku`), run with
+```
+make heroku-server
+```
+
+Now, try out the [entire experiment](http://localhost:22362/) or demo specific plugins:
+- [GraphTraining](http://localhost:22362/testexperiment?type=GraphTraining)
+- [PathIdentification](http://localhost:22362/testexperiment?type=PathIdentification)
+
+
+# Psirokuturk README
 
 A starter pack for running online experiments with Psiturk on Heroku.
 
@@ -24,7 +52,7 @@ Note that requirements.txt is for the heroku app, not for your local environment
 ```
     bin/set_config.py
 ```
-You will now have a config.txt file in this directory. 
+You will now have a config.txt file in this directory.
 
 5. Add university-specific information in the template. Check templates/ad.html, templates/error.html, and config.txt for any mention of "Bodacious" University and replace with a more appropriate reference. You should also put your IRB-approved consent form in templates/consent.hmtl
 
