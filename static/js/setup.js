@@ -59,6 +59,7 @@ saveData = function() {
 
 // ---------- Test connection to server, then initialize the experiment. ---------- #
 // initializeExperiment is defined in experiment.coffee
+/*
 $(window).on('load', function() {
   return saveData().then(function() {
     return delay(500, function() {
@@ -69,6 +70,7 @@ $(window).on('load', function() {
     return $('#data-error').show();
   });
 });
+*/
 
 // This function is called once at the end of initializeExperiment.
 startExperiment = function(config) {
