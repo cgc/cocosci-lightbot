@@ -1,8 +1,11 @@
+# Important: Must be run first to copy environment vars to config
+import env_to_config
+env_to_config.copy_env_to_config()
+
+# Now the code
+
 import configparser
 import psiturk.experiment_server as exp
-import env_to_config
-
-env_to_config.copy_env_to_config()
 
 config = configparser.ConfigParser()
 config.read('config.txt')
