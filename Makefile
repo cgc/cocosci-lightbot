@@ -3,4 +3,4 @@ heroku-server:
 
 dev: export FLASK_ENV=development
 dev:
-	python herokuapp.py
+	python bin/herokuapp.py
