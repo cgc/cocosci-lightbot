@@ -2,7 +2,7 @@
 
 Navigation experiments over graphs to characterize hierarchical structure in behavior.
 
-Test out the entire experiment [https://cocosci-optdisco.herokuapp.com](here) or try out specific tasks:
+Test out the entire experiment [here](https://cocosci-optdisco.herokuapp.com) or try out specific tasks:
 - [GraphTraining](https://cocosci-optdisco.herokuapp.com/testexperiment?type=GraphTraining)
 - [PathIdentification](https://cocosci-optdisco.herokuapp.com/testexperiment?type=PathIdentification)
 
