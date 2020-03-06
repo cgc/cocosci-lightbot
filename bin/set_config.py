@@ -1,17 +1,17 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 from __future__ import print_function
 from psiturk.psiturk_config import PsiturkConfig
 import subprocess
 
 
 def bash(x):
-    return subprocess.check_output(x, shell=True).strip()
+    return subprocess.check_output(x, shell=True).strip().decode('ascii')
 
 print('== Writing config.txt ==')
 from jinja2 import Environment, FileSystemLoader
 env = Environment(loader=FileSystemLoader('templates'))
 template = env.get_template('config.txt')
-with open('config.txt', 'w+') as f:
+with open('config.txt', 'w') as f:
     f.write(template.render({
         'app_url': bash('heroku domains').split('\n')[1],
         'db_url': bash('heroku config:get DATABASE_URL')
