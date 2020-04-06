@@ -17,6 +17,12 @@
   right: 0;
 }
 
+.GraphTraining-other_states{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .GraphTraining-successors {
   display: flex;
   flex-wrap: wrap;
@@ -35,6 +41,22 @@
   transition: background-color 200ms;
   margin: 1rem;
   user-select: none;
+}
+
+.SuccState {
+    border: 5px solid greenyellow;
+}
+
+.NonSuccState {
+    border: 5px solid red;
+}
+
+.HighlightedState {
+    border: 5px solid darkblue;
+}
+
+.Peek {
+    font-size: 20px;
 }
 
 .GraphTraining-successors .State:hover {
