@@ -27,7 +27,7 @@ login_pw = pw
 threads = 1
 XXX=XXX
 secret_key = 'this is my secret key which is hard to guess, i should change this'
-adserver_revproxy_host = salty-meadow-30207.herokuapp.com
+#adserver_revproxy_host = salty-meadow-30207.herokuapp.com
 
 [Task Parameters]
 experiment_code_version = 1.0
@@ -42,5 +42,5 @@ bonus_message = "Thanks for participating!"
 #
 #   https://<host>:<port>/ad
 
-use_psiturk_ad_server = false
-ad_location = https://salty-meadow-30207.herokuapp.com/pub
+use_psiturk_ad_server = true
+#ad_location = https://salty-meadow-30207.herokuapp.com/pub
