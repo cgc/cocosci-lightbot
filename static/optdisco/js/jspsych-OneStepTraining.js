@@ -40,7 +40,7 @@ function render(graph, gfx, state, nDistractors) {
   `;
 }
 
-function showState(el, graph, graphics, start, nDistractors) {
+function showState(el, graph, graphics, start, stateParams) {
   let resolve;
   let promise = new Promise(function(res, rej) {
     resolve = res;
@@ -49,6 +49,8 @@ function showState(el, graph, graphics, start, nDistractors) {
   let peeked = false;
   let success = true;
   let selected = [];
+
+  const nDistractors = stateParams['nDistractors'];
 
   el.innerHTML = render(graph, graphics, start, nDistractors);
   let succ_left = graph.graph[start];
@@ -94,6 +96,7 @@ function showState(el, graph, graphics, start, nDistractors) {
             selected,
             success
           };
+          Object.assign(response_data, stateParams);
           setTimeout(() => resolve(response_data), 1000);
       }
     });
@@ -156,7 +159,7 @@ jsPsych.plugins.OneStepTraining = (function() {
       let training = Promise.resolve();
       state_order.forEach(state => {
             training = training.then(() => {
-              return showState(el, graph, graphics, state, nDistractors)
+              return showState(el, graph, graphics, state, {nDistractors})
                   .then(function (response_data) {
                         allsuccess = allsuccess && response_data.success && !response_data.peeked;
                         console.log("trained: " + allsuccess);
@@ -177,10 +180,83 @@ jsPsych.plugins.OneStepTraining = (function() {
       return training
     }
 
+    function spacedRepetition(el, graph, graphics, nDistractors) {
+      let sampleSet = _.memoize((boxes, n, t) => {
+        n = typeof(n) === 'undefined' ? 1 : n;
+        t = typeof(t) === 'undefined' ? 1 : t;
+        let nb = boxes.length;
+        let bi = _.range(nb).map((b) => _.range((nb - b)^t).map(() => b));
+        bi = _.filter(bi, (b, i) => boxes[i].length > 0);
+        return _.flatten(bi)
+      })
+
+      function sampleBox(boxes, n, t) {
+        n = typeof(n) === 'undefined' ? 1 : n;
+        t = typeof(t) === 'undefined' ? 1 : t;
+        let s = _.times(n, () => _.sample(sampleSet(boxes, n, t)));
+        return s.length === 1 ? s[0] : s
+      }
+
+      function sampleUnconnected(boxes, lastState, graph) {
+        while (true) {
+            let nextBox = sampleBox(boxes);
+            let nextBoxIdx = _.random(boxes[nextBox].length);
+            if (!_.includes(graph[lastState], boxes[nextBox][nextBoxIdx])) {
+                return {nextBox, nextBoxIdx}
+            }
+        }
+      }
+
+      let nBoxes = 3;
+      let memoBoxes = _.range(nBoxes).map(()=>[]);
+      memoBoxes[0] = generateRandomStateOrder(graph);
+
+      function repetition(response_data) {
+          // depending on if the participant was correct, place this in the next memory box or at the beginning
+          let correct = response_data.success && !response_data.peeked;
+          let memoBoxN;
+          if (correct) {
+              memoBoxN = _.min([response_data.memoBox + 1, memoBoxes.length - 1]);
+          }
+          else {
+              memoBoxN = 0;
+          }
+          memoBoxes[memoBoxN].push(response_data.state);
+
+          // if everything is in the final memory box, the participant is trained
+          if (memoBoxes[memoBoxes.length - 1].length === graph.states.length) {
+              console.log("done training");
+              return
+          }
+
+          // randomly select from one of the memory boxes but biased towards earlier ones
+          console.log(memoBoxes);
+          let next = sampleUnconnected(memoBoxes, response_data.state, graph);
+          let nextState = memoBoxes[next.nextBox].splice(next.nextBoxIdx, 1)[0];
+          let stateParams = {nDistractors, memoBox: next.nextBox};
+          console.log(stateParams);
+
+          return showState(el, graph, graphics, nextState, stateParams)
+              .then(repetition)
+      }
+
+      let training = Promise.resolve();
+      training = training.then(() => {
+        let stateParams = {nDistractors, memoBox: 0};
+        return showState(el, graph, graphics, memoBoxes[0].shift(), stateParams)
+            .then(repetition)
+      });
+      return training
+    }
+
     function trainingStates(el, graph, graphics, trainingParams) {
         let training;
+        console.log("Training Strategy: "+trainingParams.strategy);
         if (trainingParams.strategy === 'allstates') {
           training = generateAllStateTrainingBlocks(el, graph, graphics, trainingParams.nDistractors);
+        }
+        else if (trainingParams.strategy === 'spacedrep') {
+          training = spacedRepetition(el, graph, graphics, trainingParams.nDistractors);
         }
         return training.then(() => {
           console.log(`successfully trained on ${trainingParams.nDistractors} distractors`);
