@@ -55,17 +55,15 @@ const instructions = () => (
       
       <div style="font-size: 40pt">🚲🚲🚲️</div>
       
-      To help you learn, we will let you **peek** at the answers if you make a mistake
-      or if you press the **peek** button. 
-      This briefly reveals the associations in <span style="color: greenyellow; background-color: darkgrey">green</span>, 
-      which you should then select. Don't be surprised if you need to use the 
-      **peek** button a lot at first! 
+      Whenever you make a mistake, you will be shown the answers in 
+      <span style="color: greenyellow; background-color: darkgrey">green</span>. 
+      Don't be surprised if you make a lot of mistakes at first!
       
       <div style="font-size: 40pt">🐒🐒🐒️</div>
       
       The learning trials will get progressively harder.
       Once you are able to correctly identify **every** association 
-      **without peeking** on the hardest trials, you can continue 
+      **without making a mistake** on the hardest trials, you can continue 
       to the main part of the task.
       `),
       choices: ['Continue'],
@@ -120,6 +118,7 @@ async function initializeExperiment() {
     graphics: gfx,
     trainingParams: {
       nDistractors: 2,
+      peekable: false,
       strategy: "spacedrep" //"allstates"
     },
     timeline: [{start: 0, goal: 1}, ],
@@ -134,7 +133,8 @@ async function initializeExperiment() {
     graph: graph,
     graphics: gfx,
     trainingParams: {
-      nDistractors: 2,
+      nDistractors: 5,
+      peekable: false,
       strategy: "spacedrep"
     },
     on_finish() {
@@ -142,50 +142,52 @@ async function initializeExperiment() {
       saveData();
     }
   };
-  // let tasks = [];
+
+  //main task
+  let tasks = [];
   // const states = graph.states;
-  // for (const start of states) {
-  //   for (const goal of states) {
-  //     if (start === goal) {
-  //       continue;
-  //     }
-  //     tasks.push({start, goal});
-  //   }
-  // }
-  // const numSampledTasks = 2;
-  // tasks = jsPsych.randomization.sampleWithoutReplacement(tasks, numSampledTasks);
-  //
-  // let trials = [
-  //   {start: 0, goal: 1},
-  //   {start: 0, goal: 4},
-  //   {start: 0, goal: 5},
-  //   ...tasks,
-  // ];
-  //
-  // let updateProgress = makeUpdateProgress(trials.length + numSampledTasks);
-  //
+  for (const start of states) {
+    for (const goal of states) {
+      if (start === goal) {
+        continue;
+      }
+      tasks.push({start, goal});
+    }
+  }
+  const numSampledTasks = 2;
+  tasks = jsPsych.randomization.sampleWithoutReplacement(tasks, numSampledTasks);
+
+  let trials = [
+    {start: 0, goal: 1},
+    {start: 0, goal: 4},
+    {start: 0, goal: 5},
+    ...tasks,
+  ];
+
+  let updateProgress = makeUpdateProgress(trials.length + numSampledTasks);
+
   // const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, states.length);
-  // var gt = {
-  //   type: 'GraphTraining',
-  //   graph: graph,
-  //   graphics: gfx,
-  //   timeline: trials,
-  //   on_finish() {
-  //     updateProgress();
-  //     saveData();
-  //   }
-  // };
-  //
-  // var pi = {
-  //   type: 'PathIdentification',
-  //   graph: graph,
-  //   graphics: gfx,
-  //   timeline: tasks,
-  //   on_finish() {
-  //     updateProgress();
-  //     saveData();
-  //   }
-  // };
+  var gt = {
+    type: 'GraphTraining',
+    graph: graph,
+    graphics: gfx,
+    timeline: trials,
+    on_finish() {
+      updateProgress();
+      saveData();
+    }
+  };
+
+  var pi = {
+    type: 'PathIdentification',
+    graph: graph,
+    graphics: gfx,
+    timeline: tasks,
+    on_finish() {
+      updateProgress();
+      saveData();
+    }
+  };
 
   var timeline = _.flatten([
     instructions(),
@@ -193,8 +195,8 @@ async function initializeExperiment() {
     onestep_5d,
     // gt,
     // pi,
-    //finalPoints,
-    // debrief(),
+    // finalPoints,
+    debrief(),
   ]);
 
   if (location.pathname == '/testexperiment') {
