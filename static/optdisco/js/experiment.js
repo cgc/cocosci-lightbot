@@ -55,9 +55,10 @@ const instructions = () => (
       
       <div style="font-size: 40pt">🚲🚲🚲️</div>
       
-      To help with learning, you can **peek** at the answers.
-      This briefly reveals the associations, which you should then
-      select. Don't be surprised if you need to use the 
+      To help you learn, we will let you **peek** at the answers if you make a mistake
+      or if you press the **peek** button. 
+      This briefly reveals the associations in <span style="color: greenyellow; background-color: darkgrey">green</span>, 
+      which you should then select. Don't be surprised if you need to use the 
       **peek** button a lot at first! 
       
       <div style="font-size: 40pt">🐒🐒🐒️</div>
@@ -117,7 +118,10 @@ async function initializeExperiment() {
     type: 'OneStepTraining',
     graph: graph,
     graphics: gfx,
-    nDistractors: 2,
+    trainingParams: {
+      nDistractors: 2,
+      strategy: "allstates"
+    },
     timeline: [{start: 0, goal: 1}, ],
     on_finish() {
       // updateProgress();
@@ -128,7 +132,10 @@ async function initializeExperiment() {
     type: 'OneStepTraining',
     graph: graph,
     graphics: gfx,
-    nDistractors: 5,
+    trainingParams: {
+      nDistractors: 2,
+      strategy: "allstates"
+    },
     on_finish() {
       // updateProgress();
       saveData();
@@ -180,7 +187,7 @@ async function initializeExperiment() {
   // };
 
   var timeline = _.flatten([
-    instructions(),
+    // instructions(),
     onestep_2d,
     onestep_5d,
     // gt,

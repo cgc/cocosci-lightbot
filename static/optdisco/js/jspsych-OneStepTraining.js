@@ -21,13 +21,17 @@ function render(graph, gfx, state, nDistractors) {
       }
   }
   other_state_divs = other_state_divs.join("");
-  let peek = '<button class="btn btn-primary Peek">Peek</button>';
+  let peek = `
+    <button class="btn btn-primary Peek">Peek</button>
+    <div>Reminder: To continue to the next stage, you need to answer 
+    every association correctly without peeking.</div>
+    `;
   return `
   <div class="GraphTraining">
     <div class="GraphTraining-state">
       <div>${stateTemplate(state, gfx[state])}</div>
     </div>
-    Pick associated pictures:
+    <div id="GraphTraining-msg">Pick the associated pictures:</div>
     <div class="GraphTraining-other_states">
       ${other_state_divs}
     </div>
@@ -78,8 +82,9 @@ function showState(el, graph, graphics, start, nDistractors) {
       }
       else {
         s.classList.add("NonSuccState");
+        document.getElementById("GraphTraining-msg").innerHTML = "Whoops, you made a mistake!";
         highlightSuccessorStates();
-        setTimeout(unhighlightSuccessorStates, 200);
+        setTimeout(unhighlightSuccessorStates, 500);
         success = false;
       }
       if (succ_left.length === 0) {
@@ -125,7 +130,7 @@ jsPsych.plugins.OneStepTraining = (function() {
     better data saving strategy (ask fred)
     */
 
-    function generateStateOrder(graph) {
+    function generateRandomStateOrder(graph) {
       // generates a state ordering without adjacent states occuring after one another
       while (true) {
         let state_order = jsPsych.randomization.repeat(graph.states, 1);
@@ -144,39 +149,46 @@ jsPsych.plugins.OneStepTraining = (function() {
       }
     }
 
-    function trainingStates(el, graph, graphics, nDistractors) {
+    function generateAllStateTrainingBlocks(el, graph, graphics, nDistractors) {
       let allsuccess = true;
-      let state_order = generateStateOrder(graph);
+      let state_order = generateRandomStateOrder(graph);
 
-      let allstates = Promise.resolve();
+      let training = Promise.resolve();
       state_order.forEach(state => {
-            allstates = allstates.then(() => {
+            training = training.then(() => {
               return showState(el, graph, graphics, state, nDistractors)
                   .then(function (response_data) {
-                    allsuccess = allsuccess && response_data.success && !response_data.peeked;
-                    console.log("trained: " + allsuccess);
-                    data.responses.push(response_data);
-                  }
-              )
+                        allsuccess = allsuccess && response_data.success && !response_data.peeked;
+                        console.log("trained: " + allsuccess);
+                        data.responses.push(response_data);
+                      }
+                  )
             });
           }
       );
 
-      let training_states = allstates.then(() => {
-        if (allsuccess) {
-          console.log(`successfully trained on ${nDistractors} distractors`);
-          display_element.innerHTML = ''; // HACK???
-          jsPsych.finishTrial(data);
-        }
-        else {
+      training = training.then(() => {
+        if (!allsuccess) {
           console.log('not trained yet');
-          return trainingStates(el, graph, graphics, nDistractors)
+          return trainingStates(el, graph, graphics, nDistractors, trainingParams)
         }
       });
 
-      return training_states
+      return training
     }
-    return trainingStates(display_element, trial.graph, trial.graphics, trial.nDistractors);
+
+    function trainingStates(el, graph, graphics, trainingParams) {
+        let training;
+        if (trainingParams.strategy === 'allstates') {
+          training = generateAllStateTrainingBlocks(el, graph, graphics, trainingParams.nDistractors);
+        }
+        return training.then(() => {
+          console.log(`successfully trained on ${trainingParams.nDistractors} distractors`);
+          display_element.innerHTML = ''; // HACK???
+          jsPsych.finishTrial(data);
+        })
+    }
+    return trainingStates(display_element, trial.graph, trial.graphics, trial.trainingParams);
   });
 
   return plugin;
