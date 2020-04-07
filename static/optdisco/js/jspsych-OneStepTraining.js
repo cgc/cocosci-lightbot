@@ -138,7 +138,7 @@ jsPsych.plugins.OneStepTraining = (function() {
 
         function generateRandomStateOrder(graph) {
             // generates a state ordering without adjacent states occuring after one another
-            while (true) {
+            for (var i = 0; i < 10000; i++) {
                 let state_order = jsPsych.randomization.repeat(graph.states, 1);
                 let adj_states = false;
                 for (const ii of _.range(0, state_order.length - 1)) {
@@ -204,7 +204,7 @@ jsPsych.plugins.OneStepTraining = (function() {
             }
 
             function sampleUnconnected(boxes, lastState, graph) {
-                while (true) {
+                for (var i = 0; i < 10000; i++) {
                     let nextBox = sampleBox(boxes);
                     let nextBoxIdx = _.random(boxes[nextBox].length - 1);
                     if (!(_.includes(graph.graph[lastState], boxes[nextBox][nextBoxIdx]) ||
