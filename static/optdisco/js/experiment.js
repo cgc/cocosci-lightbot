@@ -120,7 +120,7 @@ async function initializeExperiment() {
     graphics: gfx,
     trainingParams: {
       nDistractors: 2,
-      strategy: "allstates"
+      strategy: "spacedrep" //"allstates"
     },
     timeline: [{start: 0, goal: 1}, ],
     on_finish() {
@@ -128,13 +128,14 @@ async function initializeExperiment() {
       saveData();
     }
   };
+
   var onestep_5d = {
     type: 'OneStepTraining',
     graph: graph,
     graphics: gfx,
     trainingParams: {
       nDistractors: 2,
-      strategy: "allstates"
+      strategy: "spacedrep"
     },
     on_finish() {
       // updateProgress();
@@ -187,7 +188,7 @@ async function initializeExperiment() {
   // };
 
   var timeline = _.flatten([
-    // instructions(),
+    instructions(),
     onestep_2d,
     onestep_5d,
     // gt,
