@@ -9,12 +9,12 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 //import s2c from '../json/solway2c.js';
 import s2c from './solway2c.js';
 
-const renderState = (graphic) => `<span class="State">
+const renderState = (graphic) => `<div class="State">
   <img src="${graphicsUrl(graphic)}" />
-</span>`;
+</div>`;
 
 const renderSmallEmoji = (graphic) => `
-<img src="${graphicsUrl(graphic)}" style="width:5rem;height:5rem;" />
+<img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
 `;
 
 const instructions = () => (
@@ -33,11 +33,11 @@ const instructions = () => (
 
       Each picture is associated with several other pictures. For example, this picture
 
-      <div>${renderState("🍫")}</div>
+      <div>${renderSmallEmoji("🍫")}</div>
 
       might be associated with these three pictures:
 
-      <div>${renderState("🔮")}${renderState("🐳")}${renderState("🎁")}</div>
+      <div>${renderSmallEmoji("🔮")}${renderSmallEmoji("🐳")}${renderSmallEmoji("🎁")}</div>
       `),
       choices: ['Continue'],
       button_html: '<button id="continuebutton" class="btn btn-primary">%choice%</button>',
@@ -212,7 +212,7 @@ async function initializeExperiment() {
     // HACK Demo logic here!
     timeline = [
       {
-        type: searchParams.type || 'GraphTraining',
+        type: searchParams.get('type') || 'GraphTraining',
         graph: graph,
         graphics: gfx,
         timeline: trials,

@@ -41,7 +41,6 @@
   transition: background-color 200ms;
   margin: 1rem;
   user-select: none;
-  display: inline-block;
 }
 
 .State > img {
