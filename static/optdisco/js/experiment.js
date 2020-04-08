@@ -1,5 +1,5 @@
 import {Graph} from './graphs.js';
-import {graphics} from './utils.js';
+import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import './jspsych-GraphTraining.js';
 import './jspsych-OneStepTraining.js';
 import './jspsych-PathIdentification.js';
@@ -9,27 +9,35 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 //import s2c from '../json/solway2c.js';
 import s2c from './solway2c.js';
 
+const renderState = (graphic) => `<span class="State">
+  <img src="${graphicsUrl(graphic)}" />
+</span>`;
+
+const renderSmallEmoji = (graphic) => `
+<img src="${graphicsUrl(graphic)}" style="width:5rem;height:5rem;" />
+`;
+
 const instructions = () => (
     [{
       type: "html-button-response",
       // We use the handy markdown function (defined in utils.js) to format our text.
       stimulus: markdown(`
       # Instructions
-    
+
       Thanks for accepting our HIT! In this HIT, you will play a game
       with these pictures:
-      
-      <div style="font-size:40pt">
-      ${_(_.shuffle(graphics)).chunk(8).map((c) => c.join("")).join("<br>")}
+
+      <div>
+      ${_(_.shuffle(graphics)).chunk(8).map((c) => c.map(renderSmallEmoji).join("")).join("<br>")}
       </div>
-      
+
       Each picture is associated with several other pictures. For example, this picture
-      
-      <div style="font-size: 40pt">🍫</div>
-      
+
+      <div>${renderState("🍫")}</div>
+
       might be associated with these three pictures:
-      
-      <div style="font-size: 40pt">🔮 🐳 🎁</div>
+
+      <div>${renderState("🔮")}${renderState("🐳")}${renderState("🎁")}</div>
       `),
       choices: ['Continue'],
       button_html: '<button id="continuebutton" class="btn btn-primary">%choice%</button>',
@@ -42,28 +50,28 @@ const instructions = () => (
       type: "html-button-response",
       stimulus: markdown(`
       # Instructions
-      
-      In the first part of this task, you will need to learn the 
+
+      In the first part of this task, you will need to learn the
       associations between the different pictures.
-      
-      <div style="font-size: 40pt">⚙️️⚙️⚙️</div>
-      
+
+      <div>${renderSmallEmoji("⚙️")}${renderSmallEmoji("⚙️")}${renderSmallEmoji("⚙️")}</div>
+
       You will be given a series of **learning trials**.
       On each trial, you will be shown one picture and
       will need to identify its associations out of several
       other pictures.
-      
-      <div style="font-size: 40pt">🚲🚲🚲️</div>
-      
-      Whenever you make a mistake, you will be shown the answers in 
-      <span style="color: greenyellow; background-color: darkgrey">green</span>. 
+
+      <div>${renderSmallEmoji("🚲")}${renderSmallEmoji("🚲")}${renderSmallEmoji("🚲")}</div>
+
+      Whenever you make a mistake, you will be shown the answers in
+      <span style="color: greenyellow; background-color: darkgrey">green</span>.
       Don't be surprised if you make a lot of mistakes at first!
-      
-      <div style="font-size: 40pt">🐒🐒🐒️</div>
-      
+
+      <div>${renderSmallEmoji("🐒")}${renderSmallEmoji("🐒")}${renderSmallEmoji("🐒")}</div>
+
       The learning trials will get progressively harder.
-      Once you are able to correctly identify **every** association 
-      **without making a mistake** on the hardest trials, you can continue 
+      Once you are able to correctly identify **every** association
+      **without making a mistake** on the hardest trials, you can continue
       to the main part of the task.
       `),
       choices: ['Continue'],
@@ -228,11 +236,9 @@ async function initializeExperiment() {
 }
 
 $(window).on('load', function() {
-  return saveData().then(function() {
-    return delay(500, function() {
-      $('#welcome').hide();
-      return initializeExperiment().catch(handleError);
-    });
+  return Promise.all([graphicsLoading, saveData()]).then(function() {
+    $('#welcome').hide();
+    return initializeExperiment().catch(handleError);
   }).catch(function() {
     return $('#data-error').show();
   });

@@ -1,7 +1,7 @@
-import {completeModal, trialErrorHandling} from './utils.js';
+import {completeModal, trialErrorHandling, graphicsUrl} from './utils.js';
 
 const stateTemplate = (state, graphic, isSucc) => `
-<div class='State' data-state="${state}" data-issucc="${isSucc}">${graphic}</div>
+<div class='State' data-state="${state}" data-issucc="${isSucc}"><img src="${graphicsUrl(graphic)}" /></div>
 `;
 
 function render(graph, gfx, state, stateParams) {
@@ -23,7 +23,7 @@ function render(graph, gfx, state, stateParams) {
     other_state_divs = other_state_divs.join("");
     let peek = `
     <button class="btn btn-primary Peek">Peek</button>
-    <div>Reminder: To continue to the next stage, you need to answer 
+    <div>Reminder: To continue to the next stage, you need to answer
     every association correctly without peeking.</div>
     `;
     return `

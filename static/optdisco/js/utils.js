@@ -45,6 +45,27 @@ export const graphics = [
   '✈️','🎣','🍫','🍎','🧀','🍌','🍪','🌞','⛄️','🐒','🐳','👑','👟','🤖','🤡',
 ];
 
+export function graphicsUrl(emoji) {
+  const fn = emoji.codePointAt(0).toString(16).toUpperCase() + '.svg';
+  return "static/optdisco/images/openmoji/" + fn;
+}
+
+function loadImage(src) {
+  // https://stackoverflow.com/questions/52059596/loading-an-image-on-web-browser-using-promise
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.addEventListener("load", () => resolve(img));
+    img.addEventListener("error", err => reject(err));
+    img.src = src;
+  });
+};
+
+const images = graphics.map(function(emoji) {
+  return loadImage(graphicsUrl(emoji));
+});
+
+export const graphicsLoading = Promise.all(images);
+
 export function trialErrorHandling(trial) {
   return async function() {
     return trial.apply(this, arguments).catch(handleError);

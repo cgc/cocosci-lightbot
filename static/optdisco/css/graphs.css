@@ -36,11 +36,16 @@
   line-height: 8rem;
   font-size: 8rem;
   height: 10rem;
-  padding: 1rem;
+  padding: 0.5rem;
   box-sizing: border-box;
   transition: background-color 200ms;
   margin: 1rem;
   user-select: none;
+  display: inline-block;
+}
+
+.State > img {
+  display: block;
 }
 
 .SuccState {

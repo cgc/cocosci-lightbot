@@ -1,8 +1,8 @@
-import {completeModal, trialErrorHandling} from './utils.js';
+import {completeModal, trialErrorHandling, graphicsUrl} from './utils.js';
 import {bfs} from './graphs.js';
 
 const stateTemplate = (state, graphic) => `
-<div class='State' data-state="${state}">${graphic}</div>
+<div class='State' data-state="${state}"><img src="${graphicsUrl(graphic)}" /></div>
 `;
 
 function render(graph, gfx, state, goal) {
