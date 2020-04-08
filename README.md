@@ -29,3 +29,7 @@ Now, try out the [entire experiment](http://localhost:22362/) or demo specific p
 - [GraphTraining](http://localhost:22362/testexperiment?type=GraphTraining)
 - [PathIdentification](http://localhost:22362/testexperiment?type=PathIdentification)
 
+Push to heroku once you've set it as a git remote:
+```
+git push heroku master
+```
