@@ -156,20 +156,27 @@ async function initializeExperiment() {
 
   //main task
   let tasks = [];
+  let transitionTasks = [];
   // const states = graph.states;
   for (const start of states) {
     for (const goal of states) {
       if (start === goal) {
         continue;
       }
-      tasks.push({start, goal});
+      if (graph.graph[start].indexOf(goal) !== -1) {
+        transitionTasks.push({start, goal});
+      } else {
+        tasks.push({start, goal});
+      }
     }
   }
-  const numSampledTasks = 2;
+  const numSampledTasks = 5;
+  transitionTasks = jsPsych.randomization.sampleWithoutReplacement(transitionTasks, numSampledTasks);
   tasks = jsPsych.randomization.sampleWithoutReplacement(tasks, numSampledTasks);
 
   let trials = [
     {start: 0, goal: 1},
+    ...transitionTasks,
     {start: 0, goal: 4},
     {start: 0, goal: 5},
     ...tasks,

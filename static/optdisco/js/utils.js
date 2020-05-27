@@ -13,17 +13,20 @@ export function completeModal(md) {
   let promise = new Promise(function(res, rej) {
     resolve = res;
   });
+  const button = $('<button>', {
+    class: 'btn btn-success',
+    text: 'Continue',
+    click: function() {
+      $('.modal').remove();
+      resolve();
+    }
+  });
   showModal($('<div>')
     .add($('<div>', {html: markdown(md)}))
-    .add($('<button>', {
-      class: 'btn btn-success',
-      text: 'Continue',
-      click: function() {
-        $('.modal').remove();
-        resolve();
-      }
-    }))
+    .add(button)
   );
+  // When focused, participant can hit enter to proceed.
+  button[0].focus();
   return promise;
 }
 
