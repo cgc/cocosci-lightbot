@@ -1,6 +1,7 @@
 import {Graph} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import './jspsych-GraphTraining.js';
+import './jspsych-GraphNavigation.js';
 import './jspsych-OneStepTraining.js';
 import './jspsych-PathIdentification.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
@@ -117,6 +118,8 @@ async function initializeExperiment() {
 
   const graph = new Graph(s2c);
   window.graph = graph;
+  graph.shuffleSuccessors();
+
   const states = graph.states;
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, states.length);
   // let updateProgress = makeUpdateProgress(trials.length + numSampledTasks);

@@ -59,4 +59,13 @@ export class Graph {
       this.graph[key] = [...this.graph[key]];
     }
   }
+
+  shuffleSuccessors() {
+    /*
+    Modifies the graph, shuffling successors.
+    */
+    for (const state of this.states) {
+      graph.graph[state] = jsPsych.randomization.repeat(graph.graph[state], 1);
+    }
+  }
 }

@@ -29,6 +29,73 @@
   justify-content: center;
 }
 
+/* GraphNavigation */
+.GraphNavigation-State.State {
+  border-radius: 100%;
+  border-width: 0;
+
+  margin: 0;
+  z-index: 3;
+  position: absolute;
+}
+
+.GraphNavigation-edge {
+  border: 1px solid black;
+  height: 0px;
+  transform-origin: left center;
+  position: absolute;
+
+  transition: border-color 300ms;
+  transition: opacity 300ms;
+}
+.GraphNavigation-edge.is-faded {
+  opacity: 0.1;
+}
+.GraphNavigation-currentEdge {
+  z-index: 1;
+}
+.GraphNavigation-currentEdge-J {
+  border-color: red;
+}
+.GraphNavigation-currentEdge-K {
+  border-color: green;
+}
+.GraphNavigation-currentEdge-L {
+  border-color: blue;
+}
+
+.GraphNavigation-current.State {
+  background-color: green;
+}
+.GraphNavigation-goal.State {
+  background-color: red;
+}
+.GraphNavigation-key {
+  position: absolute;
+  border-radius: 5px;
+  border: 1px solid black;
+  width: 18pt;
+  height: 20pt;
+  color: white;
+
+  opacity: 0;
+  transition: opacity 300ms;
+
+  z-index: 2;
+}
+.GraphNavigation-currentKey {
+  opacity: 1;
+}
+.GraphNavigation-key-J {
+  background-color: red;
+}
+.GraphNavigation-key-K {
+  background-color: green;
+}
+.GraphNavigation-key-L {
+  background-color: blue;
+}
+
 .State {
   border: 1px solid #555;
   border-radius: 5px;
@@ -38,7 +105,7 @@
   height: 10rem;
   padding: 0.5rem;
   box-sizing: border-box;
-  transition: background-color 200ms;
+  transition: background-color 300ms;
   margin: 1rem;
   user-select: none;
 }
