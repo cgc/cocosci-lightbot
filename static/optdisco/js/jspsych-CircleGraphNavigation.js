@@ -1,4 +1,4 @@
-import {completeModal, trialErrorHandling, graphicsUrl} from './utils.js';
+import {completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise} from './utils.js';
 import {bfs} from './graphs.js';
 
 const stateTemplate = (state, graphic, cls, style) => `
@@ -156,7 +156,11 @@ export function showState(el, graph, state) {
   }
   document.addEventListener('keypress', handleTransition);
 
-  return promise;
+  return promise.then((state) => {
+    return setTimeoutPromise(200).then(() => {
+      return state;
+    });
+  });
 }
 
 function enableHoverEdges(display_element, graph) {
@@ -203,7 +207,10 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
     */
 
     const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder);
-    display_element.innerHTML = `${trial.intro || ''}${graphEl}`;
+    const intro = `
+    Navigate to ${renderSmallEmoji(trial.graphics[trial.goal])}
+    `;
+    display_element.innerHTML = `${intro}${graphEl}`;
 
     if (trial.hoverEdges) {
       enableHoverEdges(display_element, trial.graph);
@@ -334,13 +341,14 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     console.log(trial);
 
     const {start, goal, graph, graphics, stateOrder} = trial;
+    const solution = bfs(graph, start, goal).path;
 
     const intro = trial.identifyOneState ? `
-      <p>Select one icon you would pass by when getting from ${renderSmallEmoji(graphics[start])}
+      <p>Select one picture you would pass by when getting from ${renderSmallEmoji(graphics[start])}
       to ${renderSmallEmoji(graphics[goal])}.</p>
     ` : `
-      <p>How would you get from ${renderSmallEmoji(graphics[start])}
-      to ${renderSmallEmoji(graphics[goal])}?</p>
+      <p>Select the ${solution.length-1} picture(s) you would visit to get from ${renderSmallEmoji(graphics[start])}
+      to ${renderSmallEmoji(graphics[goal])}.</p>
     `;
     const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
     display_element.innerHTML = `${intro}${graphEl}`;

@@ -91,3 +91,7 @@ export function parseHTML(html) {
   var parsed = parser.parseFromString(html, 'text/html');
   return parsed.getRootNode().body;
 }
+
+export function setTimeoutPromise(ms) {
+  return new Promise((res) => setTimeout(res, ms));
+}

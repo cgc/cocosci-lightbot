@@ -1,4 +1,4 @@
-import {completeModal, addPlugin, graphicsUrl, parseHTML} from './utils.js';
+import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
 import {showState, renderCircleGraph, setCurrentState} from './jspsych-CircleGraphNavigation.js';
 
 const renderSmallEmoji = (graphic, style) => `
@@ -28,12 +28,12 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     });
   }
 
-  async function showStateUntil(state, goal) {
+  async function showStateUntil(graph, state, goal) {
     const nextState = await showState(root, graph, state);
     if (nextState == goal) {
       return;
     }
-    return showStateUntil(nextState, goal);
+    return showStateUntil(graph, nextState, goal);
   }
 
   function renderKey(key) {
@@ -86,7 +86,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
 
         Press the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys to navigate.
       `),
-      makePromise: () => showStateUntil(intermed, goal),
+      makePromise: () => showStateUntil(graph, intermed, goal),
     },
     {
       pre: async () => {
@@ -102,14 +102,19 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         el = parseHTML(renderCircleGraph(trial.fullGraph, graphics, goal, stateOrder));
         root.appendChild(el);
         el.style.opacity = 0;
+        el.querySelector('.GraphNavigation-goal').classList.remove('GraphNavigation-goal');
         await setTimeoutPromise(0);
 
         el.style.transition = `opacity ${t}ms`;
         el.style.opacity = 1;
+
+        showStateUntil(trial.fullGraph, 0, null);
       },
       html: markdown(`
-        The task will consist of 15 puzzles like this, but with the associations shown below. Click the button below when you are ready to start.
-        <button>Continue</button>
+        The task will consist of 15 puzzles, but with the associations shown below.
+        Before starting the task, feel free to explore with the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys.
+
+        Whenever you're ready: <button>Start the task</button>
       `),
       makePromise: makeButtonPromise,
     },

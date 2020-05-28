@@ -107,6 +107,20 @@ const piInstruction = () => ({
   // We use the handy markdown function (defined in utils.js) to format our text.
   stimulus: markdown(`
     In this next section we'll ask you a few questions about how you navigate.
+
+    First, we'll ask you to tell us how you would navigate between two pictures.
+  `),
+  choices: ['Continue'],
+  button_html: '<button class="btn btn-primary">%choice%</button>',
+});
+
+const piInstruction2 = () => ({
+  type: "html-button-response",
+  // We use the handy markdown function (defined in utils.js) to format our text.
+  stimulus: markdown(`
+    Now, we'll ask you to tell us just one picture you'll navigate through.
+
+    Don't think too hard about it, let us know the first thing that comes to mind.
   `),
   choices: ['Continue'],
   button_html: '<button class="btn btn-primary">%choice%</button>',
@@ -177,32 +191,35 @@ async function initializeExperiment() {
     }
   };
 
-  var pi = {
+  var pi = (timeline) => ({
     type: 'CirclePathIdentification',
     graph,
     graphics: gfx,
     stateOrder,
-    timeline: [
-      config.simpleProbes[0],
-      {...config.simpleProbes[1], identifyOneState: true},
-      config.hardProbes[0],
-      {...config.hardProbes[1], identifyOneState: true},
-    ],
+    timeline,
     on_finish() {
       updateProgress();
       saveData();
     }
-  };
-
-  let updateProgress = makeUpdateProgress(gn.timeline.length + pi.timeline.length);
+  });
 
   var timeline = _.flatten([
     inst,
     gn,
     piInstruction(),
-    pi,
+    pi([
+      config.simpleProbes[0],
+      config.hardProbes[0],
+    ]),
+    piInstruction2(),
+    pi([
+      {...config.simpleProbes[1], identifyOneState: true},
+      {...config.hardProbes[1], identifyOneState: true},
+    ]),
     debrief(),
   ]);
+
+  let updateProgress = makeUpdateProgress(timeline.length);
 
   if (location.pathname == '/testexperiment') {
     const searchParams = new URLSearchParams(location.search);
