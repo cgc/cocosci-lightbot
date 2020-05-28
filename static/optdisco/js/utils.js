@@ -18,6 +18,7 @@ export function completeModal(md) {
     text: 'Continue',
     click: function() {
       $('.modal').remove();
+      document.removeEventListener('keypress', handleEnter);
       resolve();
     }
   });
@@ -25,8 +26,14 @@ export function completeModal(md) {
     .add($('<div>', {html: markdown(md)}))
     .add(button)
   );
-  // When focused, participant can hit enter to proceed.
-  button[0].focus();
+
+  // We 'click' button when enter is pressed.
+  function handleEnter(e) {
+    if (e.keyCode == 13) {
+      button[0].click();
+    }
+  }
+  document.addEventListener('keypress', handleEnter);
   return promise;
 }
 

@@ -203,6 +203,9 @@ async function initializeExperiment() {
     }
   });
 
+  // HACK this is very specific to current PathIdentification tasks.
+  let updateProgress = makeUpdateProgress(trials.length + 4);
+
   var timeline = _.flatten([
     inst,
     gn,
@@ -218,8 +221,6 @@ async function initializeExperiment() {
     ]),
     debrief(),
   ]);
-
-  let updateProgress = makeUpdateProgress(timeline.length);
 
   if (location.pathname == '/testexperiment') {
     const searchParams = new URLSearchParams(location.search);
