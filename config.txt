@@ -1,6 +1,6 @@
 [HIT Configuration]
 title = Navigating connected images
-description = The experiment consists of finding paths through a web of connected images.
+description = This Psychology experiment consists of finding paths through a web of connected images.
 amt_keywords = Psychology
 lifetime = 24
 us_only = true
