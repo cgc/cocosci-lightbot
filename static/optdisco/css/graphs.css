@@ -95,6 +95,10 @@
 .GraphNavigation-key-L {
   background-color: blue;
 }
+.GraphNavigation-instruction {
+  width: 600px; /* Based on CircleGraphNavigation width */
+  height: 100px;
+}
 
 .State {
   border: 1px solid #555;

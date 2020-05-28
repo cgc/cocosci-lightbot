@@ -2,6 +2,7 @@ import {Graph} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import './jspsych-GraphTraining.js';
 import './jspsych-CircleGraphNavigation.js';
+import './jspsych-CircleGraphNavigationInstruction.js';
 import './jspsych-OneStepTraining.js';
 import './jspsych-PathIdentification.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
@@ -101,6 +102,15 @@ const debrief = () => ({
   ]
 });
 
+const piInstruction = () => ({
+  type: "html-button-response",
+  // We use the handy markdown function (defined in utils.js) to format our text.
+  stimulus: markdown(`
+    In this next section we'll ask you a few questions about how you navigate.
+  `),
+  choices: ['Continue'],
+  button_html: '<button class="btn btn-primary">%choice%</button>',
+});
 
 function makeUpdateProgress(total) {
   var i = 0;
@@ -113,12 +123,10 @@ function makeUpdateProgress(total) {
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
-  //const stateOrderIdx = _.random(config.stateOrders.length-1);
-  const stateOrderIdx = 0;
+  const stateOrderIdx = _.random(config.stateOrders.length-1);
   psiturk.recordUnstructuredData('stateOrderIdx', stateOrderIdx);
 
-  //const taskOrderIdx = _.random(config.taskOrders.length-1);
-  const taskOrderIdx = 0;
+  const taskOrderIdx = _.random(config.taskOrders.length-1);
   psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
 
   const graph = new Graph(config.graph);
@@ -132,7 +140,30 @@ async function initializeExperiment() {
   const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
 
-  let updateProgress = makeUpdateProgress(trials.length + 777);
+  const instructionNodes = {
+    0: new Set([2]),
+    2: new Set([0, 1, 3]),
+  };
+  const instructionGraph = new Graph(config.graph.map(node => {
+    const ns = instructionNodes[node[0]];
+    return [
+      node[0],
+      ns ? node[1].filter(n => ns.has(n)) : [],
+    ];
+  }));
+
+  var inst = {
+    type: 'CircleGraphNavigationInstruction',
+    graph: instructionGraph,
+    fullGraph: graph,
+    graphics: gfx,
+    stateOrder,
+    timeline: [{start: 0, goal: 1}],
+    on_finish() {
+      updateProgress();
+      saveData();
+    }
+  };
 
   var gn = {
     type: 'CircleGraphNavigation',
@@ -163,9 +194,12 @@ async function initializeExperiment() {
     }
   };
 
+  let updateProgress = makeUpdateProgress(gn.timeline.length + pi.timeline.length);
+
   var timeline = _.flatten([
-    instructions(),
+    inst,
     gn,
+    piInstruction(),
     pi,
     debrief(),
   ]);

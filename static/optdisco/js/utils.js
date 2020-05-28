@@ -78,3 +78,16 @@ export function trialErrorHandling(trial) {
     return trial.apply(this, arguments).catch(handleError);
   };
 };
+
+export function addPlugin(name, func) {
+  jsPsych.plugins[name] = {
+    info: { name: name, parameters: {} },
+    trial: trialErrorHandling(func),
+  };
+}
+
+export function parseHTML(html) {
+  var parser = new DOMParser();
+  var parsed = parser.parseFromString(html, 'text/html');
+  return parsed.getRootNode().body;
+}

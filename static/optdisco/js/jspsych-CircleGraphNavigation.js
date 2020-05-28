@@ -7,7 +7,7 @@ const stateTemplate = (state, graphic, cls, style) => `
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 
-function renderCircleGraph(graph, gfx, goal, stateOrder) {
+export function renderCircleGraph(graph, gfx, goal, stateOrder) {
   const width = 600;
   const height = 600;
   const blockSize = 100;
@@ -92,7 +92,7 @@ function queryEdge(root, state, successor) {
   }
 }
 
-function setCurrentState(display_element, graph, state) {
+export function setCurrentState(display_element, graph, state) {
   // Remove old classes!
   function removeClass(cls) {
     const els = display_element.querySelectorAll('.' + cls);
@@ -106,6 +106,11 @@ function setCurrentState(display_element, graph, state) {
   for (const key of SUCCESSOR_KEYS) {
     removeClass(`GraphNavigation-currentEdge-${key}`)
     removeClass(`GraphNavigation-currentKey-${key}`)
+  }
+
+  // Can call this to clear out current state too.
+  if (state == null) {
+    return;
   }
 
   // Add new classes! Set current state.
@@ -134,7 +139,7 @@ function setCurrentState(display_element, graph, state) {
   return keyToState;
 }
 
-function showState(el, graph, graphics, state, goal) {
+export function showState(el, graph, state) {
   let resolve;
   let promise = new Promise(function(res, rej) {
     resolve = res;
@@ -204,18 +209,18 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
       enableHoverEdges(display_element, trial.graph);
     }
 
-    function recursiveShowState(el, graph, graphics, start, goal) {
-      return showState(el, graph, graphics, start, goal).then(function(state) {
-        data.times.push(Date.now() - startTime);
+    async function recursiveShowState(el, graph, graphics, start, goal) {
+      const state = await showState(el, graph, start);
+      data.times.push(Date.now() - startTime);
 
-        if (state === goal) {
-          return [goal];
-        } else {
-          return recursiveShowState(el, graph, graphics, state, goal);
-        }
-      }).then(function(path) {
-        return [start].concat(path);
-      });
+      let path;
+      if (state === goal) {
+        path = [goal];
+      } else {
+        path = await recursiveShowState(el, graph, graphics, state, goal);
+      }
+
+      return [start].concat(path);
     }
 
     return recursiveShowState(display_element, trial.graph, trial.graphics, trial.start, trial.goal).then(function(path) {
