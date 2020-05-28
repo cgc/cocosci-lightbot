@@ -1,4 +1,6 @@
-export function bfs(graph, start, goal) {
+export function bfs(graph, start, goal, kwargs={}) {
+  const successors = kwargs.successors || (state => graph.graph[state]);
+
   function reconstructPath(cameFrom, start, goal) {
     const path = [];
     let node = goal;
@@ -22,7 +24,7 @@ export function bfs(graph, start, goal) {
       };
     }
     closed.add(curr);
-    for (const succ of graph.graph[curr]) {
+    for (const succ of successors(curr)) {
       if (!closed.has(succ) && queue.indexOf(succ) === -1) {
         queue.push(succ);
         cameFrom[succ] = curr;
@@ -65,7 +67,7 @@ export class Graph {
     Modifies the graph, shuffling successors.
     */
     for (const state of this.states) {
-      graph.graph[state] = jsPsych.randomization.repeat(graph.graph[state], 1);
+      this.graph[state] = jsPsych.randomization.repeat(this.graph[state], 1);
     }
   }
 }

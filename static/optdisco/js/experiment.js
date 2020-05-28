@@ -1,14 +1,12 @@
 import {Graph} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import './jspsych-GraphTraining.js';
-import './jspsych-GraphNavigation.js';
+import './jspsych-CircleGraphNavigation.js';
 import './jspsych-OneStepTraining.js';
 import './jspsych-PathIdentification.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
-
-// loading some data...
-//import s2c from '../json/solway2c.js';
-import s2c from './solway2c.js';
+import config from './configuration/pre_pilot_trials.js';
+//import s2c from './solway2c.js';
 
 const renderState = (graphic) => `<div class="State">
   <img src="${graphicsUrl(graphic)}" />
@@ -18,7 +16,7 @@ const renderSmallEmoji = (graphic) => `
 <img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
 `;
 
-const instructions = () => (
+const instructions = (gfx) => (
     [{
       type: "html-button-response",
       // We use the handy markdown function (defined in utils.js) to format our text.
@@ -113,82 +111,34 @@ function makeUpdateProgress(total) {
 }
 
 async function initializeExperiment() {
-  // Saving some subject metadata
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
-  const graph = new Graph(s2c);
-  window.graph = graph;
+  //const stateOrderIdx = _.random(config.stateOrders.length-1);
+  const stateOrderIdx = 0;
+  psiturk.recordUnstructuredData('stateOrderIdx', stateOrderIdx);
+
+  //const taskOrderIdx = _.random(config.taskOrders.length-1);
+  const taskOrderIdx = 0;
+  psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
+
+  const graph = new Graph(config.graph);
+  // HACK how to systematically implement this?
   graph.shuffleSuccessors();
 
-  const states = graph.states;
-  const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, states.length);
-  // let updateProgress = makeUpdateProgress(trials.length + numSampledTasks);
-  var onestep_2d = {
-    type: 'OneStepTraining',
-    graph: graph,
+  const trials = (
+    config.taskOrders[taskOrderIdx]
+    // PRETRIAL
+    .slice(0, 15));
+  const stateOrder = config.stateOrders[stateOrderIdx];
+  const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
+
+  let updateProgress = makeUpdateProgress(trials.length + 777);
+
+  var gn = {
+    type: 'CircleGraphNavigation',
+    graph,
     graphics: gfx,
-    trainingParams: {
-      nDistractors: 2,
-      peekable: false,
-      strategy: "spacedrep" //"allstates"
-    },
-    timeline: [{start: 0, goal: 1}, ],
-    on_finish() {
-      // updateProgress();
-      saveData();
-    }
-  };
-
-  var onestep_5d = {
-    type: 'OneStepTraining',
-    graph: graph,
-    graphics: gfx,
-    trainingParams: {
-      nDistractors: 5,
-      peekable: false,
-      strategy: "spacedrep"
-    },
-    on_finish() {
-      // updateProgress();
-      saveData();
-    }
-  };
-
-  //main task
-  let tasks = [];
-  let transitionTasks = [];
-  // const states = graph.states;
-  for (const start of states) {
-    for (const goal of states) {
-      if (start === goal) {
-        continue;
-      }
-      if (graph.graph[start].indexOf(goal) !== -1) {
-        transitionTasks.push({start, goal});
-      } else {
-        tasks.push({start, goal});
-      }
-    }
-  }
-  const numSampledTasks = 5;
-  transitionTasks = jsPsych.randomization.sampleWithoutReplacement(transitionTasks, numSampledTasks);
-  tasks = jsPsych.randomization.sampleWithoutReplacement(tasks, numSampledTasks);
-
-  let trials = [
-    {start: 0, goal: 1},
-    ...transitionTasks,
-    {start: 0, goal: 4},
-    {start: 0, goal: 5},
-    ...tasks,
-  ];
-
-  let updateProgress = makeUpdateProgress(trials.length + numSampledTasks);
-
-  // const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, states.length);
-  var gt = {
-    type: 'GraphTraining',
-    graph: graph,
-    graphics: gfx,
+    stateOrder,
     timeline: trials,
     on_finish() {
       updateProgress();
@@ -197,10 +147,16 @@ async function initializeExperiment() {
   };
 
   var pi = {
-    type: 'PathIdentification',
-    graph: graph,
+    type: 'CirclePathIdentification',
+    graph,
     graphics: gfx,
-    timeline: tasks,
+    stateOrder,
+    timeline: [
+      config.simpleProbes[0],
+      {...config.simpleProbes[1], identifyOneState: true},
+      config.hardProbes[0],
+      {...config.hardProbes[1], identifyOneState: true},
+    ],
     on_finish() {
       updateProgress();
       saveData();
@@ -209,28 +165,30 @@ async function initializeExperiment() {
 
   var timeline = _.flatten([
     instructions(),
-    onestep_2d,
-    onestep_5d,
-    // gt,
-    // pi,
-    // finalPoints,
+    gn,
+    pi,
     debrief(),
   ]);
 
   if (location.pathname == '/testexperiment') {
     const searchParams = new URLSearchParams(location.search);
-    // HACK Demo logic here!
-    timeline = [
-      {
-        type: searchParams.get('type') || 'GraphTraining',
-        graph: graph,
-        graphics: gfx,
-        timeline: trials,
-        on_finish() {
-          updateProgress();
-        }
-      },
-    ];
+    const type = searchParams.get('type') || 'GraphTraining';
+    timeline = timeline.filter(t => t.type == type);
+    console.log(timeline);
+    if (!timeline.length) {
+      timeline = [
+        {
+          type,
+          graph,
+          graphics: gfx,
+          stateOrder,
+          timeline: trials,
+          on_finish() {
+            updateProgress();
+          }
+        },
+      ];
+    }
   }
 
   return startExperiment({

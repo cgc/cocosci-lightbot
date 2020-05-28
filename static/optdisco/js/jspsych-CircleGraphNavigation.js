@@ -7,7 +7,7 @@ const stateTemplate = (state, graphic, cls, style) => `
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 
-function render(graph, gfx, goal) {
+function renderCircleGraph(graph, gfx, goal, stateOrder) {
   const width = 600;
   const height = 600;
   const blockSize = 100;
@@ -15,11 +15,6 @@ function render(graph, gfx, goal) {
   const radiusX = 250;
 
   const stateToXY = {};
-
-  // HACK HACK save this somewhere!!!
-  // HACK HACK save this somewhere!!!
-  // HACK HACK save this somewhere!!!
-  const stateOrder = jsPsych.randomization.repeat(graph.states, 1);
 
   stateOrder.forEach((state, idx) => {
     const angle = idx * 2 * Math.PI / graph.states.length;
@@ -159,11 +154,33 @@ function showState(el, graph, graphics, state, goal) {
   return promise;
 }
 
-jsPsych.plugins.GraphNavigation = (function() {
+function enableHoverEdges(display_element, graph) {
+  for (const el of display_element.querySelectorAll('.GraphNavigation-State')) {
+    el.addEventListener('mouseenter', function(e) {
+      const state = parseInt(el.dataset.state, 10);
+      // hovers.push({state, time: Date.now() - startTime});
+
+      for (const edge of display_element.querySelectorAll('.GraphNavigation-edge')) {
+        edge.classList.add('is-faded');
+      }
+      for (const successor of graph.graph[state]) {
+        const el = queryEdge(display_element, state, successor);
+        el.classList.remove('is-faded');
+      }
+    });
+    el.addEventListener('mouseleave', function(e) {
+      for (const edge of display_element.querySelectorAll('.GraphNavigation-edge')) {
+        edge.classList.remove('is-faded');
+      }
+    });
+  }
+}
+
+jsPsych.plugins.CircleGraphNavigation = (function() {
 
   var plugin = {};
   plugin.info = {
-    name: 'GraphNavigation',
+    name: 'CircleGraphNavigation',
     parameters: {}
   };
 
@@ -174,42 +191,22 @@ jsPsych.plugins.GraphNavigation = (function() {
     const data = {
       times: [],
       states: [],
-      hovers: [],
     };
-    let hovers = [];
     /*
     TODO record successor orderings?
     record images used
     */
 
-    display_element.innerHTML = render(trial.graph, trial.graphics, trial.goal);
+    const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder);
+    display_element.innerHTML = `${trial.intro || ''}${graphEl}`;
 
-    for (const el of display_element.querySelectorAll('.GraphNavigation-State')) {
-      el.addEventListener('mouseenter', function(e) {
-        const state = parseInt(el.dataset.state, 10);
-        hovers.push({state, time: Date.now() - startTime});
-
-        for (const edge of display_element.querySelectorAll('.GraphNavigation-edge')) {
-          edge.classList.add('is-faded');
-        }
-        for (const successor of trial.graph.graph[state]) {
-          const el = queryEdge(display_element, state, successor);
-          el.classList.remove('is-faded');
-        }
-      });
-      el.addEventListener('mouseleave', function(e) {
-        for (const edge of display_element.querySelectorAll('.GraphNavigation-edge')) {
-          edge.classList.remove('is-faded');
-        }
-      });
+    if (trial.hoverEdges) {
+      enableHoverEdges(display_element, trial.graph);
     }
 
     function recursiveShowState(el, graph, graphics, start, goal) {
       return showState(el, graph, graphics, start, goal).then(function(state) {
         data.times.push(Date.now() - startTime);
-        data.states.push(state);
-        data.hovers.push(hovers);
-        hovers = [];
 
         if (state === goal) {
           return [goal];
@@ -224,15 +221,150 @@ jsPsych.plugins.GraphNavigation = (function() {
     return recursiveShowState(display_element, trial.graph, trial.graphics, trial.start, trial.goal).then(function(path) {
       data.states = path;
       console.log(data);
-      const optimal = bfs(trial.graph, trial.start, trial.goal);
+      const perfect = path.length - 1 == trial.optimal ? "That was perfect!" : "";
       return completeModal(`
         ### Success!
-        Took ${path.length - 1} moves. Optimal length ${optimal.path.length}.
-        ${path.join('')}
+        ${perfect}
       `);
     }).then(function() {
       display_element.innerHTML = ''; // HACK???
       jsPsych.finishTrial(data);
+    });
+  });
+
+  return plugin;
+})();
+
+const MAX_CLICKS = 15; // should be tuned per graph???
+
+function showPathIdentification(el, graph, graphics, start, goal, clickLimit) {
+  let resolve;
+  let promise = new Promise(function(res, rej) {
+    resolve = res;
+  });
+
+  const startTime = Date.now();
+
+  const optimalPath = bfs(graph, start, goal).path;
+
+  function isOptimal() {
+    // Can't be right if they haven't selected the right number of items.
+    if (selected.size != optimalPath.length) {
+      return false;
+    }
+
+    function successors(state) {
+      return graph.graph[state].filter(s => selected.has(s));
+    }
+
+    const result = bfs(graph, start, goal, {successors});
+    // Can't be right if there's no solution in a BFS that filters based on selected.
+    if (!result) {
+      return false;
+    }
+    // Right if their path is the same length as optimal.
+    // Notably, they don't have to have the same path.
+    return result.path.length == optimalPath.length;
+  }
+
+  const selected = new Set([goal]);
+
+  const data = {
+    selected,
+    totalClicks: 0,
+    times: [],
+    actions: [],
+  };
+
+  for (const s of el.querySelectorAll('.PathIdentification-selectable')) {
+    if (s == start || s == goal) {
+      continue;
+    }
+    s.addEventListener('click', function(e) {
+      e.preventDefault();
+      const state = parseInt(s.getAttribute('data-state'), 10);
+      const select = !selected.has(state);
+
+      // record data
+      data.times.push(Date.now() - startTime);
+      data.actions.push({state, select});
+
+      // Toggle logic
+      if (select) {
+        selected.add(state);
+        s.classList.add('PathIdentification-selected');
+      } else {
+        selected.delete(state);
+        s.classList.remove('PathIdentification-selected');
+      }
+
+      // Check to see if they solved it
+      if (isOptimal()) {
+        data.success = true;
+        resolve(data);
+        return;
+      }
+
+      // Check to see if they exceeded # of clicks.
+      data.totalClicks++;
+      if (data.totalClicks >= clickLimit) {
+        data.success = false;
+        resolve(data);
+        return;
+      }
+    });
+  }
+
+  return promise;
+}
+
+const renderSmallEmoji = (graphic) => `
+<img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
+`;
+
+jsPsych.plugins.CirclePathIdentification = (function() {
+  const plugin = { info: { name: 'CirclePathIdentification', parameters: {} } };
+
+  plugin.trial = trialErrorHandling(async function(display_element, trial) {
+    console.log(trial);
+
+    const {start, goal, graph, graphics, stateOrder} = trial;
+
+    const intro = trial.identifyOneState ? `
+      <p>Select one icon you would pass by when getting from ${renderSmallEmoji(graphics[start])}
+      to ${renderSmallEmoji(graphics[goal])}.</p>
+    ` : `
+      <p>How would you get from ${renderSmallEmoji(graphics[start])}
+      to ${renderSmallEmoji(graphics[goal])}?</p>
+    `;
+    const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
+    display_element.innerHTML = `${intro}${graphEl}`;
+
+    // Styling tweaks: Remove edges.
+    display_element.querySelectorAll('.GraphNavigation-edge').forEach(el => el.remove());
+    // Add styling/classes for selectable states.
+    for (const s of graph.states) {
+      let cls = 'PathIdentification-selectable';
+      if (s == start) {
+        cls = 'PathIdentification-start';
+      } else if (s == goal) {
+        cls = 'PathIdentification-goal';
+      }
+      const el = display_element.querySelector(`.GraphNavigation-State-${s}`);
+      el.classList.add(cls);
+    }
+
+    const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
+    return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit).then(function(data) {
+      console.log(data);
+      const msg = trial.identifyOneState ? `### Success!` : data.success ? `### Success!` : `
+      ### Ran out of clicks!
+      Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
+      `;
+      return completeModal(msg).then(function() {
+        display_element.innerHTML = '';
+        jsPsych.finishTrial(data);
+      });
     });
   });
 
