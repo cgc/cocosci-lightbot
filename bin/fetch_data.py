@@ -1,14 +1,16 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import logging
-import urllib2
+import requests
+from requests.auth import HTTPBasicAuth
 import pandas as pd
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import ast
 import re
 import json
 from collections import defaultdict
+import configparser
 
 logging.basicConfig(level="INFO")
 
@@ -37,29 +39,8 @@ class Labeler(object):
 
     __call__ = label
 
-def add_auth(url, username, password):
-    """Add HTTP authencation for opening urls with urllib2.
 
-    Based on http://www.voidspace.org.uk/python/articles/authentication.shtml
-    """
-    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-
-    # because we have put None at the start it will always use this
-    # username/password combination for urls for which `theurl` is a super-url
-    passman.add_password(None, url, username, password)
-
-    # create the AuthHandler
-    authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-    # All calls to urllib2.urlopen will now use our handler. Make sure not to
-    # include the protocol in with the URL, or HTTPPasswordMgrWithDefaultRealm
-    # will be very confused.  You must (of course) use it when fetching the
-    # page though.
-    opener = urllib2.build_opener(authhandler)
-    urllib2.install_opener(opener)
-
-
-def fetch(site_root, filename, version, force=True):
+def fetch(site_root, filename, version, auth, force=True):
     """Download `filename` from `site_root` and save it in the
     data/human_raw/`version` data folder.
     """
@@ -73,18 +54,11 @@ def fetch(site_root, filename, version, force=True):
         return
 
     # download the data
-    try:
-        handler = urllib2.urlopen(url)
-    except IOError as err:
-        if getattr(err, 'code', None) == 401:
-            logging.error("Server authentication failed.")
-            raise err
-        else:
-            raise
-    else:
-        data = handler.read()
-        logging.info("Fetched succesfully: %s", url)
-
+    r = requests.get(url, auth=auth)
+    r.raise_for_status()
+    data = r.text
+    logging.info("Fetched succesfully: %s", url)
+    
     # write out the data file
     if not os.path.exists(os.path.dirname(dest)):
         os.makedirs(os.path.dirname(dest))
@@ -172,10 +146,9 @@ def reformat_data(version):
     return data
 
 def main(version, address, username, password):
-    add_auth(address, username, password)
     files = ["trialdata", "eventdata", "questiondata"]
     for filename in files:
-        fetch(address, filename, version)
+        fetch(address, filename, version, HTTPBasicAuth(username, password))
 
 
 if __name__ == "__main__":
@@ -187,10 +160,11 @@ if __name__ == "__main__":
               "parameter in the psiTurk config.txt file that was used when the "
               "data was collected."))
 
-    url = "https://ball-exp.herokuapp.com/data"
-    if url == "https://ball-exp.herokuapp.com/data":
-        print('Set the URL in this file before usage. Then delete this ')
-        exit(1)
+    c = configparser.ConfigParser()
+    c.read('config.txt')
+    sp = c['Server Parameters']
+
+    url = 'https://' + sp['adserver_revproxy_host'] + '/data'
 
     args = parser.parse_args()
-    main(args.version, url, 'user', 'pw')  # from config.txt
+    main(args.version, url, sp['login_username'], sp['login_pw'])

@@ -348,7 +348,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
       to ${renderSmallEmoji(graphics[goal])}.</p>
     ` : `
       <p>Select the ${solution.length-1} picture(s) you would visit to get from ${renderSmallEmoji(graphics[start])}
-      to ${renderSmallEmoji(graphics[goal])}.</p>
+      to ${renderSmallEmoji(graphics[goal])}. Selected pictures are gray. Only select the pictures you need to navigate through.</p>
     `;
     const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
     display_element.innerHTML = `${intro}${graphEl}`;

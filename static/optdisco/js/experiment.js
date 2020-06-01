@@ -6,7 +6,7 @@ import './jspsych-CircleGraphNavigationInstruction.js';
 import './jspsych-OneStepTraining.js';
 import './jspsych-PathIdentification.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
-import config from './configuration/pre_pilot_trials.js';
+import config from './configuration/trials.js';
 //import s2c from './solway2c.js';
 
 const renderState = (graphic) => `<div class="State">
@@ -108,7 +108,7 @@ const piInstruction = () => ({
   stimulus: markdown(`
     In this next section we'll ask you a few questions about how you navigate.
 
-    First, we'll ask you to tell us how you would navigate between two pictures.
+    First, we'll ask you to tell us how you would navigate between two pictures by selecting the pictures you would pass through. Make sure you've only selected the relevant pictures. There is a limit of 15 clicks before you move on to the next question.
   `),
   choices: ['Continue'],
   button_html: '<button class="btn btn-primary">%choice%</button>',
@@ -119,8 +119,6 @@ const piInstruction2 = () => ({
   // We use the handy markdown function (defined in utils.js) to format our text.
   stimulus: markdown(`
     Now, we'll ask you to tell us just one picture you'll navigate through.
-
-    Don't think too hard about it, let us know the first thing that comes to mind.
   `),
   choices: ['Continue'],
   button_html: '<button class="btn btn-primary">%choice%</button>',
@@ -150,7 +148,7 @@ async function initializeExperiment() {
   const trials = (
     config.taskOrders[taskOrderIdx]
     // PRETRIAL
-    .slice(0, 15));
+    .slice(0, 30));
   const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
 
@@ -204,7 +202,7 @@ async function initializeExperiment() {
   });
 
   // HACK this is very specific to current PathIdentification tasks.
-  let updateProgress = makeUpdateProgress(trials.length + 4);
+  let updateProgress = makeUpdateProgress(trials.length + 12);
 
   var timeline = _.flatten([
     inst,
@@ -213,11 +211,19 @@ async function initializeExperiment() {
     pi([
       config.simpleProbes[0],
       config.hardProbes[0],
+      config.simpleProbes[1],
+      config.hardProbes[1],
+      config.simpleProbes[2],
+      config.hardProbes[2],
     ]),
     piInstruction2(),
     pi([
-      {...config.simpleProbes[1], identifyOneState: true},
-      {...config.hardProbes[1], identifyOneState: true},
+      {...config.simpleProbes[3], identifyOneState: true},
+      {...config.hardProbes[3], identifyOneState: true},
+      {...config.simpleProbes[4], identifyOneState: true},
+      {...config.hardProbes[4], identifyOneState: true},
+      {...config.simpleProbes[5], identifyOneState: true},
+      {...config.hardProbes[5], identifyOneState: true},
     ]),
     debrief(),
   ]);
