@@ -30,6 +30,10 @@
 }
 
 /* GraphNavigation */
+.GraphNavigation {
+  margin: 0 auto;
+}
+
 .GraphNavigation-State.State {
   border-radius: 100%;
   border-width: 0;
@@ -96,7 +100,6 @@
   background-color: blue;
 }
 .GraphNavigation-instruction {
-  width: 600px; /* Based on CircleGraphNavigation width */
   height: 100px;
 }
 

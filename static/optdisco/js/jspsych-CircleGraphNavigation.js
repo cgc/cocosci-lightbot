@@ -370,7 +370,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
     return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit).then(function(data) {
       console.log(data);
-      const msg = trial.identifyOneState ? `### Success!` : data.success ? `### Success!` : `
+      const msg = trial.identifyOneState ? `` : data.success ? `### Success!` : `
       ### Ran out of clicks!
       Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
       `;
