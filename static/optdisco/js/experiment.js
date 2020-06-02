@@ -169,6 +169,7 @@ async function initializeExperiment() {
     graph: instructionGraph,
     fullGraph: graph,
     graphics: gfx,
+    trialsLength: trials.length,
     stateOrder,
     timeline: [{start: 0, goal: 1}],
     on_finish() {

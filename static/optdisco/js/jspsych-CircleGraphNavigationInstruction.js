@@ -111,7 +111,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         showStateUntil(trial.fullGraph, 0, null);
       },
       html: markdown(`
-        The task will consist of 15 puzzles, but with the associations shown below.
+        The task will consist of ${trial.trialsLength} puzzles with the associations shown below. Afterward, we'll ask you some questions.
         Before starting the task, feel free to explore with the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys.
 
         Whenever you're ready: <button>Start the task</button>
