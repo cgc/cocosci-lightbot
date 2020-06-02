@@ -343,18 +343,23 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const {start, goal, graph, graphics, stateOrder} = trial;
     const solution = bfs(graph, start, goal).path;
 
-    const intro = trial.identifyOneState ? `
-      <p>Select one picture you would pass by when getting from ${renderSmallEmoji(graphics[start])}
-      to ${renderSmallEmoji(graphics[goal])}.</p>
+    const msg = trial.alternateCopy ? `
+      <p>What's the first picture you think of when figuring out how to go from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}?</p>
+    ` : trial.busStop ? `
+      <p>Now, we'll ask you one final question. Imagine that instant teleportation was added to this task. So, in addition to the connections, you could use instant teleportation to get to one (but only one!) picture.</p>
+
+      <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
     ` : `
+      <p>Select one picture you would visit to get from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}.</p>
+    `;
+
+    const intro = trial.identifyOneState ? msg : `
       <p>Select the ${solution.length-1} picture(s) you would visit to get from ${renderSmallEmoji(graphics[start])}
       to ${renderSmallEmoji(graphics[goal])}. Selected pictures are gray. Only select the pictures you need to navigate through.</p>
     `;
     const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
     display_element.innerHTML = `${intro}${graphEl}`;
 
-    // Styling tweaks: Remove edges.
-    display_element.querySelectorAll('.GraphNavigation-edge').forEach(el => el.remove());
     // Add styling/classes for selectable states.
     for (const s of graph.states) {
       let cls = 'PathIdentification-selectable';

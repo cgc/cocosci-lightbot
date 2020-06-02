@@ -124,6 +124,14 @@ const piInstruction2 = () => ({
   button_html: '<button class="btn btn-primary">%choice%</button>',
 });
 
+const makeSimpleInstruction = (text) => ({
+  type: "html-button-response",
+  // We use the handy markdown function (defined in utils.js) to format our text.
+  stimulus: markdown(text),
+  choices: ['Continue'],
+  button_html: '<button class="btn btn-primary">%choice%</button>',
+});
+
 function makeUpdateProgress(total) {
   var i = 0;
   return function() {
@@ -140,6 +148,9 @@ async function initializeExperiment() {
 
   const taskOrderIdx = _.random(config.taskOrders.length-1);
   psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
+
+  const probeOrder = _.random(1);
+  psiturk.recordUnstructuredData('probeOrder', probeOrder);
 
   const graph = new Graph(config.graph);
   // HACK how to systematically implement this?
@@ -202,30 +213,43 @@ async function initializeExperiment() {
     }
   });
 
+  let probe;
+  if (probeOrder == 0) {
+    probe = [
+      makeSimpleInstruction(`
+      In this next section we'll ask you a few questions about how you navigate.
+
+      First, we'll ask you to tell us one picture you would visit when navigating.
+      `),
+      pi(config.hardProbes.map(p => ({...p, identifyOneState: true, alternateCopy: false}))),
+      makeSimpleInstruction(`
+        Now we'll ask you a few more questions. This time, tell us the first picture that comes to mind when you try to figure out how to reach the goal.
+      `),
+      pi(config.hardProbesAlternate.map(p => ({...p, identifyOneState: true, alternateCopy: true}))),
+    ];
+  } else {
+    probe = [
+      makeSimpleInstruction(`
+      In this next section we'll ask you a few questions about how you navigate.
+
+      First, tell us the first picture that comes to mind when you try to figure out how to reach the goal.
+      `),
+      pi(config.hardProbes.map(p => ({...p, identifyOneState: true, alternateCopy: true}))),
+      makeSimpleInstruction(`
+        Now we'll ask you a few more questions. This time, tell us one picture you would visit when navigating.
+      `),
+      pi(config.hardProbesAlternate.map(p => ({...p, identifyOneState: true, alternateCopy: false}))),
+    ];
+  }
+
   // HACK this is very specific to current PathIdentification tasks.
-  let updateProgress = makeUpdateProgress(trials.length + 12);
+  let updateProgress = makeUpdateProgress(trials.length + 16);
 
   var timeline = _.flatten([
     inst,
     gn,
-    piInstruction(),
-    pi([
-      config.simpleProbes[0],
-      config.hardProbes[0],
-      config.simpleProbes[1],
-      config.hardProbes[1],
-      config.simpleProbes[2],
-      config.hardProbes[2],
-    ]),
-    piInstruction2(),
-    pi([
-      {...config.simpleProbes[3], identifyOneState: true},
-      {...config.hardProbes[3], identifyOneState: true},
-      {...config.simpleProbes[4], identifyOneState: true},
-      {...config.hardProbes[4], identifyOneState: true},
-      {...config.simpleProbes[5], identifyOneState: true},
-      {...config.hardProbes[5], identifyOneState: true},
-    ]),
+    probe,
+    pi([{identifyOneState: true, busStop: true}]),
     debrief(),
   ]);
 
