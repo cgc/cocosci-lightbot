@@ -94,9 +94,9 @@ const debrief = () => ({
   button_label: 'Submit',
   questions: [
     {'prompt': 'What strategy did you use to answer the questions at the end?',
-     'rows': 2, columns: 60}
+     'rows': 2, columns: 60},
     {'prompt': 'How did you make the decision about which picture to use for instant teleportation?',
-     'rows': 2, columns: 60}
+     'rows': 2, columns: 60},
     {'prompt': 'Was anything confusing or hard to understand?',
      'rows': 2, columns: 60},
     {'prompt': 'Do you have any suggestions on how we can improve the instructions or interface?',
