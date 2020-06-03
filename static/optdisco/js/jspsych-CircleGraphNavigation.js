@@ -346,7 +346,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const msg = trial.alternateCopy ? `
       <p>What's the first picture you think of when figuring out how to go from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}?</p>
     ` : trial.busStop ? `
-      <p>Now, we'll ask you one final question. Imagine that instant teleportation was added to this task. So, in addition to the connections, you could use instant teleportation to get to one (but only one!) picture.</p>
+      <p>Now, we'll ask you one final question. Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.</p>
 
       <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
     ` : `
