@@ -28,8 +28,17 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     });
   }
 
+  const cancelAtEnd = [];
+
   async function showStateUntil(graph, state, goal) {
-    const nextState = await showState(root, graph, state);
+    const res = showState(root, graph, state);
+    cancelAtEnd.push(res.cancel);
+    const nextState = await res.promise;
+    // When we cancel, this happens.
+    if (nextState == null) {
+      console.log('showState was cancelled');
+      return;
+    }
     if (nextState == goal) {
       return;
     }
@@ -73,7 +82,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
 
         To navigate between places, type the letter shown on the line. Now, try it: Type ${renderKey('J')}.
       `),
-      makePromise: () => showState(root, graph, start),
+      makePromise: () => showState(root, graph, start).promise,
     },
     {
       pre: () => {
@@ -134,6 +143,11 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   }
 
   return recursiveTimeline().then(() => {
+    // HACK we make sure all things we were showing before are cancelled.
+    for (const c of cancelAtEnd) {
+      c();
+    }
+
     root.innerHTML = '';
     jsPsych.finishTrial();
   });

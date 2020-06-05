@@ -147,6 +147,11 @@ export function showState(el, graph, state) {
 
   const keyToState = setCurrentState(el, graph, state);
 
+  function cancel() {
+    document.removeEventListener('keypress', handleTransition);
+    resolve(null);
+  }
+
   function handleTransition(e) {
     e.preventDefault();
     if (e.keyCode in keyToState) {
@@ -156,11 +161,15 @@ export function showState(el, graph, state) {
   }
   document.addEventListener('keypress', handleTransition);
 
-  return promise.then((state) => {
+  const rv = promise.then((state) => {
     return setTimeoutPromise(200).then(() => {
       return state;
     });
   });
+  return {
+    cancel,
+    promise: rv,
+  };
 }
 
 function enableHoverEdges(display_element, graph) {
@@ -217,7 +226,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
     }
 
     async function recursiveShowState(el, graph, graphics, start, goal) {
-      const state = await showState(el, graph, start);
+      const state = await showState(el, graph, start).promise;
       data.times.push(Date.now() - startTime);
 
       let path;
