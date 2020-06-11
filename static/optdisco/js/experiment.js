@@ -298,3 +298,22 @@ $(window).on('load', function() {
     return $('#data-error').show();
   });
 });
+
+const errors = [];
+function recordError(e) {
+  if (!e) {
+    // Sometimes window.onerror passes in empty errors?
+    return;
+  }
+  errors.push(e);
+  psiturk.recordUnstructuredData('error2', JSON.stringify(errors.map(function(e) {
+    return e.message + e.stack;
+  })));
+  psiturk.saveData();
+}
+window.onerror = function(message, source, lineno, colno, error) {
+  recordError(error);
+};
+window.addEventListener('unhandledrejection', function(event) {
+  recordError(event.reason);
+});
