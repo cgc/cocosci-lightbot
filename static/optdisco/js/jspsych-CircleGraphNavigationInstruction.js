@@ -67,8 +67,8 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         root.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
       },
       html: markdown(`
-        Each picture is associated with several other pictures, shown by a line between them.
-        For example, ${renderSmallEmoji(graphics[start])} is associated with ${renderSmallEmoji(graphics[intermed])}.
+        Each picture is connected with several other pictures, shown by a line between them.
+        For example, ${renderSmallEmoji(graphics[start])} is connected with ${renderSmallEmoji(graphics[intermed])}.
 
         <button>Next</button>
       `),
@@ -120,7 +120,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         showStateUntil(trial.fullGraph, 0, null);
       },
       html: markdown(`
-        The task will consist of ${trial.trialsLength} puzzles with the associations shown below. Afterward, we'll ask you some questions.
+        The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The pictures and connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
         Before starting the task, feel free to explore with the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys.
 
         Whenever you're ready: <button>Start the task</button>

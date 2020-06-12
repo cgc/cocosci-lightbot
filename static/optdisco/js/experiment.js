@@ -83,7 +83,19 @@ const instructions = (gfx) => (
     }]
 );
 
-const debrief = () => ({
+const debrief = () => [{
+  type: 'survey-multi-choice',
+  preamble: markdown(`
+  # HIT complete
+
+  Thanks for participating! Please answer the questions below before
+  submitting the HIT.
+  `),
+  button_label: 'Submit',
+  questions: [
+    {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
+  ],
+}, {
   type: 'survey-text',
   preamble: markdown(`
   # HIT complete
@@ -104,7 +116,7 @@ const debrief = () => ({
     {'prompt': 'Any other comments?',
      'rows': 2, columns: 60}
   ]
-});
+}];
 
 const piInstruction = () => ({
   type: "html-button-response",
@@ -153,8 +165,8 @@ async function initializeExperiment() {
   const taskOrderIdx = _.random(config.taskOrders.length-1);
   psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
 
-  const probeOrder = _.random(1);
-  psiturk.recordUnstructuredData('probeOrder', probeOrder);
+  const timeLimit = _.sample([4*1000, 8*1000, 12*1000]);
+  psiturk.recordUnstructuredData('timeLimit', timeLimit);
 
   const graph = new Graph(config.graph);
   // HACK how to systematically implement this?
@@ -205,55 +217,33 @@ async function initializeExperiment() {
     }
   };
 
+  var piInstruction = makeSimpleInstruction(`
+    In this next section we will ask you ${config.probes.length} questions about how you navigate.
+
+    We will ask you about the first picture you think of that is between two pictures. You'll have ${timeLimit/1000} seconds to answer each question.
+  `);
+
   var pi = (timeline) => ({
     type: 'CirclePathIdentification',
     graph,
     graphics: gfx,
     stateOrder,
     timeline,
+    timeLimit: timeLimit,
+    identifyOneState: true,
     on_finish() {
       updateProgress();
       saveData();
     }
   });
 
-  let probe;
-  if (probeOrder == 0) {
-    probe = [
-      makeSimpleInstruction(`
-      In this next section we'll ask you a few questions about how you navigate.
-
-      First, we'll ask you to tell us one picture you would visit when navigating.
-      `),
-      pi(config.hardProbes.map(p => ({...p, identifyOneState: true, alternateCopy: false}))),
-      makeSimpleInstruction(`
-        Now we'll ask you a few more questions. This time, tell us the first picture that comes to mind when you try to figure out how to reach the goal.
-      `),
-      pi(config.hardProbesAlternate.map(p => ({...p, identifyOneState: true, alternateCopy: true}))),
-    ];
-  } else {
-    probe = [
-      makeSimpleInstruction(`
-      In this next section we'll ask you a few questions about how you navigate.
-
-      First, tell us the first picture that comes to mind when you try to figure out how to reach the goal.
-      `),
-      pi(config.hardProbes.map(p => ({...p, identifyOneState: true, alternateCopy: true}))),
-      makeSimpleInstruction(`
-        Now we'll ask you a few more questions. This time, tell us one picture you would visit when navigating.
-      `),
-      pi(config.hardProbesAlternate.map(p => ({...p, identifyOneState: true, alternateCopy: false}))),
-    ];
-  }
-
-  // HACK this is very specific to current PathIdentification tasks.
-  let updateProgress = makeUpdateProgress(trials.length + 16);
+  let updateProgress = makeUpdateProgress(trials.length + config.probes.length * 2);
 
   var timeline = _.flatten([
     inst,
     gn,
-    probe,
-    pi([{identifyOneState: true, busStop: true}]),
+    piInstruction,
+    pi(config.probes),
     debrief(),
   ]);
 

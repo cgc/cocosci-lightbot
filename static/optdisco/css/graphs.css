@@ -44,28 +44,28 @@
 }
 
 .GraphNavigation-edge {
-  border: 1px solid black;
-  height: 0px;
+  height: 2px;
   transform-origin: left center;
   position: absolute;
+  background-color: black;
 
-  transition: border-color 300ms;
-  transition: opacity 300ms;
+  transition: background-color 300ms, height 300ms, opacity 300ms;
 }
 .GraphNavigation-edge.is-faded {
   opacity: 0.1;
 }
 .GraphNavigation-currentEdge {
   z-index: 1;
+  height: 4px;
 }
 .GraphNavigation-currentEdge-J {
-  border-color: red;
+  background-color: red;
 }
 .GraphNavigation-currentEdge-K {
-  border-color: green;
+  background-color: green;
 }
 .GraphNavigation-currentEdge-L {
-  border-color: blue;
+  background-color: blue;
 }
 
 .GraphNavigation-current.State {

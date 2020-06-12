@@ -13,15 +13,15 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
   const blockSize = 100;
   const radiusY = 250;
   const radiusX = 250;
+  const offsetX = width / 2 - blockSize / 2;
+  const offsetY = height / 2 - blockSize / 2;
 
   const stateToXY = {};
 
   stateOrder.forEach((state, idx) => {
     const angle = idx * 2 * Math.PI / graph.states.length;
-    const offsetX = width / 2 - blockSize / 2;
-    const offsetY = height / 2 - blockSize / 2;
     let x = Math.cos(angle) * radiusX + offsetX;
-    let y = Math.sin(angle) * radiusY + offsetX;
+    let y = Math.sin(angle) * radiusY + offsetY;
     stateToXY[state] = [x, y];
   });
 
@@ -31,9 +31,22 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
     return stateTemplate(state, gfx[state], cls, `transform: translate(${x}px,${y}px);`);
   });
 
+  function scaleEdge(pos, offset) {
+    /*
+    We scale edges/keys in to ensure that short connections avoid overlapping node borders.
+    */
+    return (pos - offset) * 0.95 + offset;
+  }
+  function scaleCoordinate([x, y]) {
+    return [
+      scaleEdge(x, offsetX),
+      scaleEdge(y, offsetY),
+    ];
+  }
+
   function addKey(key, state, successor, norm) {
-    const [x, y] = stateToXY[state];
-    const [sx, sy] = stateToXY[successor];
+    const [x, y] = scaleCoordinate(stateToXY[state]);
+    const [sx, sy] = scaleCoordinate(stateToXY[successor]);
     const [keyWidth, keyHeight] = [20, 28]; // HACK get from CSS
     // We also add the key labels here
     const mul = 1.4 * blockSize / 2;
@@ -49,13 +62,13 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
   const succ = [];
   const keys = [];
   for (const state of graph.states) {
-    let [x, y] = stateToXY[state];
+    let [x, y] = scaleCoordinate(stateToXY[state]);
 
     graph.graph[state].forEach((successor, idx) => {
       if (state >= successor) {
         return;
       }
-      let [sx, sy] = stateToXY[successor];
+      let [sx, sy] = scaleCoordinate(stateToXY[successor]);
       const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
       const rot = Math.atan2(sy-y, sx-x);
       succ.push(`
@@ -258,7 +271,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
 
 const MAX_CLICKS = 15; // should be tuned per graph???
 
-function showPathIdentification(el, graph, graphics, start, goal, clickLimit) {
+function showPathIdentification(el, graph, graphics, start, goal, clickLimit, timeLimit) {
   let resolve;
   let promise = new Promise(function(res, rej) {
     resolve = res;
@@ -297,6 +310,12 @@ function showPathIdentification(el, graph, graphics, start, goal, clickLimit) {
     actions: [],
   };
 
+  if (timeLimit) {
+    setTimeout(() => {
+      resolve({success: false, timeout: true, ...data});
+    }, timeLimit);
+  }
+
   for (const s of el.querySelectorAll('.PathIdentification-selectable')) {
     if (s == start || s == goal) {
       continue;
@@ -321,16 +340,14 @@ function showPathIdentification(el, graph, graphics, start, goal, clickLimit) {
 
       // Check to see if they solved it
       if (isOptimal()) {
-        data.success = true;
-        resolve(data);
+        resolve({success: true, ...data});
         return;
       }
 
       // Check to see if they exceeded # of clicks.
       data.totalClicks++;
       if (data.totalClicks >= clickLimit) {
-        data.success = false;
-        resolve(data);
+        resolve({success: false, ...data});
         return;
       }
     });
@@ -352,14 +369,12 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const {start, goal, graph, graphics, stateOrder} = trial;
     const solution = bfs(graph, start, goal).path;
 
-    const msg = trial.alternateCopy ? `
-      <p>What's the first picture you think of when figuring out how to go from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}?</p>
-    ` : trial.busStop ? `
+    const msg = trial.busStop ? `
       <p>Now, we'll ask you one final question. Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.</p>
 
       <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
     ` : `
-      <p>Select one picture you would visit to get from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}.</p>
+      <p>What's the first picture you think of that is between ${renderSmallEmoji(graphics[start])} and ${renderSmallEmoji(graphics[goal])}?</p>
     `;
 
     const intro = trial.identifyOneState ? msg : `
@@ -382,7 +397,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     }
 
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
-    return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit).then(function(data) {
+    return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
       console.log(data);
       const msg = trial.identifyOneState ? `` : data.success ? `### Success!` : `
       ### Ran out of clicks!
