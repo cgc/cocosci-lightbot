@@ -374,7 +374,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
 
       <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
     ` : `
-      <p>What's the first picture you think of that is between ${renderSmallEmoji(graphics[start])} and ${renderSmallEmoji(graphics[goal])}?</p>
+      <p>What's the first picture you think of when navigating from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}?</p>
     `;
 
     const intro = trial.identifyOneState ? msg : `
