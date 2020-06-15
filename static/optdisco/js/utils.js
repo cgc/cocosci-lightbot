@@ -102,3 +102,58 @@ export function parseHTML(html) {
 export function setTimeoutPromise(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
+
+// Initially in https://jsfiddle.net/zoradude5/j4ogytfp/39/
+function runTimerText(el, ms) {
+  let resolve;
+  const p = new Promise((res, rej) => { resolve = res; });
+
+  const start = new Date();
+
+  function update() {
+    const elapsed = new Date() - start;
+
+    // End once time is elapsed
+    if (elapsed > ms+1) { // Make sure we go out past our time a bit, the 0.01 sec.
+      // Clear interval! Important to end updates.
+      clearInterval(inter);
+      resolve();
+    }
+
+    // Render seconds: round up, and make sure we don't go below 0.
+    const seconds = Math.max(0, Math.ceil((ms - elapsed) / 1000));
+
+    // Update DOM
+    el.textContent = (
+      seconds == 0 ? 'Done!' :
+      seconds == 1 ? '1 second left' :
+      `${seconds} seconds left`
+    );
+  }
+
+  // Set interval, every 100ms so we're never too late.
+  const inter = setInterval(update, 100);
+  // Run the first render manually.
+  update();
+
+  return p;
+}
+
+export function runTimer(root, ms) {
+  // Render timer.
+  root.innerHTML = `
+  <div class="Timer-progressContainer"><div class="Timer-progress"></div></div>
+  <span class="Timer-number"></span>
+  `;
+
+  // Animate progress bar.
+  const el = root.querySelector('.Timer-progress')
+  el.style.transitionDuration = `${ms}ms`;
+  // Wait until next iter of event loop to make sure transition has right duration.
+  setTimeout(() => {
+    el.classList.add('progressing');
+  }, 0);
+
+  // Set text rendering. Also gives us a promise for completion.
+  return runTimerText(root.querySelector('.Timer-number'), ms);
+}

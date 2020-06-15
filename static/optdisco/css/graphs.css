@@ -195,3 +195,23 @@
 .legal hr {
  border-color: #ccc;
 }
+
+.Timer-progressContainer {
+  display: inline-block;
+  width: 50px;
+  height: 1rem;
+  background-color: #eee;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.Timer-progress {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(90, 160, 200);
+  background-color: #aaa;
+  transition: transform 1s linear;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.Timer-progress.progressing {
+  transform: scaleX(1);
+}

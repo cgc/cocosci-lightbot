@@ -1,4 +1,4 @@
-import {completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise} from './utils.js';
+import {runTimer, completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
 import {bfs} from './graphs.js';
 
 const stateTemplate = (state, graphic, cls, style) => `
@@ -382,7 +382,8 @@ jsPsych.plugins.CirclePathIdentification = (function() {
       to ${renderSmallEmoji(graphics[goal])}. Selected pictures are gray. Only select the pictures you need to navigate through.</p>
     `;
     const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
-    display_element.innerHTML = `${intro}${graphEl}`;
+    const timer = `<div class='Timer'></div>`;
+    display_element.innerHTML = `${intro}${timer}${graphEl}`;
 
     // Add styling/classes for selectable states.
     for (const s of graph.states) {
@@ -396,13 +397,22 @@ jsPsych.plugins.CirclePathIdentification = (function() {
       el.classList.add(cls);
     }
 
+    // Start timer
+    runTimer(display_element.querySelector('.Timer'), trial.timeLimit);
+
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
     return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
       console.log(data);
-      const msg = trial.identifyOneState ? `` : data.success ? `### Success!` : `
-      ### Ran out of clicks!
-      Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
-      `;
+      display_element.querySelector('.Timer').remove();
+      let msg;
+      if (trial.identifyOneState) {
+        msg = data.timeout ? '### Ran out of time' : '';
+      } else {
+        msg = data.success ? `### Success!` : `
+        ### Ran out of clicks!
+        Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
+        `;
+      }
       return completeModal(msg).then(function() {
         display_element.innerHTML = '';
         jsPsych.finishTrial(data);
