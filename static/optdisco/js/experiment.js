@@ -223,11 +223,38 @@ async function initializeExperiment() {
     }
   };
 
-  var piInstruction = makeSimpleInstruction(`
-    In this next section, we want to understand how you are planning your routes. For the next ${config.probes.length} rounds, we will show you a picture to start at and one to navigate to, just like before. But, instead of actually navigating from one to the other, we just want you to start planning your route and click on the first picture that comes to mind.
+  var piInstruction = makeSimpleInstruction(`    
+    In this next section, we want to understand how you are planning your
+    routes. For the next ${config.probes.length} rounds, we will show you a
+    picture to start at and one to navigate to, just like before.
+
+    But, instead of actually navigating from one to the other, we just want you to<br>
+    **start planning your route and click on the *first picture that comes to mind.***
 
     You'll have ${timeLimit/1000} seconds to answer each question.
   `);
+
+  var piCheck = {
+    type: 'survey-multi-choice',
+    preamble: `
+      <h1>Comprehension check</h1>
+
+    `,
+      // Please answer the following question to ensure you understand.
+    questions: [
+      {
+        prompt: 'For the next rounds, which picture should you click on?',
+        options: [
+          '&nbsp;The prettiest picture.',
+          '&nbsp;<i>Any</i> picture on the path between the start and goal state.',
+          '&nbsp;The <i>first</i> picture on the path between the start and goal state.',
+          '&nbsp;The first picture that comes to mind when planning a route from start to goal state.'
+        ],
+        required: true
+      }
+
+    ]
+  }
 
   var pi = (timeline) => ({
     type: 'CirclePathIdentification',
@@ -274,6 +301,7 @@ async function initializeExperiment() {
     gn,
     piInstruction,
     pi(config.probes),
+    piCheck,
     arInstruction,
     ar,
     debrief(),
