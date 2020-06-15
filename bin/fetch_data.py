@@ -11,8 +11,12 @@ import re
 import json
 from collections import defaultdict
 import configparser
+import hashlib
 
 logging.basicConfig(level="INFO")
+
+def hash_id(worker_id):
+    return 'md5:' + hashlib.md5(worker_id.encode()).hexdigest()
 
 def to_snake_case(name):
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -58,7 +62,7 @@ def fetch(site_root, filename, version, auth, force=True):
     r.raise_for_status()
     data = r.text
     logging.info("Fetched succesfully: %s", url)
-    
+
     # write out the data file
     if not os.path.exists(os.path.dirname(dest)):
         os.makedirs(os.path.dirname(dest))
@@ -70,6 +74,10 @@ def fetch(site_root, filename, version, auth, force=True):
         n_pid = df[0].unique().shape[0]
         logging.info('Number of participants: %s', n_pid)
 
+    # Anonymize PIDs
+    df = pd.read_csv(dest, header=None)
+    df[0] = df[0].map(hash_id)
+    df.to_csv(dest, header=None, index=False)
 
 def reformat_data(version):
     data_path = 'data/human_raw/{}/'.format(version)
