@@ -466,6 +466,8 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
       cls = 'PathIdentification-start';
     } else if (s == goal) {
       cls = 'PathIdentification-goal';
+    } else if (s == probe) {
+      cls = 'PathIdentification-probe';
     }
     if (!cls) {
       continue;
