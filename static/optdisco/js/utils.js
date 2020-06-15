@@ -8,7 +8,11 @@ export function showModal(content) {
   }).appendTo($('#jspsych-target'));
 };
 
-export function completeModal(md) {
+export function completeModal(md, options) {
+  options = options || {};
+  // By default, Enter (code=13) and Space (code=20) submits.
+  const keyCodeSubmit = new Set(options.keyCodeSubmit || [13, 20]);
+
   let resolve;
   let promise = new Promise(function(res, rej) {
     resolve = res;
@@ -29,7 +33,7 @@ export function completeModal(md) {
 
   // We 'click' button when enter is pressed.
   function handleEnter(e) {
-    if (e.keyCode == 13) {
+    if (keyCodeSubmit.has(e.keyCode)) {
       button[0].click();
     }
   }

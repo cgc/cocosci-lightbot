@@ -168,6 +168,12 @@ async function initializeExperiment() {
   const timeLimit = _.sample([4*1000, 8*1000, 12*1000]);
   psiturk.recordUnstructuredData('timeLimit', timeLimit);
 
+  const acceptRejectKeys = _.sample([
+    {accept: 'P', reject: 'Q'},
+    {accept: 'Q', reject: 'P'},
+  ]);
+  psiturk.recordUnstructuredData('acceptRejectKeys', acceptRejectKeys);
+
   const graph = new Graph(config.graph);
   // HACK how to systematically implement this?
   graph.shuffleSuccessors();
@@ -218,9 +224,9 @@ async function initializeExperiment() {
   };
 
   var piInstruction = makeSimpleInstruction(`
-    In this next section we will ask you ${config.probes.length} questions about how you navigate.
+    In this next section, we want to understand how you are planning your routes. For the next ${config.probes.length} rounds, we will show you a picture to start at and one to navigate to, just like before. But, instead of actually navigating from one to the other, we just want you to start planning your route and click on the first picture that comes to mind.
 
-    We will ask you about the first picture you think of that is between two pictures. You'll have ${timeLimit/1000} seconds to answer each question.
+    You'll have ${timeLimit/1000} seconds to answer each question.
   `);
 
   var pi = (timeline) => ({
@@ -237,34 +243,49 @@ async function initializeExperiment() {
     }
   });
 
-  let updateProgress = makeUpdateProgress(trials.length + config.probes.length * 2);
+  function renderKey(key) {
+    return `<span
+      class="GraphNavigation-key GraphNavigation-key-${key}"
+      style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
+  }
+  var arInstruction = makeSimpleInstruction(`
+    In this last section we will ask you ${config.acceptreject.length} questions about how you navigate.
+
+    We'll show you a start picture and goal picture and ask if a third picture is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
+  `);
+
+  var ar = {
+    type: 'AcceptReject',
+    acceptRejectKeys,
+    graph,
+    graphics: gfx,
+    stateOrder,
+    timeline: config.acceptreject,
+    on_finish() {
+      updateProgress();
+      saveData();
+    }
+  };
+
+  let updateProgress = makeUpdateProgress(trials.length + config.probes.length + config.acceptreject.length);
 
   var timeline = _.flatten([
     inst,
     gn,
     piInstruction,
     pi(config.probes),
+    arInstruction,
+    ar,
     debrief(),
   ]);
 
   if (location.pathname == '/testexperiment') {
     const searchParams = new URLSearchParams(location.search);
-    const type = searchParams.get('type') || 'GraphTraining';
-    timeline = timeline.filter(t => t.type == type);
-    console.log(timeline);
-    if (!timeline.length) {
-      timeline = [
-        {
-          type,
-          graph,
-          graphics: gfx,
-          stateOrder,
-          timeline: trials,
-          on_finish() {
-            updateProgress();
-          }
-        },
-      ];
+    const type = searchParams.get('type');
+    if (type) {
+      timeline = timeline.filter(t => t.type == type);
+    } else {
+      timeline = timeline.map(t => ({...t, timeline: t.timeline ? t.timeline.slice(0, 1) : [{}]}));
     }
   }
 

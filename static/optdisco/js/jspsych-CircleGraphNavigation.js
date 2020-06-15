@@ -143,10 +143,10 @@ export function setCurrentState(display_element, graph, state) {
   // We return a dictionary from keyCode to successor state.
   const keyToState = {};
 
-  const upperCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
+  const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
   graph.graph[state].forEach((succ, idx) => {
     keyToState[SUCCESSOR_KEYS[idx].charCodeAt(0)] = succ;
-    keyToState[SUCCESSOR_KEYS[idx].charCodeAt(0) + upperCase] = succ;
+    keyToState[SUCCESSOR_KEYS[idx].charCodeAt(0) + lowerCase] = succ;
   });
 
   return keyToState;
@@ -403,7 +403,11 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
     return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
       console.log(data);
+
+      // Simply removing timer is a pretty good way to remove the timer's visual
+      // if there isn't a timeout. May want to leave it in if there is a timeout?
       display_element.querySelector('.Timer').remove();
+
       let msg;
       if (trial.identifyOneState) {
         msg = data.timeout ? '### Ran out of time' : '';
@@ -422,3 +426,79 @@ jsPsych.plugins.CirclePathIdentification = (function() {
 
   return plugin;
 })();
+
+function documentEventPromise(eventName, fn) {
+  // Adds event handler to document that runs until the function `fn` returns a truthy value.
+  const el = document;
+  return new Promise((resolve, rej) => {
+    function handler(e) {
+      const rv = fn(e);
+      if (rv) {
+        el.removeEventListener(eventName, handler);
+        resolve(rv);
+      }
+    }
+    el.addEventListener(eventName, handler);
+  });
+}
+
+addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
+  function renderKey(key) {
+    return `<span
+      class="GraphNavigation-key GraphNavigation-key-${key}"
+      style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
+  }
+
+  const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
+
+  const intro = `
+  <p>Navigating from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}.
+  Will you pass ${renderSmallEmoji(graphics[probe])}?
+  ${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>
+  `;
+
+  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
+  root.innerHTML = `${intro}${graphEl}`;
+
+  for (const s of graph.states) {
+    let cls;
+    if (s == start) {
+      cls = 'PathIdentification-start';
+    } else if (s == goal) {
+      cls = 'PathIdentification-goal';
+    }
+    if (!cls) {
+      continue;
+    }
+    const el = root.querySelector(`.GraphNavigation-State-${s}`);
+    el.classList.add(cls);
+  }
+
+  const keyCodeSubmit = [13, 20]; // Add newline & space
+  const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
+  for (const response of Object.keys(keys)) {
+    const code = keys[response].charCodeAt(0);
+    keyCodeSubmit.push(code);
+    keyCodeSubmit.push(code + lowerCase);
+  }
+
+  return documentEventPromise('keypress', e => {
+    for (const response of Object.keys(keys)) {
+      const code = keys[response].charCodeAt(0);
+
+      if (e.keyCode == code || e.keyCode == code + lowerCase) {
+        e.preventDefault();
+        return {response};
+      }
+    }
+  }).then(data => {
+    console.log(data);
+    const msg = `
+    Press Enter, ${renderKey(keys.accept)}, ${renderKey(keys.reject)}, or click to continue.
+    `;
+    return completeModal(msg, {keyCodeSubmit}).then(function() {
+      root.innerHTML = '';
+      jsPsych.finishTrial(data);
+    });
+  });
+}));

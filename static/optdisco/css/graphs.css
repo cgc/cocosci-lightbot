@@ -81,6 +81,7 @@
   width: 18pt;
   height: 20pt;
   color: white;
+  background-color: black;
 
   opacity: 0;
   transition: opacity 300ms;
