@@ -255,7 +255,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
     return recursiveShowState(display_element, trial.graph, trial.graphics, trial.start, trial.goal).then(function(path) {
       data.states = path;
       console.log(data);
-      const perfect = path.length - 1 == trial.optimal ? "That was perfect!" : "";
+      const perfect = path.length - 1 == trial.optimal ? "" : "";
       return completeModal(`
         ### Success!
         ${perfect}
