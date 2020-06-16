@@ -33,3 +33,13 @@ Push to heroku once you've set it as a git remote:
 ```
 git push heroku master
 ```
+
+## Experiment workflow
+1. Prep code!
+2. Update `experiment_code_version` and make a git tag marking commit the code was run with.
+3. Scale up Heroku: `heroku ps:scale --app cocosci-optdisco web=1:Hobby`.
+4. Using `./bin/psiturk-herokudb`, ensure `mode live`, submit with `hit create <# HIT> <payment> <expiry>`. Example is `hit create 9 4.00 1`.
+5. Use sanity script to keep track of HITs & automatically scale down Heroku: `python bin/sanity.py cocosci-optdisco`.
+6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list`.
+7. Download data with `python bin/fetch_data.py $CODE_VERSION`.
+
