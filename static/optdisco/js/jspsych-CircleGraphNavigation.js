@@ -484,6 +484,8 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
     keyCodeSubmit.push(code + lowerCase);
   }
 
+  const startTime = Date.now();
+
   return documentEventPromise('keypress', e => {
     for (const response of Object.keys(keys)) {
       const code = keys[response].charCodeAt(0);
@@ -495,6 +497,7 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
     }
   }).then(data => {
     console.log(data);
+    data.rt = Date.now() - startTime;
     const msg = `
     Press Enter, ${renderKey(keys.accept)}, ${renderKey(keys.reject)}, or click to continue.
     `;
