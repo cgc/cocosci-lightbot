@@ -165,8 +165,8 @@ async function initializeExperiment() {
   const taskOrderIdx = _.random(config.taskOrders.length-1);
   psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
 
-  const timeLimit = _.sample([4*1000, 8*1000, 12*1000]);
-  psiturk.recordUnstructuredData('timeLimit', timeLimit);
+  //const timeLimit = _.sample([4*1000, 8*1000, 12*1000]);
+  //psiturk.recordUnstructuredData('timeLimit', timeLimit);
 
   const acceptRejectKeys = _.sample([
     {accept: 'P', reject: 'Q'},
@@ -184,6 +184,7 @@ async function initializeExperiment() {
     .slice(0, 30));
   const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
+  psiturk.recordUnstructuredData('gfx', gfx);
 
   const instructionNodes = {
     0: new Set([2]),
@@ -223,15 +224,13 @@ async function initializeExperiment() {
     }
   };
 
-  var piInstruction = makeSimpleInstruction(`    
+  var piInstruction = makeSimpleInstruction(`
     In this next section, we want to understand how you are planning your
     routes. For the next ${config.probes.length} rounds, we will show you a
     picture to start at and one to navigate to, just like before.
 
     But, instead of actually navigating from one to the other, we just want you to<br>
     **start planning your route and click on the *first picture that comes to mind.***
-
-    You'll have ${timeLimit/1000} seconds to answer each question.
   `);
 
   var piCheck = {
@@ -262,7 +261,7 @@ async function initializeExperiment() {
     graphics: gfx,
     stateOrder,
     timeline,
-    timeLimit: timeLimit,
+    //timeLimit: timeLimit,
     identifyOneState: true,
     on_finish() {
       updateProgress();
@@ -294,11 +293,22 @@ async function initializeExperiment() {
     }
   };
 
+  const busInstruction = makeSimpleInstruction(`
+    While solving these ${trials.length} puzzles, keep in mind the following question which will be asked later:
+
+    > Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.
+    >
+    > If you did the task again, which picture would you choose to use for instant teleportation?
+  `);
+
   let updateProgress = makeUpdateProgress(trials.length + config.probes.length + config.acceptreject.length);
 
   var timeline = _.flatten([
     inst,
+    busInstruction,
     gn,
+    makeSimpleInstruction(`You've completed the ${trials.length} puzzles! Now we'll ask you some questions.`),
+    pi([{identifyOneState: true, busStop: true}]),
     piInstruction,
     piCheck,
     pi(config.probes),

@@ -41,5 +41,6 @@ git push heroku master
 4. Using `./bin/psiturk-herokudb`, ensure `mode live`, submit with `hit create <# HIT> <payment> <expiry>`. Example is `hit create 9 4.00 1`.
 5. Use sanity script to keep track of HITs & automatically scale down Heroku: `python bin/sanity.py cocosci-optdisco`.
 6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list`.
-7. Download data with `python bin/fetch_data.py $CODE_VERSION`.
+7. Verify all workers have been paid with `worker list --submitted`.
+8. Download data with `python bin/fetch_data.py $CODE_VERSION`.
 

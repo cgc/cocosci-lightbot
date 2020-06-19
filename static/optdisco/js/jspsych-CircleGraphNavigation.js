@@ -370,7 +370,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const solution = bfs(graph, start, goal).path;
 
     const msg = trial.busStop ? `
-      <p>Now, we'll ask you one final question. Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.</p>
+      <p>Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.</p>
 
       <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
     ` : `
@@ -398,7 +398,9 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     }
 
     // Start timer
-    runTimer(display_element.querySelector('.Timer'), trial.timeLimit);
+    if (trial.timeLimit) {
+      runTimer(display_element.querySelector('.Timer'), trial.timeLimit);
+    }
 
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
     return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
@@ -406,7 +408,9 @@ jsPsych.plugins.CirclePathIdentification = (function() {
 
       // Simply removing timer is a pretty good way to remove the timer's visual
       // if there isn't a timeout. May want to leave it in if there is a timeout?
-      display_element.querySelector('.Timer').remove();
+      if (trial.timeLimit) {
+        display_element.querySelector('.Timer').remove();
+      }
 
       let msg;
       if (trial.identifyOneState) {
