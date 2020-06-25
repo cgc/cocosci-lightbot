@@ -21,8 +21,8 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   // since it can help avoid edges overlapping neighboring nodes.
   const scaleEdgeFactor = options.scaleEdgeFactor || 0.95;
 
-  const width = 800;
-  const height = 600;
+  const width = options.width || 600;
+  const height = options.height || 600;
   const blockSize = 100;
   const radiusY = 250;
   const radiusX = 250;

@@ -206,12 +206,17 @@ async function initializeExperiment() {
     fixedXY: solway2cXY,
     keyDistanceFactor: 1.35,
     scaleEdgeFactor: 1,
+    width: 800,
+    height: 400,
   };
 
   const trials = (
     config.taskOrders[taskOrderIdx]
+    // HACK this filters for tasks that cross bottlenecks & are longer than 2 steps.
+    .filter(t => ((t.start<5)^(t.goal<5)) && t.optimal > 2)
     // PRETRIAL
     .slice(0, 30));
+  psiturk.recordUnstructuredData('trials', trials);
   const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
   psiturk.recordUnstructuredData('gfx', gfx);
