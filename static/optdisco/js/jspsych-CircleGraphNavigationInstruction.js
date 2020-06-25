@@ -11,7 +11,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   const {start, goal, graph, graphics, stateOrder} = trial;
   const intermed = 2; // HACK!
 
-  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
+  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
   root.innerHTML = `<div class="GraphNavigation-instruction"></div>${graphEl}`;
   const instruction = root.querySelector('.GraphNavigation-instruction');
 
@@ -108,7 +108,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         await setTimeoutPromise(t);
 
         el.remove();
-        el = parseHTML(renderCircleGraph(trial.fullGraph, graphics, goal, stateOrder));
+        el = parseHTML(renderCircleGraph(trial.fullGraph, graphics, goal, stateOrder, trial.graphRenderOptions));
         root.appendChild(el);
         el.style.opacity = 0;
         el.querySelector('.GraphNavigation-goal').classList.remove('GraphNavigation-goal');

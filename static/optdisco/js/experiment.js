@@ -156,6 +156,30 @@ function makeUpdateProgress(total) {
   };
 }
 
+/*
+x,y coordinates for the solway graph from Figure 2c.
+*/
+const solway2cXY = [
+  [0, 5],
+  [2, 5],
+  [1, 4],
+  [0, 3],
+  [2, 3],
+  [3, 2],
+  [5, 2],
+  [4, 1],
+  [3, 0],
+  [5, 0],
+].map(xy => {
+  // Mapping to [-1, 1], divide by max 5, mult by length of range.
+  let scale = 2/5;
+  let x = (xy[0]*scale - 1);
+  let y = -(xy[1]*scale - 1);
+  [x, y] = [(x + y) / Math.sqrt(2), (y - x) / Math.sqrt(2)];
+  const scaleFactor = 0.97;
+  return [scaleFactor*x, scaleFactor*y];
+});
+
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
@@ -177,6 +201,12 @@ async function initializeExperiment() {
   const graph = new Graph(config.graph);
   // HACK how to systematically implement this?
   graph.shuffleSuccessors();
+
+  const graphRenderOptions = {
+    fixedXY: solway2cXY,
+    keyDistanceFactor: 1.35,
+    scaleEdgeFactor: 1,
+  };
 
   const trials = (
     config.taskOrders[taskOrderIdx]
@@ -206,6 +236,7 @@ async function initializeExperiment() {
     trialsLength: trials.length,
     stateOrder,
     timeline: [{start: 0, goal: 1}],
+    graphRenderOptions,
     on_finish() {
       updateProgress();
       saveData();
@@ -218,6 +249,7 @@ async function initializeExperiment() {
     graphics: gfx,
     stateOrder,
     timeline: trials,
+    graphRenderOptions,
     on_finish() {
       updateProgress();
       saveData();
@@ -263,6 +295,7 @@ async function initializeExperiment() {
     timeline,
     //timeLimit: timeLimit,
     identifyOneState: true,
+    graphRenderOptions,
     on_finish() {
       updateProgress();
       saveData();
@@ -287,6 +320,7 @@ async function initializeExperiment() {
     graphics: gfx,
     stateOrder,
     timeline: config.acceptreject,
+    graphRenderOptions,
     on_finish() {
       updateProgress();
       saveData();

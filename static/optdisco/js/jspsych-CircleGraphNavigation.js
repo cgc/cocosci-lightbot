@@ -7,8 +7,21 @@ const stateTemplate = (state, graphic, cls, style) => `
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 
-export function renderCircleGraph(graph, gfx, goal, stateOrder) {
-  const width = 600;
+export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
+  options = options || {};
+  /*
+  An optional parameter is fixedXY. This requires x,y coordinates that are in
+  [-1, 1]. The choice of range is a bit arbitrary; results from code that assumes
+  the output of sin/cos.
+  */
+  const fixedXY = options.fixedXY;
+  // Controls how far the key is from the node center. Scales keyWidth/2.
+  const keyDistanceFactor = options.keyDistanceFactor || 1.4;
+  // Scales edges and keys in. Good for when drawn in a circle
+  // since it can help avoid edges overlapping neighboring nodes.
+  const scaleEdgeFactor = options.scaleEdgeFactor || 0.95;
+
+  const width = 800;
   const height = 600;
   const blockSize = 100;
   const radiusY = 250;
@@ -19,6 +32,12 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
   const stateToXY = {};
 
   stateOrder.forEach((state, idx) => {
+    if (fixedXY) {
+      let x = fixedXY[state][0] * radiusX + offsetX;
+      let y = fixedXY[state][1] * radiusY + offsetY;
+      stateToXY[state] = [x, y];
+      return;
+    }
     const angle = idx * 2 * Math.PI / graph.states.length;
     let x = Math.cos(angle) * radiusX + offsetX;
     let y = Math.sin(angle) * radiusY + offsetY;
@@ -35,7 +54,7 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
     /*
     We scale edges/keys in to ensure that short connections avoid overlapping node borders.
     */
-    return (pos - offset) * 0.95 + offset;
+    return (pos - offset) * scaleEdgeFactor + offset;
   }
   function scaleCoordinate([x, y]) {
     return [
@@ -49,7 +68,7 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder) {
     const [sx, sy] = scaleCoordinate(stateToXY[successor]);
     const [keyWidth, keyHeight] = [20, 28]; // HACK get from CSS
     // We also add the key labels here
-    const mul = 1.4 * blockSize / 2;
+    const mul = keyDistanceFactor * blockSize / 2;
     keys.push(`
       <div class="GraphNavigation-key GraphNavigation-key-${state}-${successor} GraphNavigation-key-${key}" style="
         transform: translate(
@@ -228,7 +247,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
     record images used
     */
 
-    const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder);
+    const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder, trial.graphRenderOptions);
     const intro = `
     Navigate to ${renderSmallEmoji(trial.graphics[trial.goal])}
     `;
@@ -381,7 +400,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
       <p>Select the ${solution.length-1} picture(s) you would visit to get from ${renderSmallEmoji(graphics[start])}
       to ${renderSmallEmoji(graphics[goal])}. Selected pictures are gray. Only select the pictures you need to navigate through.</p>
     `;
-    const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
+    const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
     const timer = `<div class='Timer'></div>`;
     display_element.innerHTML = `${intro}${timer}${graphEl}`;
 
@@ -461,7 +480,7 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   ${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>
   `;
 
-  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder);
+  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
   root.innerHTML = `${intro}${graphEl}`;
 
   for (const s of graph.states) {
