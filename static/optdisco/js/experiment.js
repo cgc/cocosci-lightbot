@@ -200,7 +200,7 @@ async function initializeExperiment() {
 
   const graph = new Graph(config.graph);
   // HACK how to systematically implement this?
-  graph.shuffleSuccessors();
+  // graph.shuffleSuccessors();
 
   const graphRenderOptions = {
     fixedXY: solway2cXY,
