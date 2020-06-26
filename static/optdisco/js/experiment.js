@@ -268,6 +268,8 @@ async function initializeExperiment() {
 
     But, instead of actually navigating from one to the other, we just want you to<br>
     **start planning your route and click on the *first picture that comes to mind.***
+
+    First we'll start with some practice questions.
   `);
 
   var piCheck = {
@@ -316,21 +318,27 @@ async function initializeExperiment() {
     In this last section we will ask you ${config.acceptreject.length} questions about how you navigate.
 
     We'll show you a start picture and goal picture and ask if a third picture is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
+
+    First we'll start with some practice questions.
   `);
 
-  var ar = {
+  const practiceOver = makeSimpleInstruction(`
+    Now, we'll move on to the real questions.
+  `);
+
+  var ar = timeline => ({
     type: 'AcceptReject',
     acceptRejectKeys,
     graph,
     graphics: gfx,
     stateOrder,
-    timeline: config.acceptreject,
+    timeline,
     graphRenderOptions,
     on_finish() {
       updateProgress();
       saveData();
     }
-  };
+  });
 
   const busInstruction = makeSimpleInstruction(`
     While solving these ${trials.length} puzzles, keep in mind the following question which will be asked later:
@@ -350,9 +358,19 @@ async function initializeExperiment() {
     pi([{identifyOneState: true, busStop: true}]),
     piInstruction,
     piCheck,
+    pi([
+      {start: 0, goal: 4, practice: true},
+      {start: 5, goal: 9, practice: true},
+    ]),
+    practiceOver,
     pi(config.probes),
     arInstruction,
-    ar,
+    ar([
+      {start: 0, goal: 4, probe: 1, practice: true},
+      {start: 5, goal: 9, probe: 8, practice: true},
+    ]),
+    practiceOver,
+    ar(config.acceptreject),
     debrief(),
   ]);
 

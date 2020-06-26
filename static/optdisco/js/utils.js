@@ -10,8 +10,8 @@ export function showModal(content) {
 
 export function completeModal(md, options) {
   options = options || {};
-  // By default, Enter (code=13) and Space (code=20) submits.
-  const keyCodeSubmit = new Set(options.keyCodeSubmit || [13, 20]);
+  // By default, Enter (code=13) and Space (code=32) submits.
+  const keyCodeSubmit = new Set(options.keyCodeSubmit || [13, 32]);
 
   let resolve;
   let promise = new Promise(function(res, rej) {

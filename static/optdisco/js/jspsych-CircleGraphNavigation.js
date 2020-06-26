@@ -424,6 +424,8 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
     return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
       console.log(data);
+      data.busStop = trial.busStop;
+      data.practice = trial.practice;
 
       // Simply removing timer is a pretty good way to remove the timer's visual
       // if there isn't a timeout. May want to leave it in if there is a timeout?
@@ -465,20 +467,36 @@ function documentEventPromise(eventName, fn) {
   });
 }
 
+function endTrialScreen(root) {
+  root.innerHTML = '<h2 style="margin-top: 20vh;">Press spacebar to continue.</h2>';
+  return documentEventPromise('keypress', (e) => e.keyCode == 32);
+}
+
 addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   function renderKey(key) {
     return `<span
       class="GraphNavigation-key GraphNavigation-key-${key}"
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
+  function renderInputInstruction(inst) {
+    return `<span style="border: 1px solid black; border-radius: 3px; padding: 3px; font-weight: bold;">${inst}</span>`;
+  }
 
   const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
 
+  let keyInstruction;
+  if (keys.accept == 'Q') {
+    keyInstruction = `${renderInputInstruction('Yes (q)')} &nbsp; ${renderInputInstruction('No (p)')}`;
+  } else {
+    keyInstruction = `${renderInputInstruction('No (q)')} &nbsp; ${renderInputInstruction('Yes (p)')}`;
+  }
+
   const intro = `
   <p>Navigating from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}.
-  Will you pass ${renderSmallEmoji(graphics[probe])}?
-  ${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>
+  Will you pass ${renderSmallEmoji(graphics[probe])}?<br />
+  ${keyInstruction}
   `;
+  //${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>
 
   const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
   root.innerHTML = `${intro}${graphEl}`;
@@ -499,7 +517,7 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
     el.classList.add(cls);
   }
 
-  const keyCodeSubmit = [13, 20]; // Add newline & space
+  const keyCodeSubmit = [13, 32]; // Add newline & space
   const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
   for (const response of Object.keys(keys)) {
     const code = keys[response].charCodeAt(0);
@@ -520,11 +538,13 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
     }
   }).then(data => {
     console.log(data);
+    data.practice = trial.practice;
     data.rt = Date.now() - startTime;
     const msg = `
     Press Enter, ${renderKey(keys.accept)}, ${renderKey(keys.reject)}, or click to continue.
     `;
-    return completeModal(msg, {keyCodeSubmit}).then(function() {
+    // return completeModal(msg, {keyCodeSubmit}).then(function() {
+    return endTrialScreen(root).then(function() {
       root.innerHTML = '';
       jsPsych.finishTrial(data);
     });
