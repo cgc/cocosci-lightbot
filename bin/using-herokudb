@@ -1,0 +1,3 @@
+#!/bin/bash
+
+PORT=9001 ON_HEROKU=1 ON_CLOUD=1 DATABASE_URL=$(heroku config:get DATABASE_URL) exec "$@"
