@@ -210,12 +210,29 @@ async function initializeExperiment() {
     height: 400,
   };
 
+  let length3 = 0;
+  const trials = config.taskOrders[taskOrderIdx].filter((t, idx) => {
+    const cross = (t.start<5)^(t.goal<5);
+    if (cross) {
+      if (t.optimal > 3) {
+        return true;
+      } else if (t.optimal == 3) {
+        length3++;
+        if (length3 <= 6) {
+          return true;
+        }
+      }
+    }
+    return false;
+  });
+  /*
   const trials = (
     config.taskOrders[taskOrderIdx]
     // HACK this filters for tasks that cross bottlenecks & are longer than 2 steps.
     .filter(t => ((t.start<5)^(t.goal<5)) && t.optimal > 2)
     // PRETRIAL
     .slice(0, 30));
+    */
   psiturk.recordUnstructuredData('trials', trials);
   const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
