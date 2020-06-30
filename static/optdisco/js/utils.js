@@ -34,6 +34,7 @@ export function completeModal(md, options) {
   // We 'click' button when enter is pressed.
   function handleEnter(e) {
     if (keyCodeSubmit.has(e.keyCode)) {
+      e.preventDefault();
       button[0].click();
     }
   }

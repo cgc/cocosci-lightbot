@@ -277,6 +277,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
       const perfect = path.length - 1 == trial.optimal ? "" : "";
       return completeModal(`
         ### Success!
+        Press spacebar or click to continue.
         ${perfect}
       `);
     }).then(function() {
@@ -434,6 +435,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
       }
 
       let msg;
+      const cont = '\n\nPress spacebar or click to continue.';
       if (trial.identifyOneState) {
         msg = data.timeout ? '### Ran out of time' : '';
       } else {
@@ -442,7 +444,7 @@ jsPsych.plugins.CirclePathIdentification = (function() {
         Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
         `;
       }
-      return completeModal(msg).then(function() {
+      return completeModal(msg+cont).then(function() {
         display_element.innerHTML = '';
         jsPsych.finishTrial(data);
       });
