@@ -203,11 +203,19 @@ async function initializeExperiment() {
   // graph.shuffleSuccessors();
 
   const graphRenderOptions = {
+    scaleEdgeFactor: 1,
+    width: 450,
+    height: 450,
+    radiusX: 175,
+    radiusY: 175,
+    /*
+    For Solway planarization.
     fixedXY: solway2cXY,
     keyDistanceFactor: 1.35,
     scaleEdgeFactor: 1,
     width: 800,
     height: 400,
+    */
   };
 
   let length3 = 0;
@@ -281,10 +289,10 @@ async function initializeExperiment() {
   var piInstruction = makeSimpleInstruction(`
     In this next section, we want to understand how you are planning your
     routes. For the next ${config.probes.length} rounds, we will show you a
-    picture to start at and one to navigate to, just like before.
+    circle to start at and one to navigate to, just like before.
 
     But, instead of actually navigating from one to the other, we just want you to<br>
-    **start planning your route and click on the *first picture that comes to mind.***
+    **start planning your route and click on the *first circle that comes to mind.***
 
     First we'll start with some practice questions.
   `);
@@ -298,12 +306,12 @@ async function initializeExperiment() {
       // Please answer the following question to ensure you understand.
     questions: [
       {
-        prompt: 'For the next rounds, which picture should you click on?',
+        prompt: 'For the next rounds, which circle should you click on?',
         options: [
-          '&nbsp;The prettiest picture.',
-          '&nbsp;<i>Any</i> picture on the path between the start and goal state.',
-          '&nbsp;The <i>first</i> picture on the path between the start and goal state.',
-          '&nbsp;The first picture that comes to mind when planning a route from start to goal state.'
+          '&nbsp;The prettiest circle.',
+          '&nbsp;<i>Any</i> circle on the path between the start and goal.',
+          '&nbsp;The <i>first</i> circle on the path between the start and goal.',
+          '&nbsp;The first circle that comes to mind when planning a route from start to goal.'
         ],
         required: true
       }
@@ -334,7 +342,7 @@ async function initializeExperiment() {
   var arInstruction = makeSimpleInstruction(`
     In this last section we will ask you ${config.acceptreject.length} questions about how you navigate.
 
-    We'll show you a start picture and goal picture and ask if a third picture is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
+    We'll show you a start and goal and ask if a circle is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
 
     First we'll start with some practice questions.
   `);
@@ -360,9 +368,9 @@ async function initializeExperiment() {
   const busInstruction = makeSimpleInstruction(`
     While solving these ${trials.length} puzzles, keep in mind the following question which will be asked later:
 
-    > Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.
+    > Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.
     >
-    > If you did the task again, which picture would you choose to use for instant teleportation?
+    > If you did the task again, which circle would you choose to use for instant teleportation?
   `);
 
   let updateProgress = makeUpdateProgress(trials.length + config.probes.length + config.acceptreject.length);

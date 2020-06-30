@@ -2,7 +2,7 @@ import {runTimer, completeModal, trialErrorHandling, graphicsUrl, setTimeoutProm
 import {bfs} from './graphs.js';
 
 const stateTemplate = (state, graphic, cls, style) => `
-<div class="State GraphNavigation-State ${cls || ''}" style="${style || ''}" data-state="${state}"><img src="${graphicsUrl(graphic)}" /></div>
+<div class="State GraphNavigation-State ${cls || ''}" style="${style || ''}" data-state="${state}"></div>
 `;
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
@@ -24,8 +24,8 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   const width = options.width || 600;
   const height = options.height || 600;
   const blockSize = 100;
-  const radiusY = 250;
-  const radiusX = 250;
+  const radiusY = options.radiusY || 250;
+  const radiusX = options.radiusX || 250;
   const offsetX = width / 2 - blockSize / 2;
   const offsetY = height / 2 - blockSize / 2;
 
@@ -104,7 +104,7 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   }
 
   return `
-  <div class="GraphNavigation" style="width: ${width}px; height: ${height}px;">
+  <div class="GraphNavigation NoPicture" style="width: ${width}px; height: ${height}px;">
     ${keys.join('')}
     ${succ.join('')}
     ${states.join('')}
@@ -249,7 +249,7 @@ jsPsych.plugins.CircleGraphNavigation = (function() {
 
     const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder, trial.graphRenderOptions);
     const intro = `
-    Navigate to ${renderSmallEmoji(trial.graphics[trial.goal])}
+    Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'background-color: red;')}
     `;
     display_element.innerHTML = `${intro}${graphEl}`;
 
@@ -375,8 +375,8 @@ function showPathIdentification(el, graph, graphics, start, goal, clickLimit, ti
   return promise;
 }
 
-const renderSmallEmoji = (graphic) => `
-<img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
+const renderSmallEmoji = (graphic, sty) => `
+<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;${sty||''}"></span>
 `;
 
 jsPsych.plugins.CirclePathIdentification = (function() {
@@ -389,11 +389,11 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     const solution = bfs(graph, start, goal).path;
 
     const msg = trial.busStop ? `
-      <p>Imagine a version of this task that includes instant teleportation to one picture of your choice. The task is otherwise exactly the same: you navigate between the same pictures along the same connections, but you can also teleport to the picture you choose.</p>
+      <p>Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.</p>
 
-      <p>If you did the task again, which picture would you choose to use for instant teleportation?</p>
+      <p>If you did the task again, which circle would you choose to use for instant teleportation?</p>
     ` : `
-      <p>What's the first picture you think of when navigating from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}?</p>
+      <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'background-color: green')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}?</p>
     `;
 
     const intro = trial.identifyOneState ? msg : `
@@ -468,8 +468,13 @@ function documentEventPromise(eventName, fn) {
 }
 
 function endTrialScreen(root) {
-  root.innerHTML = '<h2 style="margin-top: 20vh;">Press spacebar to continue.</h2>';
-  return documentEventPromise('keypress', (e) => e.keyCode == 32);
+  root.innerHTML = '<h2 style="margin-top: 20vh;margin-bottom:100vh;">Press spacebar to continue.</h2>';
+  return documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
 }
 
 addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
@@ -492,8 +497,8 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   }
 
   const intro = `
-  <p>Navigating from ${renderSmallEmoji(graphics[start])} to ${renderSmallEmoji(graphics[goal])}.
-  Will you pass ${renderSmallEmoji(graphics[probe])}?<br />
+  <p>Navigating from ${renderSmallEmoji(graphics[start], 'background-color: green;')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}.
+  Will you pass ${renderSmallEmoji(graphics[probe], 'background-color: rgb(252,233,68);')}?<br />
   ${keyInstruction}
   `;
   //${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>

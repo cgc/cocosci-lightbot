@@ -43,6 +43,21 @@
   position: absolute;
 }
 
+.NoPicture .GraphNavigation-State {
+  background-color: black;
+  margin: 3rem;
+  height: 4rem;
+  width: 4rem;
+}
+/* HACK HACK HACK b/c the above is too strong an overwrite... */
+.NoPicture .PathIdentification-start {
+  background-color: green;
+}
+.NoPicture .PathIdentification-probe {
+  background-color: rgb(252,233,68);
+}
+/* HACK HACK HACK */
+
 .GraphNavigation-edge {
   height: 2px;
   transform-origin: left center;

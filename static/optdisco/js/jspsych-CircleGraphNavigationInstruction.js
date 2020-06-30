@@ -2,7 +2,7 @@ import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} fro
 import {showState, renderCircleGraph, setCurrentState} from './jspsych-CircleGraphNavigation.js';
 
 const renderSmallEmoji = (graphic, style) => `
-<img src="${graphicsUrl(graphic)}" style="width:4rem;height:4rem;${style || ''}" />
+<span style="display:inline-block;width:3rem;height:3rem;${style || ''}"></span>
 `;
 
 addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
@@ -56,7 +56,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       pre: () => {},
       html: markdown(`
         Thanks for accepting our HIT! In this HIT, you will play a game
-        with these pictures.
+        with these circles.
 
         <button>Next</button>
       `),
@@ -67,8 +67,8 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         root.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
       },
       html: markdown(`
-        Each picture is connected with several other pictures, shown by a line between them.
-        For example, ${renderSmallEmoji(graphics[start])} is connected with ${renderSmallEmoji(graphics[intermed])}.
+        Each circle is connected with several other circles, shown by a line between them.
+        For example, the two circles below are connected.
 
         <button>Next</button>
       `),
@@ -77,10 +77,10 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {},
       html: markdown(`
-        In the first part of this task, you will need to navigate between the pictures.
-        Your current location ${renderSmallEmoji(graphics[start])} is marked with a green circle ${renderSmallEmoji(graphics[start], 'background-color: green;border-radius:100%;')}.
+        In the first part of this task, you will need to navigate between the circles.
+        Your current location is marked with a green circle ${renderSmallEmoji(graphics[start], 'background-color: green;border-radius:100%;')}.
 
-        To navigate between places, type the letter shown on the line. Now, try it: Type ${renderKey('J')}.
+        To navigate between circles, type the letter shown on the line. Now, try it: Type ${renderKey('J')}.
       `),
       makePromise: () => showState(root, graph, start).promise,
     },
@@ -91,7 +91,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         root.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
       },
       html: markdown(`
-        Great! Your goal ${renderSmallEmoji(graphics[goal])} is marked with a red circle ${renderSmallEmoji(graphics[goal], 'background-color: red;border-radius:100%;')}. Try going there now.
+        Great! Your goal is marked with a red circle ${renderSmallEmoji(graphics[goal], 'background-color: red;border-radius:100%;')}. Try going there now.
 
         Press the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys to navigate.
       `),
@@ -120,7 +120,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         showStateUntil(trial.fullGraph, 0, null);
       },
       html: markdown(`
-        The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The pictures and connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
+        The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
         Before starting the task, feel free to explore with the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys.
 
         Whenever you're ready: <button>Start the task</button>
