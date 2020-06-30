@@ -34,6 +34,13 @@ Push to heroku once you've set it as a git remote:
 git push heroku master
 ```
 
+If you're seeing an `Library not loaded: @rpath/libssl.1.1.dylib ... Reason: image not found` error when running `./bin/psiturk-herokudb', you may need to `pip uninstall psycopg2` and run the following:
+```
+pip install --global-option=build_ext \
+            --global-option="-I/usr/local/opt/openssl/include" \
+            --global-option="-L/usr/local/opt/openssl/lib" -r requirements.txt
+```
+
 ## Experiment workflow
 1. Prep code!
 2. Update `experiment_code_version` and make a git tag marking commit the code was run with.
