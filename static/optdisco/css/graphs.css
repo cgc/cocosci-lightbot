@@ -74,13 +74,13 @@
   height: 4px;
 }
 .GraphNavigation-currentEdge-J {
-  background-color: red;
+  background-color: darkorange;
 }
 .GraphNavigation-currentEdge-K {
-  background-color: green;
+  background-color: violet;
 }
 .GraphNavigation-currentEdge-L {
-  background-color: blue;
+  background-color: mediumturquoise;
 }
 
 .GraphNavigation-current.State {
@@ -107,13 +107,13 @@
   opacity: 1;
 }
 .GraphNavigation-key-J {
-  background-color: red;
+  background-color: darkorange;
 }
 .GraphNavigation-key-K {
-  background-color: green;
+  background-color: violet;
 }
 .GraphNavigation-key-L {
-  background-color: blue;
+  background-color: mediumturquoise;
 }
 .GraphNavigation-instruction {
   height: 100px;
