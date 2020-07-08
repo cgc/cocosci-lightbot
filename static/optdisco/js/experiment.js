@@ -9,10 +9,6 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 import config from './configuration/trials.js';
 //import s2c from './solway2c.js';
 
-const renderState = (graphic) => `<div class="State">
-  <img src="${graphicsUrl(graphic)}" />
-</div>`;
-
 const renderSmallEmoji = (graphic) => `
 <img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
 `;
@@ -180,6 +176,19 @@ const solway2cXY = [
   return [scaleFactor*x, scaleFactor*y];
 });
 
+const solway2cKeys = [
+  ['I', 'L', 'K'],
+  ['J', 'K', 'L'],
+  ['J', 'I', 'K'],
+  ['J', 'I', 'L'],
+  ['I', 'K', 'L'],
+  ['J', 'I', 'K'],
+  ['J', 'K', 'L'],
+  ['I', 'K', 'L'],
+  ['J', 'I', 'L'],
+  ['I', 'J', 'K'],
+];
+
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
@@ -208,6 +217,7 @@ async function initializeExperiment() {
     height: 450,
     radiusX: 175,
     radiusY: 175,
+    successorKeys: solway2cKeys,
     /*
     For Solway planarization.
     fixedXY: solway2cXY,
@@ -351,6 +361,13 @@ async function initializeExperiment() {
     Now, we'll move on to the real questions.
   `);
 
+  const expectedResponses = _.shuffle(new Array(5).fill('Q').concat(new Array(5).fill('P'))).map(er => ({expectedResponse: er}));
+  var arPractice = {
+    type: 'AcceptRejectPractice',
+    acceptRejectKeys,
+    timeline: expectedResponses,
+  };
+
   var ar = timeline => ({
     type: 'AcceptReject',
     acceptRejectKeys,
@@ -390,6 +407,7 @@ async function initializeExperiment() {
     practiceOver,
     pi(config.probes),
     arInstruction,
+    arPractice,
     ar([
       {start: 0, goal: 4, probe: 1, practice: true},
       {start: 5, goal: 9, probe: 8, practice: true},

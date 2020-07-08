@@ -44,19 +44,11 @@
 }
 
 .NoPicture .GraphNavigation-State {
-  background-color: black;
+  background-image: url('/static/optdisco/images/openmoji/2B1B.svg');
   margin: 3rem;
   height: 4rem;
   width: 4rem;
 }
-/* HACK HACK HACK b/c the above is too strong an overwrite... */
-.NoPicture .PathIdentification-start {
-  background-color: green;
-}
-.NoPicture .PathIdentification-probe {
-  background-color: rgb(252,233,68);
-}
-/* HACK HACK HACK */
 
 .GraphNavigation-edge {
   height: 2px;
@@ -73,21 +65,15 @@
   z-index: 1;
   height: 4px;
 }
-.GraphNavigation-currentEdge-J {
-  background-color: darkorange;
-}
-.GraphNavigation-currentEdge-K {
-  background-color: violet;
-}
-.GraphNavigation-currentEdge-L {
-  background-color: mediumturquoise;
-}
 
 .GraphNavigation-current.State {
-  background-color: green;
+  background-image: url('/static/optdisco/images/openmoji/26AB.svg');
 }
 .GraphNavigation-goal.State {
-  background-color: red;
+  background-image: url('/static/optdisco/images/openmoji/2B50.svg');
+}
+.GraphNavigation-probe.State {
+  background-image: url('/static/optdisco/images/openmoji/2754.svg');
 }
 .GraphNavigation-key {
   position: absolute;
@@ -106,15 +92,24 @@
 .GraphNavigation-currentKey {
   opacity: 1;
 }
-.GraphNavigation-key-J {
+
+.GraphNavigation-key-J,
+.GraphNavigation-currentEdge-J {
   background-color: darkorange;
 }
-.GraphNavigation-key-K {
+.GraphNavigation-key-K,
+.GraphNavigation-currentEdge-K {
   background-color: violet;
 }
-.GraphNavigation-key-L {
+.GraphNavigation-key-L,
+.GraphNavigation-currentEdge-L {
   background-color: mediumturquoise;
 }
+.GraphNavigation-key-I,
+.GraphNavigation-currentEdge-I {
+  background-color: red;
+}
+
 .GraphNavigation-instruction {
   height: 100px;
 }
@@ -163,6 +158,7 @@
   justify-content: center;
   flex-wrap: wrap;
 }
+/*
 .PathIdentification-start {
   background-color: green;
 }
@@ -172,6 +168,7 @@
 .PathIdentification-probe {
   background-color: rgb(252,233,68);
 }
+*/
 .PathIdentification-selected,
 .PathIdentification-selected:hover {
   background-color: #bbb !important;

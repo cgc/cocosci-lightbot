@@ -1,14 +1,123 @@
-import {runTimer, completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
+import {parseHTML, runTimer, completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
 import {bfs} from './graphs.js';
-
-const stateTemplate = (state, graphic, cls, style) => `
-<div class="State GraphNavigation-State ${cls || ''}" style="${style || ''}" data-state="${state}"></div>
-`;
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 
+class CircleGraph {
+  constructor(options) {
+    this.options = options;
+    options.edgeShow = options.edgeShow || (() => true);
+    options.successorKeys = options.graphRenderOptions.successorKeys || options.stateOrder.map(() => SUCCESSOR_KEYS);
+
+    this.el = parseHTML(renderCircleGraph(
+      options.graph, options.graphics, options.goal, options.stateOrder,
+      {
+        edgeShow: options.edgeShow,
+        successorKeys: options.successorKeys,
+        ...options.graphRenderOptions,
+      }
+    ));
+
+    this.setCurrentState(options.start);
+
+    // Making sure it is easy to clean up event listeners...
+    this.cancel = [];
+  }
+
+  setCurrentState(state) {
+    this.state = state;
+    setCurrentState(this.el, this.options.graph, this.state, {
+      edgeShow: this.options.edgeShow,
+      successorKeys: this.options.successorKeys,
+    });
+  }
+
+  keyCodeToState(keyCode) {
+    /*
+    Mapping keyCode to states.
+    */
+    const key = String.fromCharCode(keyCode).toUpperCase();
+    const idx = this.options.successorKeys[this.state].indexOf(key);
+    if (idx === -1) {
+      return null;
+    }
+    const succ = this.options.graph.graph[this.state][idx];
+    if (!this.options.edgeShow(this.state, succ)) {
+      return null;
+    }
+    return succ;
+  }
+
+  keyTransition() {
+    /*
+    Returns a promise that is resolved with {state} when there is a keypress
+    corresponding to a valid state transition.
+    */
+    const p = documentEventPromise('keypress', (e) => {
+      const state = this.keyCodeToState(e.keyCode);
+      if (state !== null) {
+        e.preventDefault();
+        return {state};
+      }
+    });
+
+    this.cancel.push(p.cancel);
+
+    return p;
+  }
+
+  async navigate() {
+    /*
+    Higher-order function that stitches together other class methods
+    for an interactive key-based navigation.
+    */
+    const startTime = Date.now();
+    const data = {
+      times: [],
+      states: [this.state],
+    };
+
+    while (true) {
+      // State transition
+      const {state} = await this.keyTransition();
+      // Record information
+      data.states.push(state);
+      data.times.push(Date.now() - startTime);
+      // Termination condition, intentionally avoiding calling cg.setCurrentState() below to avoid rendering.
+      if (state == this.options.goal) {
+        break;
+      }
+      // Taking a pause...
+      await setTimeoutPromise(200);
+      // Update state
+      this.setCurrentState(state);
+    }
+
+    return data;
+  }
+}
+
+const stateTemplate = (state, graphic, options) => {
+  let cls = `GraphNavigation-State-${state}`;
+  if (options.goal) {
+    cls += ' GraphNavigation-goal';
+  }
+  if (options.probe) {
+    cls += ' GraphNavigation-probe';
+  }
+  return `
+  <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}"></div>
+  `;
+};
+
+const renderSmallEmoji = (graphic, sty) => `
+<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;${sty||''}"></span>
+`;
+
 export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   options = options || {};
+  options.edgeShow = options.edgeShow || (() => true);
+  const successorKeys = options.successorKeys;
   /*
   An optional parameter is fixedXY. This requires x,y coordinates that are in
   [-1, 1]. The choice of range is a bit arbitrary; results from code that assumes
@@ -46,8 +155,11 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
 
   const states = stateOrder.map(state => {
     const [x, y] = stateToXY[state];
-    const cls = `GraphNavigation-State-${state} ${state == goal ? 'GraphNavigation-goal' : ''}`;
-    return stateTemplate(state, gfx[state], cls, `transform: translate(${x}px,${y}px);`);
+    return stateTemplate(state, gfx[state], {
+      probe: state == options.probe,
+      goal: state == goal,
+      style: `transform: translate(${x}px,${y}px);`,
+    });
   });
 
   function scaleEdge(pos, offset) {
@@ -90,16 +202,18 @@ export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
       let [sx, sy] = scaleCoordinate(stateToXY[successor]);
       const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
       const rot = Math.atan2(sy-y, sx-x);
+      const opacity = options.edgeShow(state, successor) ? 1 : 0;
       succ.push(`
         <div class="GraphNavigation-edge GraphNavigation-edge-${state}-${successor}" style="
         width: ${norm}px;
+        opacity: ${opacity};
         transform: translate(${x+blockSize/2}px,${y+blockSize/2}px) rotate(${rot}rad);
         "></div>
       `);
 
       // We also add the key labels here
-      addKey(SUCCESSOR_KEYS[idx], state, successor, norm);
-      addKey(SUCCESSOR_KEYS[graph.graph[successor].indexOf(state)], successor, state, norm);
+      addKey(successorKeys[state][idx], state, successor, norm);
+      addKey(successorKeys[successor][graph.graph[successor].indexOf(state)], successor, state, norm);
     });
   }
 
@@ -124,7 +238,14 @@ function queryEdge(root, state, successor) {
   }
 }
 
-export function setCurrentState(display_element, graph, state) {
+const ALL_KEYS = ['J', 'K', 'L', 'I'];
+
+export function setCurrentState(display_element, graph, state, options) {
+  options = options || {};
+  options.edgeShow = options.edgeShow || (() => true);
+
+  const successorKeys = options.successorKeys[state];
+
   // Remove old classes!
   function removeClass(cls) {
     const els = display_element.querySelectorAll('.' + cls);
@@ -135,7 +256,7 @@ export function setCurrentState(display_element, graph, state) {
   removeClass('GraphNavigation-current')
   removeClass('GraphNavigation-currentEdge')
   removeClass('GraphNavigation-currentKey')
-  for (const key of SUCCESSOR_KEYS) {
+  for (const key of ALL_KEYS) {
     removeClass(`GraphNavigation-currentEdge-${key}`)
     removeClass(`GraphNavigation-currentKey-${key}`)
   }
@@ -148,24 +269,31 @@ export function setCurrentState(display_element, graph, state) {
   // Add new classes! Set current state.
   display_element.querySelector(`.GraphNavigation-State-${state}`).classList.add('GraphNavigation-current');
   graph.graph[state].forEach((successor, idx) => {
+    if (!options.edgeShow(state, successor)) {
+      return;
+    }
+
     // Set current edges
     let el = queryEdge(display_element, state, successor);
     el.classList.add('GraphNavigation-currentEdge');
-    el.classList.add(`GraphNavigation-currentEdge-${SUCCESSOR_KEYS[idx]}`);
+    el.classList.add(`GraphNavigation-currentEdge-${successorKeys[idx]}`);
 
     // Now setting active keys
     el = display_element.querySelector(`.GraphNavigation-key-${state}-${successor}`);
     el.classList.add('GraphNavigation-currentKey');
-    el.classList.add(`GraphNavigation-currentKey-${SUCCESSOR_KEYS[idx]}`);
+    el.classList.add(`GraphNavigation-currentKey-${successorKeys[idx]}`);
   });
 
+  // HACK HACK DELETE
+  // HACK HACK DELETE
+  // HACK HACK DELETE
   // We return a dictionary from keyCode to successor state.
   const keyToState = {};
 
   const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
   graph.graph[state].forEach((succ, idx) => {
-    keyToState[SUCCESSOR_KEYS[idx].charCodeAt(0)] = succ;
-    keyToState[SUCCESSOR_KEYS[idx].charCodeAt(0) + lowerCase] = succ;
+    keyToState[successorKeys[idx].charCodeAt(0)] = succ;
+    keyToState[successorKeys[idx].charCodeAt(0) + lowerCase] = succ;
   });
 
   return keyToState;
@@ -226,11 +354,33 @@ function enableHoverEdges(display_element, graph) {
   }
 }
 
-jsPsych.plugins.CircleGraphNavigation = (function() {
+addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
+  console.log(trial);
+
+  const cg = new CircleGraph(trial);
+  root.innerHTML = `
+  Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'background-color: red;')}
+  `;
+  root.appendChild(cg.el);
+
+  const data = await cg.navigate();
+
+  console.log(data);
+
+  await completeModal(`
+    ### Success!
+    Press spacebar or click to continue.
+  `);
+
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+}));
+
+jsPsych.plugins.CircleGraphNavigation1 = (function() {
 
   var plugin = {};
   plugin.info = {
-    name: 'CircleGraphNavigation',
+    name: 'CircleGraphNavigation1',
     parameters: {}
   };
 
@@ -376,10 +526,6 @@ function showPathIdentification(el, graph, graphics, start, goal, clickLimit, ti
   return promise;
 }
 
-const renderSmallEmoji = (graphic, sty) => `
-<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;${sty||''}"></span>
-`;
-
 jsPsych.plugins.CirclePathIdentification = (function() {
   const plugin = { info: { name: 'CirclePathIdentification', parameters: {} } };
 
@@ -409,9 +555,13 @@ jsPsych.plugins.CirclePathIdentification = (function() {
     for (const s of graph.states) {
       let cls = 'PathIdentification-selectable';
       if (s == start) {
-        cls = 'PathIdentification-start';
+        cls = 'GraphNavigation-current';
       } else if (s == goal) {
+        continue; // HACK HACK
+        continue; // HACK HACK
         cls = 'PathIdentification-goal';
+        continue; // HACK HACK
+        continue; // HACK HACK
       }
       const el = display_element.querySelector(`.GraphNavigation-State-${s}`);
       el.classList.add(cls);
@@ -454,10 +604,25 @@ jsPsych.plugins.CirclePathIdentification = (function() {
   return plugin;
 })();
 
+class PromiseCancellation extends Error {
+  constructor() {
+    super("PromiseCancellation");
+    this.name = this.message;
+  }
+}
+
 function documentEventPromise(eventName, fn) {
   // Adds event handler to document that runs until the function `fn` returns a truthy value.
   const el = document;
-  return new Promise((resolve, rej) => {
+  let cancel;
+  const p = new Promise((resolve, reject) => {
+
+    // Can be cancelled. Results in Error of PromiseCancellation.
+    cancel = function() {
+      el.removeEventListener(eventName, handler);
+      reject(new PromiseCancellation());
+    };
+
     function handler(e) {
       const rv = fn(e);
       if (rv) {
@@ -465,12 +630,15 @@ function documentEventPromise(eventName, fn) {
         resolve(rv);
       }
     }
+
     el.addEventListener(eventName, handler);
   });
+  p.cancel = () => cancel();
+  return p;
 }
 
-function endTrialScreen(root) {
-  root.innerHTML = '<h2 style="margin-top: 20vh;margin-bottom:100vh;">Press spacebar to continue.</h2>';
+function endTrialScreen(root, msg) {
+  root.innerHTML = `<h2 style="margin-top: 20vh;margin-bottom:100vh;">${msg || ''}Press spacebar to continue.</h2>`;
   return documentEventPromise('keypress', (e) => {
     if (e.keyCode == 32) {
       e.preventDefault();
@@ -479,43 +647,65 @@ function endTrialScreen(root) {
   });
 }
 
-addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
-  function renderKey(key) {
-    return `<span
-      class="GraphNavigation-key GraphNavigation-key-${key}"
-      style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
-  }
+function renderKeyInstruction(keys) {
   function renderInputInstruction(inst) {
-    return `<span style="border: 1px solid black; border-radius: 3px; padding: 3px; font-weight: bold;">${inst}</span>`;
+    return `<span style="border: 1px solid black; border-radius: 3px; padding: 3px; font-weight: bold; display: inline-block;">${inst}</span>`;
   }
 
-  const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
-
-  let keyInstruction;
   if (keys.accept == 'Q') {
-    keyInstruction = `${renderInputInstruction('Yes (q)')} &nbsp; ${renderInputInstruction('No (p)')}`;
+    return `${renderInputInstruction('Yes (q)')} &nbsp; ${renderInputInstruction('No (p)')}`;
   } else {
-    keyInstruction = `${renderInputInstruction('No (q)')} &nbsp; ${renderInputInstruction('Yes (p)')}`;
+    return `${renderInputInstruction('No (q)')} &nbsp; ${renderInputInstruction('Yes (p)')}`;
   }
+}
+
+addPlugin('AcceptRejectPractice', trialErrorHandling(async function(root, trial) {
+  const {expectedResponse, acceptRejectKeys: keys} = trial;
+  root.innerHTML = `
+    Respond with "${expectedResponse == keys.accept ? 'Yes' : 'No'}".
+    <br/><br/><br/>
+    ${renderKeyInstruction(keys)}
+    <br/>
+  `;
+
+  await documentEventPromise('keypress', e => {
+    const input = String.fromCharCode(e.keyCode);
+    if (input.toUpperCase() == expectedResponse) {
+      e.preventDefault();
+      return true;
+    }
+  });
+
+  await endTrialScreen(root, 'Great!<br /><br />');
+
+  root.innerHTML = '';
+  jsPsych.finishTrial({practice: true});
+}));
+
+addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
+  const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
 
   const intro = `
   <p>Navigating from ${renderSmallEmoji(graphics[start], 'background-color: green;')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}.
   Will you pass ${renderSmallEmoji(graphics[probe], 'background-color: rgb(252,233,68);')}?<br />
-  ${keyInstruction}
+  ${renderKeyInstruction(keys)}
   `;
-  //${renderKey(keys.accept)} for <b>Yes</b>. ${renderKey(keys.reject)} for <b>No</b>.</p>
 
-  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
+  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, {
+    probe,
+    ...trial.graphRenderOptions,
+  });
   root.innerHTML = `${intro}${graphEl}`;
 
   for (const s of graph.states) {
     let cls;
     if (s == start) {
-      cls = 'PathIdentification-start';
+      //cls = 'PathIdentification-start';
+      cls = 'GraphNavigation-current';
     } else if (s == goal) {
-      cls = 'PathIdentification-goal';
+      //cls = 'PathIdentification-goal';
     } else if (s == probe) {
-      cls = 'PathIdentification-probe';
+      //cls = 'PathIdentification-probe';
     }
     if (!cls) {
       continue;
@@ -547,10 +737,6 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
     console.log(data);
     data.practice = trial.practice;
     data.rt = Date.now() - startTime;
-    const msg = `
-    Press Enter, ${renderKey(keys.accept)}, ${renderKey(keys.reject)}, or click to continue.
-    `;
-    // return completeModal(msg, {keyCodeSubmit}).then(function() {
     return endTrialScreen(root).then(function() {
       root.innerHTML = '';
       jsPsych.finishTrial(data);
