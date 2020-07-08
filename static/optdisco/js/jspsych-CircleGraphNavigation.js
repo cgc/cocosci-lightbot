@@ -152,8 +152,8 @@ const stateTemplate = (state, graphic, options) => {
   `;
 };
 
-const renderSmallEmoji = (graphic, sty) => `
-<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;${sty||''}"></span>
+export const renderSmallEmoji = (graphic, cls) => `
+<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;margin-bottom:-1rem;" class="${cls||''}"></span>
 `;
 
 function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
@@ -360,7 +360,7 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
 
   const cg = new CircleGraph(trial);
   root.innerHTML = `
-  Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'background-color: red;')}
+  Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'GraphNavigation-goal')}
   `;
   root.appendChild(cg.el);
 
@@ -391,7 +391,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
     <p>If you did the task again, which circle would you choose to use for instant teleportation?</p>
   ` : `
-    <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'background-color: green')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}?</p>
+    <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}?</p>
   `;
 
   const cg = new CircleGraph({...trial, start: null});
@@ -500,8 +500,8 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
 
   const intro = `
-  <p>Navigating from ${renderSmallEmoji(graphics[start], 'background-color: green;')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}.
-  Will you pass ${renderSmallEmoji(graphics[probe], 'background-color: rgb(252,233,68);')}?<br />
+  <p>Navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}.
+  Will you pass ${renderSmallEmoji(graphics[probe], 'GraphNavigation-probe')}?<br />
   ${renderKeyInstruction(keys)}
   `;
   root.innerHTML = `${intro}`;

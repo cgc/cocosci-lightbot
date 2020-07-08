@@ -36,13 +36,15 @@
   margin: 0;
   z-index: 3;
   position: absolute;
-}
 
-.NoPicture .GraphNavigation-State {
-  background-image: url('/static/optdisco/images/openmoji/2B1B.svg');
   margin: 3rem;
   height: 4rem;
   width: 4rem;
+}
+
+.GraphNavigation-State {
+  /* HACK structuring this way so it's easier to have in text. */
+  background-image: url('/static/optdisco/images/openmoji/2B1B.svg');
 }
 
 .GraphNavigation-edge {
@@ -61,13 +63,13 @@
   height: 4px;
 }
 
-.GraphNavigation-current.State {
+.GraphNavigation-current {
   background-image: url('/static/optdisco/images/openmoji/26AB.svg');
 }
-.GraphNavigation-goal.State {
+.GraphNavigation-goal {
   background-image: url('/static/optdisco/images/openmoji/2B50.svg');
 }
-.GraphNavigation-probe.State {
+.GraphNavigation-probe {
   background-image: url('/static/optdisco/images/openmoji/2754.svg');
 }
 .GraphNavigation-key {

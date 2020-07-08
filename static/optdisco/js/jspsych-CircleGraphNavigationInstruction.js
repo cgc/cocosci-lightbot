@@ -1,9 +1,5 @@
 import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
-import {CircleGraph} from './jspsych-CircleGraphNavigation.js';
-
-const renderSmallEmoji = (graphic, style) => `
-<span style="display:inline-block;width:3rem;height:3rem;${style || ''}"></span>
-`;
+import {CircleGraph, renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 
 addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   console.log(trial);
@@ -27,11 +23,11 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   root.appendChild(cg.el);
   const instruction = root.querySelector('.GraphNavigation-instruction');
 
-  root.querySelector('.GraphNavigation-edge-0-2').style.opacity = 0;
-  root.querySelector('.GraphNavigation-edge-1-2').style.opacity = 0;
-  root.querySelector('.GraphNavigation-edge-2-3').style.opacity = 0;
+  cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 0;
+  cg.el.querySelector('.GraphNavigation-edge-1-2').style.opacity = 0;
+  cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 0;
 
-  const goalEl = root.querySelector('.GraphNavigation-goal');
+  const goalEl = cg.el.querySelector('.GraphNavigation-goal');
   goalEl.classList.remove('GraphNavigation-goal');
 
   function makeButtonPromise() {
@@ -51,7 +47,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       pre: () => {},
       html: markdown(`
         Thanks for accepting our HIT! In this HIT, you will play a game
-        with these circles.
+        with these ${renderSmallEmoji(null, 'GraphNavigation-State')}.
 
         <button>Next</button>
       `),
@@ -59,7 +55,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     },
     {
       pre: () => {
-        root.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
+        cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
       },
       html: markdown(`
         Each circle is connected with several other circles, shown by a line between them.
@@ -73,7 +69,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       pre: () => {},
       html: markdown(`
         In the first part of this task, you will need to navigate between the circles.
-        Your current location is marked with a green circle ${renderSmallEmoji(graphics[start], 'background-color: green;border-radius:100%;')}.
+        Your current location is marked with a green circle ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')}.
 
         To navigate between circles, type the letter shown on the line. Now, try it: Type ${renderKey(trial.graphRenderOptions.successorKeys[start][graph.graph[start].indexOf(intermed)])}.
       `),
@@ -85,11 +81,11 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {
         goalEl.classList.add('GraphNavigation-goal');
-        root.querySelector('.GraphNavigation-edge-1-2').style.opacity = 1;
-        root.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
+        cg.el.querySelector('.GraphNavigation-edge-1-2').style.opacity = 1;
+        cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
       },
       html: markdown(`
-        Great! Your goal is marked with a red circle ${renderSmallEmoji(graphics[goal], 'background-color: red;border-radius:100%;')}. Try going there now.
+        Great! Your goal is marked with a red circle ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.
 
         Press the ${allKeys.map(renderKey).join(', ')} keys to navigate.
       `),
