@@ -1,4 +1,4 @@
-import {Graph} from './graphs.js';
+import {Graph, bestKeys} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
@@ -200,8 +200,7 @@ async function initializeExperiment() {
   psiturk.recordUnstructuredData('acceptRejectKeys', acceptRejectKeys);
 
   const graph = new Graph(config.graph);
-  // HACK how to systematically implement this?
-  // graph.shuffleSuccessors();
+  const stateOrder = config.stateOrders[stateOrderIdx];
 
   const graphRenderOptions = {
     scaleEdgeFactor: 1,
@@ -209,7 +208,7 @@ async function initializeExperiment() {
     height: 450,
     radiusX: 175,
     radiusY: 175,
-    successorKeys: solway2cKeys,
+    successorKeys: bestKeys(graph, stateOrder),
     /*
     For Solway planarization.
     fixedXY: solway2cXY,
@@ -244,7 +243,6 @@ async function initializeExperiment() {
     .slice(0, 30));
     */
   psiturk.recordUnstructuredData('trials', trials);
-  const stateOrder = config.stateOrders[stateOrderIdx];
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
   psiturk.recordUnstructuredData('gfx', gfx);
 
