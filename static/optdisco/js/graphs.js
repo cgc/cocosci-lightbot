@@ -71,3 +71,56 @@ export class Graph {
     }
   }
 }
+
+export function bestKeys(graph, stateOrder) {
+  /*
+  This algorithms tries to map keys to radial states (ordered by stateOrder)
+  in a way that minimizes distance between their angle and that of the assigned direction.
+  */
+  const keys = ['L', 'K', 'J', 'I']; // Clockwise starting at right.
+  const directions = [0, 1, 2, 3];
+
+  const angles = {};
+  stateOrder.forEach((state, order) => {
+    angles[state] = order * 2 * Math.PI / graph.states.length;
+  });
+
+  const mapping = [];
+
+  for (const curr of graph.states) {
+    const neighbors = graph.graph[curr];
+
+    let minCost = Infinity;
+    let min;
+
+    for (const d0 of directions) {
+      for (const d1 of directions) {
+        if (d0 == d1) { continue; }
+        for (const d2 of directions) {
+          if (d0 == d2 || d1 == d2) { continue; }
+
+          const assignment = [d0, d1, d2];
+          const assignmentAngles = assignment.map(a => a * Math.PI / 2);
+          const cost = neighbors.reduce(
+            (acc, succ, idx) => {
+              let d = Math.abs(angles[succ] - assignmentAngles[idx]);
+              if (d > Math.PI) {
+                d = 2*Math.PI - d;
+              }
+              return acc + Math.pow(d, 2);
+            },
+            0,
+          );
+
+          if (cost < minCost) {
+            minCost = cost;
+            min = assignment;
+          }
+        }
+      }
+    }
+    mapping.push(min.map(idx => keys[idx]));
+  }
+
+  return mapping;
+}
