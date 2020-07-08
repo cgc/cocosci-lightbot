@@ -3,7 +3,7 @@ import {bfs} from './graphs.js';
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 
-class CircleGraph {
+export class CircleGraph {
   constructor(options) {
     this.options = options;
     options.edgeShow = options.edgeShow || (() => true);
@@ -21,7 +21,16 @@ class CircleGraph {
     this.setCurrentState(options.start);
 
     // Making sure it is easy to clean up event listeners...
-    this.cancel = [];
+    this.cancellables = [];
+  }
+
+  cancel() {
+    // Use this for early termination of the graph.
+    // Only used during free-form graph navigation.
+    for (const c of this.cancellables) {
+      c();
+    }
+    this.cancellables = [];
   }
 
   setCurrentState(state) {
@@ -61,7 +70,7 @@ class CircleGraph {
       }
     });
 
-    this.cancel.push(p.cancel);
+    this.cancellables.push(p.cancel);
 
     return p;
   }
@@ -238,11 +247,10 @@ function queryEdge(root, state, successor) {
   }
 }
 
-const ALL_KEYS = ['J', 'K', 'L', 'I'];
-
 export function setCurrentState(display_element, graph, state, options) {
   options = options || {};
   options.edgeShow = options.edgeShow || (() => true);
+  const allKeys = _.unique(_.flatten(options.successorKeys));
 
   const successorKeys = options.successorKeys[state];
 
@@ -256,7 +264,7 @@ export function setCurrentState(display_element, graph, state, options) {
   removeClass('GraphNavigation-current')
   removeClass('GraphNavigation-currentEdge')
   removeClass('GraphNavigation-currentKey')
-  for (const key of ALL_KEYS) {
+  for (const key of allKeys) {
     removeClass(`GraphNavigation-currentEdge-${key}`)
     removeClass(`GraphNavigation-currentKey-${key}`)
   }

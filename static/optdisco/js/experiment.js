@@ -256,22 +256,9 @@ async function initializeExperiment() {
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
   psiturk.recordUnstructuredData('gfx', gfx);
 
-  const instructionNodes = {
-    0: new Set([2]),
-    2: new Set([0, 1, 3]),
-  };
-  const instructionGraph = new Graph(config.graph.map(node => {
-    const ns = instructionNodes[node[0]];
-    return [
-      node[0],
-      ns ? node[1].filter(n => ns.has(n)) : [],
-    ];
-  }));
-
   var inst = {
     type: 'CircleGraphNavigationInstruction',
-    graph: instructionGraph,
-    fullGraph: graph,
+    graph,
     graphics: gfx,
     trialsLength: trials.length,
     stateOrder,

@@ -1,5 +1,5 @@
 import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
-import {showState, renderCircleGraph, setCurrentState} from './jspsych-CircleGraphNavigation.js';
+import {CircleGraph, showState, renderCircleGraph, setCurrentState} from './jspsych-CircleGraphNavigation.js';
 
 const renderSmallEmoji = (graphic, style) => `
 <span style="display:inline-block;width:3rem;height:3rem;${style || ''}"></span>
@@ -11,8 +11,21 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   const {start, goal, graph, graphics, stateOrder} = trial;
   const intermed = 2; // HACK!
 
-  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
-  root.innerHTML = `<div class="GraphNavigation-instruction"></div>${graphEl}`;
+  const allKeys = _.unique(_.flatten(trial.graphRenderOptions.successorKeys));
+
+  function edgeShow(state, succ) {
+    const valid = new Set([2]);
+    return valid.has(state) || valid.has(succ);
+  }
+
+  const cg = new CircleGraph({
+    ...trial,
+    start: null,
+    edgeShow,
+  });
+  //const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
+  root.innerHTML = `<div class="GraphNavigation-instruction"></div>`;//`${graphEl}`;
+  root.appendChild(cg.el);
   const instruction = root.querySelector('.GraphNavigation-instruction');
 
   root.querySelector('.GraphNavigation-edge-0-2').style.opacity = 0;
@@ -26,23 +39,6 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     return new Promise((resolve, reject) => {
       root.querySelector('button').addEventListener('click', () => resolve());
     });
-  }
-
-  const cancelAtEnd = [];
-
-  async function showStateUntil(graph, state, goal) {
-    const res = showState(root, graph, state);
-    cancelAtEnd.push(res.cancel);
-    const nextState = await res.promise;
-    // When we cancel, this happens.
-    if (nextState == null) {
-      console.log('showState was cancelled');
-      return;
-    }
-    if (nextState == goal) {
-      return;
-    }
-    return showStateUntil(graph, nextState, goal);
   }
 
   function renderKey(key) {
@@ -80,9 +76,12 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         In the first part of this task, you will need to navigate between the circles.
         Your current location is marked with a green circle ${renderSmallEmoji(graphics[start], 'background-color: green;border-radius:100%;')}.
 
-        To navigate between circles, type the letter shown on the line. Now, try it: Type ${renderKey('J')}.
+        To navigate between circles, type the letter shown on the line. Now, try it: Type ${renderKey(trial.graphRenderOptions.successorKeys[start][graph.graph[start].indexOf(intermed)])}.
       `),
-      makePromise: () => showState(root, graph, start).promise,
+      makePromise: () => {
+        cg.setCurrentState(start);
+        return cg.keyTransition();
+      },
     },
     {
       pre: () => {
@@ -93,31 +92,30 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       html: markdown(`
         Great! Your goal is marked with a red circle ${renderSmallEmoji(graphics[goal], 'background-color: red;border-radius:100%;')}. Try going there now.
 
-        Press the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys to navigate.
+        Press the ${allKeys.map(renderKey).join(', ')} keys to navigate.
       `),
-      makePromise: () => showStateUntil(graph, intermed, goal),
+      makePromise: () => {
+        cg.setCurrentState(intermed);
+        return cg.navigate();
+      },
     },
     {
       pre: async () => {
-        const setTimeoutPromise = (ms) => new Promise((res) => setTimeout(res, ms));
-        const t = 300;
-
-        let el = root.querySelector('.GraphNavigation');
-        el.style.transition = `opacity ${t}ms`;
-        el.style.opacity = 0;
-        await setTimeoutPromise(t);
-
-        el.remove();
-        el = parseHTML(renderCircleGraph(trial.fullGraph, graphics, goal, stateOrder, trial.graphRenderOptions));
-        root.appendChild(el);
-        el.style.opacity = 0;
-        el.querySelector('.GraphNavigation-goal').classList.remove('GraphNavigation-goal');
-        await setTimeoutPromise(0);
-
-        el.style.transition = `opacity ${t}ms`;
-        el.style.opacity = 1;
-
-        showStateUntil(trial.fullGraph, 0, null);
+        // Remove goal
+        cg.options.goal = null;
+        cg.el.querySelector('.GraphNavigation-goal').classList.remove('GraphNavigation-goal');
+        // Show all edges
+        cg.options.edgeShow = () => true;
+        Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 1; });
+        // Transition to goal (from last step)
+        cg.setCurrentState(goal);
+        // Free-form navigation!
+        cg.navigate().catch(err => {
+          // Cancellation causes an error, so we ignore it.
+          if (err.name != 'PromiseCancellation') {
+            throw err;
+          }
+        });
       },
       html: markdown(`
         The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
@@ -129,26 +127,15 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     },
   ];
 
-  async function recursiveTimeline(idx) {
-    idx = idx || 0;
-    if (idx == timeline.length) {
-      return;
-    }
-
-    const t = timeline[idx];
+  for (const t of timeline) {
     t.pre();
     instruction.innerHTML = t.html;
     await t.makePromise();
-    return recursiveTimeline(idx + 1);
   }
 
-  return recursiveTimeline().then(() => {
-    // HACK we make sure all things we were showing before are cancelled.
-    for (const c of cancelAtEnd) {
-      c();
-    }
+  // Cancel the free-form navigation that we started above.
+  cg.cancel();
 
-    root.innerHTML = '';
-    jsPsych.finishTrial();
-  });
+  root.innerHTML = '';
+  jsPsych.finishTrial();
 });
