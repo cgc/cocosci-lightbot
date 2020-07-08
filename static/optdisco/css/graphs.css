@@ -30,16 +30,18 @@
 }
 
 .GraphNavigation-State.State {
-  border-radius: 100%;
   border-width: 0;
 
-  margin: 0;
   z-index: 3;
   position: absolute;
 
   margin: 3rem;
   height: 4rem;
   width: 4rem;
+}
+
+.GraphNavigation-State.GraphNavigation-visited {
+  border-width: 3px;
 }
 
 .GraphNavigation-State {

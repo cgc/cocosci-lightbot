@@ -1,17 +1,9 @@
 import {Graph} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
-import './jspsych-GraphTraining.js';
-import './jspsych-CircleGraphNavigation.js';
+import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
-import './jspsych-OneStepTraining.js';
-import './jspsych-PathIdentification.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 import config from './configuration/trials.js';
-//import s2c from './solway2c.js';
-
-const renderSmallEmoji = (graphic) => `
-<img src="${graphicsUrl(graphic)}" style="width:6rem;height:6rem;" />
-`;
 
 const instructions = (gfx) => (
     [{
@@ -270,6 +262,15 @@ async function initializeExperiment() {
     }
   };
 
+  var vn = {
+    type: 'VisitNeighbors',
+    graph,
+    graphics: gfx,
+    stateOrder,
+    timeline: _.shuffle(_.range(10)).map(start => ({start})),
+    graphRenderOptions,
+  };
+
   var gn = {
     type: 'CircleGraphNavigation',
     graph,
@@ -381,6 +382,8 @@ async function initializeExperiment() {
 
   var timeline = _.flatten([
     inst,
+    makeSimpleInstruction(`First we'll have you visit every ${renderSmallEmoji(null, 'GraphNavigation-State')}`),
+    vn,
     busInstruction,
     gn,
     makeSimpleInstruction(`You've completed the ${trials.length} puzzles! Now we'll ask you some questions.`),

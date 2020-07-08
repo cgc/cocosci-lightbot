@@ -108,7 +108,9 @@ export class CircleGraph {
     });
   }
 
-  async navigate() {
+  async navigate(options) {
+    options = options || {};
+    const termination = options.termination || ((state, states) => state == this.options.goal);
     /*
     Higher-order function that stitches together other class methods
     for an interactive key-based navigation.
@@ -126,13 +128,13 @@ export class CircleGraph {
       data.states.push(state);
       data.times.push(Date.now() - startTime);
       // Termination condition, intentionally avoiding calling cg.setCurrentState() below to avoid rendering.
-      if (state == this.options.goal) {
+      if (termination(state, data.states)) {
         break;
       }
-      // Taking a pause...
-      await setTimeoutPromise(200);
       // Update state
       this.setCurrentState(state);
+      // Taking a pause...
+      await setTimeoutPromise(200);
     }
 
     return data;
@@ -367,6 +369,37 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
   const data = await cg.navigate();
 
   console.log(data);
+
+  await completeModal(`
+    ### Success!
+    Press spacebar or click to continue.
+  `);
+
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+}));
+
+addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
+  console.log(trial);
+
+  function edgeShow(state, succ) {
+    return trial.start == state || trial.start == succ;
+  }
+
+  const cg = new CircleGraph({...trial, edgeShow});
+  root.innerHTML = `
+    Visit all the ${renderSmallEmoji(null, 'GraphNavigation-State')}, then return to where you started.
+  `;
+  root.appendChild(cg.el);
+  cg.el.querySelector('.GraphNavigation-current').classList.add('GraphNavigation-visited');
+
+  const neighbors = trial.graph.graph[trial.start];
+  const data = await cg.navigate({termination: function(state, states) {
+    // Kind of a HACK.
+    cg.el.querySelector(`.GraphNavigation-State-${state}`).classList.add('GraphNavigation-visited');
+    states = new Set(states);
+    return state == trial.start && neighbors.every(n => states.has(n));
+  }});
 
   await completeModal(`
     ### Success!
