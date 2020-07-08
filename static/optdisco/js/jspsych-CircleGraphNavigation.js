@@ -14,6 +14,7 @@ export class CircleGraph {
       {
         edgeShow: options.edgeShow,
         successorKeys: options.successorKeys,
+        probe: options.probe,
         ...options.graphRenderOptions,
       }
     ));
@@ -33,11 +34,12 @@ export class CircleGraph {
     this.cancellables = [];
   }
 
-  setCurrentState(state) {
+  setCurrentState(state, options) {
     this.state = state;
     setCurrentState(this.el, this.options.graph, this.state, {
       edgeShow: this.options.edgeShow,
       successorKeys: this.options.successorKeys,
+      ...options,
     });
   }
 
@@ -73,6 +75,37 @@ export class CircleGraph {
     this.cancellables.push(p.cancel);
 
     return p;
+  }
+
+  clickTransition() {
+    /*
+    Returns a promise that is resolved with {state} when there is a click
+    corresponding to a valid state transition.
+    */
+    const invalidStates = new Set([this.state, this.options.goal]);
+
+    for (const s of this.options.graph.states) {
+      if (invalidStates.has(s)) {
+        continue;
+      }
+      const el = this.el.querySelector(`.GraphNavigation-State-${s}`);
+      el.classList.add('PathIdentification-selectable');
+    }
+
+    return new Promise(function(resolve, reject) {
+      function handler(e) {
+        if (!e.target.classList.contains('PathIdentification-selectable')) {
+          return;
+        }
+        e.preventDefault();
+        const state = parseInt(e.target.getAttribute('data-state'), 10);
+
+        document.removeEventListener('click', handler);
+        resolve({state});
+      }
+
+      document.addEventListener('click', handler);
+    });
   }
 
   async navigate() {
@@ -123,7 +156,7 @@ const renderSmallEmoji = (graphic, sty) => `
 <span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;${sty||''}"></span>
 `;
 
-export function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
+function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   options = options || {};
   options.edgeShow = options.edgeShow || (() => true);
   const successorKeys = options.successorKeys;
@@ -247,9 +280,11 @@ function queryEdge(root, state, successor) {
   }
 }
 
-export function setCurrentState(display_element, graph, state, options) {
+function setCurrentState(display_element, graph, state, options) {
   options = options || {};
   options.edgeShow = options.edgeShow || (() => true);
+  // showCurrentEdges enables rendering of current edges/keys. This is off for PathIdentification and AcceptReject.
+  options.showCurrentEdges = typeof(options.showCurrentEdges) === 'undefined' ? true : options.showCurrentEdges;
   const allKeys = _.unique(_.flatten(options.successorKeys));
 
   const successorKeys = options.successorKeys[state];
@@ -276,6 +311,11 @@ export function setCurrentState(display_element, graph, state, options) {
 
   // Add new classes! Set current state.
   display_element.querySelector(`.GraphNavigation-State-${state}`).classList.add('GraphNavigation-current');
+
+  if (!options.showCurrentEdges) {
+    return;
+  }
+
   graph.graph[state].forEach((successor, idx) => {
     if (!options.edgeShow(state, successor)) {
       return;
@@ -291,53 +331,6 @@ export function setCurrentState(display_element, graph, state, options) {
     el.classList.add('GraphNavigation-currentKey');
     el.classList.add(`GraphNavigation-currentKey-${successorKeys[idx]}`);
   });
-
-  // HACK HACK DELETE
-  // HACK HACK DELETE
-  // HACK HACK DELETE
-  // We return a dictionary from keyCode to successor state.
-  const keyToState = {};
-
-  const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
-  graph.graph[state].forEach((succ, idx) => {
-    keyToState[successorKeys[idx].charCodeAt(0)] = succ;
-    keyToState[successorKeys[idx].charCodeAt(0) + lowerCase] = succ;
-  });
-
-  return keyToState;
-}
-
-export function showState(el, graph, state) {
-  let resolve;
-  let promise = new Promise(function(res, rej) {
-    resolve = res;
-  });
-
-  const keyToState = setCurrentState(el, graph, state);
-
-  function cancel() {
-    document.removeEventListener('keypress', handleTransition);
-    resolve(null);
-  }
-
-  function handleTransition(e) {
-    e.preventDefault();
-    if (e.keyCode in keyToState) {
-      document.removeEventListener('keypress', handleTransition);
-      resolve(keyToState[e.keyCode]);
-    }
-  }
-  document.addEventListener('keypress', handleTransition);
-
-  const rv = promise.then((state) => {
-    return setTimeoutPromise(200).then(() => {
-      return state;
-    });
-  });
-  return {
-    cancel,
-    promise: rv,
-  };
 }
 
 function enableHoverEdges(display_element, graph) {
@@ -384,233 +377,46 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
   jsPsych.finishTrial(data);
 }));
 
-jsPsych.plugins.CircleGraphNavigation1 = (function() {
+addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, trial) {
+  console.log(trial);
+  if (!trial.identifyOneState) {
+    throw new Error('No path selection supported. Only one-state selection.');
+  }
 
-  var plugin = {};
-  plugin.info = {
-    name: 'CircleGraphNavigation1',
-    parameters: {}
-  };
+  const {start, goal, graph, graphics, stateOrder} = trial;
+  const solution = bfs(graph, start, goal).path;
 
-  plugin.trial = trialErrorHandling(async function(display_element, trial) {
-    console.log(trial);
+  const intro = trial.busStop ? `
+    <p>Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.</p>
 
-    const startTime = Date.now();
-    const data = {
-      times: [],
-      states: [],
-    };
-    /*
-    TODO record successor orderings?
-    record images used
-    */
+    <p>If you did the task again, which circle would you choose to use for instant teleportation?</p>
+  ` : `
+    <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'background-color: green')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}?</p>
+  `;
 
-    const graphEl = renderCircleGraph(trial.graph, trial.graphics, trial.goal, trial.stateOrder, trial.graphRenderOptions);
-    const intro = `
-    Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'background-color: red;')}
-    `;
-    display_element.innerHTML = `${intro}${graphEl}`;
-
-    if (trial.hoverEdges) {
-      enableHoverEdges(display_element, trial.graph);
-    }
-
-    async function recursiveShowState(el, graph, graphics, start, goal) {
-      const state = await showState(el, graph, start).promise;
-      data.times.push(Date.now() - startTime);
-
-      let path;
-      if (state === goal) {
-        path = [goal];
-      } else {
-        path = await recursiveShowState(el, graph, graphics, state, goal);
-      }
-
-      return [start].concat(path);
-    }
-
-    return recursiveShowState(display_element, trial.graph, trial.graphics, trial.start, trial.goal).then(function(path) {
-      data.states = path;
-      console.log(data);
-      const perfect = path.length - 1 == trial.optimal ? "" : "";
-      return completeModal(`
-        ### Success!
-        Press spacebar or click to continue.
-        ${perfect}
-      `);
-    }).then(function() {
-      display_element.innerHTML = ''; // HACK???
-      jsPsych.finishTrial(data);
-    });
-  });
-
-  return plugin;
-})();
-
-const MAX_CLICKS = 15; // should be tuned per graph???
-
-function showPathIdentification(el, graph, graphics, start, goal, clickLimit, timeLimit) {
-  let resolve;
-  let promise = new Promise(function(res, rej) {
-    resolve = res;
-  });
+  const cg = new CircleGraph({...trial, start: null});
+  cg.setCurrentState(start, {showCurrentEdges: false});
+  root.innerHTML = `${intro}`;
+  root.appendChild(cg.el);
 
   const startTime = Date.now();
-
-  const optimalPath = bfs(graph, start, goal).path;
-
-  function isOptimal() {
-    // Can't be right if they haven't selected the right number of items.
-    if (selected.size != optimalPath.length) {
-      return false;
-    }
-
-    function successors(state) {
-      return graph.graph[state].filter(s => selected.has(s));
-    }
-
-    const result = bfs(graph, start, goal, {successors});
-    // Can't be right if there's no solution in a BFS that filters based on selected.
-    if (!result) {
-      return false;
-    }
-    // Right if their path is the same length as optimal.
-    // Notably, they don't have to have the same path.
-    return result.path.length == optimalPath.length;
-  }
-
-  const selected = new Set([goal]);
-
   const data = {
-    selected,
-    totalClicks: 0,
     times: [],
-    actions: [],
+    states: [],
+    busStop: trial.busStop,
+    practice: trial.practice,
   };
 
-  if (timeLimit) {
-    setTimeout(() => {
-      resolve({success: false, timeout: true, ...data});
-    }, timeLimit);
-  }
+  const {state} = await cg.clickTransition();
 
-  for (const s of el.querySelectorAll('.PathIdentification-selectable')) {
-    if (s == start || s == goal) {
-      continue;
-    }
-    s.addEventListener('click', function(e) {
-      e.preventDefault();
-      const state = parseInt(s.getAttribute('data-state'), 10);
-      const select = !selected.has(state);
+  data.states.push(state);
+  data.times.push(Date.now() - startTime);
 
-      // record data
-      data.times.push(Date.now() - startTime);
-      data.actions.push({state, select});
+  await completeModal('Press spacebar or click to continue.');
 
-      // Toggle logic
-      if (select) {
-        selected.add(state);
-        s.classList.add('PathIdentification-selected');
-      } else {
-        selected.delete(state);
-        s.classList.remove('PathIdentification-selected');
-      }
-
-      // Check to see if they solved it
-      if (isOptimal()) {
-        resolve({success: true, ...data});
-        return;
-      }
-
-      // Check to see if they exceeded # of clicks.
-      data.totalClicks++;
-      if (data.totalClicks >= clickLimit) {
-        resolve({success: false, ...data});
-        return;
-      }
-    });
-  }
-
-  return promise;
-}
-
-jsPsych.plugins.CirclePathIdentification = (function() {
-  const plugin = { info: { name: 'CirclePathIdentification', parameters: {} } };
-
-  plugin.trial = trialErrorHandling(async function(display_element, trial) {
-    console.log(trial);
-
-    const {start, goal, graph, graphics, stateOrder} = trial;
-    const solution = bfs(graph, start, goal).path;
-
-    const msg = trial.busStop ? `
-      <p>Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.</p>
-
-      <p>If you did the task again, which circle would you choose to use for instant teleportation?</p>
-    ` : `
-      <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'background-color: green')} to ${renderSmallEmoji(graphics[goal], 'background-color: red;')}?</p>
-    `;
-
-    const intro = trial.identifyOneState ? msg : `
-      <p>Select the ${solution.length-1} picture(s) you would visit to get from ${renderSmallEmoji(graphics[start])}
-      to ${renderSmallEmoji(graphics[goal])}. Selected pictures are gray. Only select the pictures you need to navigate through.</p>
-    `;
-    const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
-    const timer = `<div class='Timer'></div>`;
-    display_element.innerHTML = `${intro}${timer}${graphEl}`;
-
-    // Add styling/classes for selectable states.
-    for (const s of graph.states) {
-      let cls = 'PathIdentification-selectable';
-      if (s == start) {
-        cls = 'GraphNavigation-current';
-      } else if (s == goal) {
-        continue; // HACK HACK
-        continue; // HACK HACK
-        cls = 'PathIdentification-goal';
-        continue; // HACK HACK
-        continue; // HACK HACK
-      }
-      const el = display_element.querySelector(`.GraphNavigation-State-${s}`);
-      el.classList.add(cls);
-    }
-
-    // Start timer
-    if (trial.timeLimit) {
-      runTimer(display_element.querySelector('.Timer'), trial.timeLimit);
-    }
-
-    const clickLimit = trial.identifyOneState ? 1 : MAX_CLICKS;
-    return showPathIdentification(display_element, graph, graphics, start, goal, clickLimit, trial.timeLimit).then(function(data) {
-      console.log(data);
-      data.busStop = trial.busStop;
-      data.practice = trial.practice;
-
-      // Simply removing timer is a pretty good way to remove the timer's visual
-      // if there isn't a timeout. May want to leave it in if there is a timeout?
-      if (trial.timeLimit) {
-        display_element.querySelector('.Timer').remove();
-      }
-
-      let msg;
-      const cont = '\n\nPress spacebar or click to continue.';
-      if (trial.identifyOneState) {
-        msg = data.timeout ? '### Ran out of time' : '';
-      } else {
-        msg = data.success ? `### Success!` : `
-        ### Ran out of clicks!
-        Sorry, you exceeded the maximum number of ${MAX_CLICKS} clicks.
-        `;
-      }
-      return completeModal(msg+cont).then(function() {
-        display_element.innerHTML = '';
-        jsPsych.finishTrial(data);
-      });
-    });
-  });
-
-  return plugin;
-})();
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+}));
 
 class PromiseCancellation extends Error {
   constructor() {
@@ -698,56 +504,29 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   Will you pass ${renderSmallEmoji(graphics[probe], 'background-color: rgb(252,233,68);')}?<br />
   ${renderKeyInstruction(keys)}
   `;
-
-  const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, {
-    probe,
-    ...trial.graphRenderOptions,
-  });
-  root.innerHTML = `${intro}${graphEl}`;
-
-  for (const s of graph.states) {
-    let cls;
-    if (s == start) {
-      //cls = 'PathIdentification-start';
-      cls = 'GraphNavigation-current';
-    } else if (s == goal) {
-      //cls = 'PathIdentification-goal';
-    } else if (s == probe) {
-      //cls = 'PathIdentification-probe';
-    }
-    if (!cls) {
-      continue;
-    }
-    const el = root.querySelector(`.GraphNavigation-State-${s}`);
-    el.classList.add(cls);
-  }
-
-  const keyCodeSubmit = [13, 32]; // Add newline & space
-  const lowerCase = 'a'.charCodeAt(0) - 'A'.charCodeAt(0);
-  for (const response of Object.keys(keys)) {
-    const code = keys[response].charCodeAt(0);
-    keyCodeSubmit.push(code);
-    keyCodeSubmit.push(code + lowerCase);
-  }
+  root.innerHTML = `${intro}`;
+  const cg = new CircleGraph({...trial, start: null});
+  cg.setCurrentState(start, {showCurrentEdges: false});
+  root.appendChild(cg.el);
 
   const startTime = Date.now();
 
-  return documentEventPromise('keypress', e => {
+  const data = await documentEventPromise('keypress', e => {
+    const input = String.fromCharCode(e.keyCode).toUpperCase();
     for (const response of Object.keys(keys)) {
-      const code = keys[response].charCodeAt(0);
-
-      if (e.keyCode == code || e.keyCode == code + lowerCase) {
+      if (input == keys[response]) {
         e.preventDefault();
         return {response};
       }
     }
-  }).then(data => {
-    console.log(data);
-    data.practice = trial.practice;
-    data.rt = Date.now() - startTime;
-    return endTrialScreen(root).then(function() {
-      root.innerHTML = '';
-      jsPsych.finishTrial(data);
-    });
   });
+
+  console.log(data);
+  data.practice = trial.practice;
+  data.rt = Date.now() - startTime;
+
+  await endTrialScreen(root);
+
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
 }));

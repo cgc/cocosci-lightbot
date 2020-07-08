@@ -341,7 +341,7 @@ async function initializeExperiment() {
 
     We'll show you a start and goal and ask if a circle is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
 
-    First we'll start with some practice questions.
+    First we'll just practice using P and Q keys to answer Yes/No questions.
   `);
 
   const practiceOver = makeSimpleInstruction(`
@@ -349,7 +349,7 @@ async function initializeExperiment() {
   `);
 
   const expectedResponses = _.shuffle(new Array(5).fill('Q').concat(new Array(5).fill('P'))).map(er => ({expectedResponse: er}));
-  var arPractice = {
+  var arKeyPractice = {
     type: 'AcceptRejectPractice',
     acceptRejectKeys,
     timeline: expectedResponses,
@@ -394,7 +394,8 @@ async function initializeExperiment() {
     practiceOver,
     pi(config.probes),
     arInstruction,
-    arPractice,
+    arKeyPractice,
+    makeSimpleInstruction("Now we'll try some practice questions."),
     ar([
       {start: 0, goal: 4, probe: 1, practice: true},
       {start: 5, goal: 9, probe: 8, practice: true},

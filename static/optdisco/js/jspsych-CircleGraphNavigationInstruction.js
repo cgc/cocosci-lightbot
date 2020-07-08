@@ -1,5 +1,5 @@
 import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
-import {CircleGraph, showState, renderCircleGraph, setCurrentState} from './jspsych-CircleGraphNavigation.js';
+import {CircleGraph} from './jspsych-CircleGraphNavigation.js';
 
 const renderSmallEmoji = (graphic, style) => `
 <span style="display:inline-block;width:3rem;height:3rem;${style || ''}"></span>
@@ -23,7 +23,6 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     start: null,
     edgeShow,
   });
-  //const graphEl = renderCircleGraph(graph, graphics, goal, stateOrder, trial.graphRenderOptions);
   root.innerHTML = `<div class="GraphNavigation-instruction"></div>`;//`${graphEl}`;
   root.appendChild(cg.el);
   const instruction = root.querySelector('.GraphNavigation-instruction');
@@ -119,7 +118,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       },
       html: markdown(`
         The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
-        Before starting the task, feel free to explore with the ${renderKey('J')}, ${renderKey('K')}, and ${renderKey('L')} keys.
+        Before starting the task, feel free to explore with the ${allKeys.map(renderKey).join(', ')} keys.
 
         Whenever you're ready: <button>Start the task</button>
       `),

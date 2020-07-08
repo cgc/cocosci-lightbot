@@ -3,11 +3,6 @@
 .GraphTraining-state {
   display: flex;
   justify-content: space-around;
-  /*
-  left: 12rem;
-  position: relative;
-  margin: 5rem 0;
-  */
   position: relative;
   margin: 3rem 0 4rem 0;
 }
@@ -158,17 +153,6 @@
   justify-content: center;
   flex-wrap: wrap;
 }
-/*
-.PathIdentification-start {
-  background-color: green;
-}
-.PathIdentification-goal {
-  background-color: red;
-}
-.PathIdentification-probe {
-  background-color: rgb(252,233,68);
-}
-*/
 .PathIdentification-selected,
 .PathIdentification-selected:hover {
   background-color: #bbb !important;
@@ -212,6 +196,8 @@
 .legal hr {
  border-color: #ccc;
 }
+
+/* The timer */
 
 .Timer-progressContainer {
   display: inline-block;
