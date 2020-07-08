@@ -19,12 +19,20 @@ function render(graph, gfx, state, goal) {
   }
   return `
   <div class="PathIdentification">
-    How would you get from ${gfx[state]} to ${gfx[goal]}?
+    In this trial, what location would you set as a subgoal? (If none, click on the goal).
     <div class="PathIdentification-states">
     ${states}
     </div>
   </div>
   `;
+  // return `
+  // <div class="PathIdentification">
+  //   How would you get from ${gfx[state]} to ${gfx[goal]}?
+  //   <div class="PathIdentification-states">
+  //   ${states}
+  //   </div>
+  // </div>
+  // `;
 }
 
 const MAX_CLICKS = 15; // should be tuned per graph???

@@ -47,7 +47,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       pre: () => {},
       html: markdown(`
         Thanks for accepting our HIT! In this HIT, you will play a game
-        with these ${renderSmallEmoji(null, 'GraphNavigation-State')}.
+        with these locations.
 
         <button>Next</button>
       `),
@@ -58,8 +58,8 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
       },
       html: markdown(`
-        Each circle is connected with several other circles, shown by a line between them.
-        For example, the two circles below are connected.
+        Each location is connected with several other locations, shown by a line between them.
+        For example, the two locations below are connected.
 
         <button>Next</button>
       `),
@@ -68,10 +68,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {},
       html: markdown(`
-        In the first part of this task, you will need to navigate between the circles.
-        Your current location is marked with a green circle ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')}.
-
-        To navigate between circles, type the letter shown on the line. Now, try it: Type ${renderKey(trial.graphRenderOptions.successorKeys[start][graph.graph[start].indexOf(intermed)])}.
+        You can move to different locations by typing the letter shown on the line. Your current location is indicated by a circle.
       `),
       makePromise: () => {
         cg.setCurrentState(start);
@@ -85,7 +82,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
       },
       html: markdown(`
-        Great! Your goal is marked with a red circle ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.
+        Great! Your goal is marked with a star ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.
 
         Press the ${allKeys.map(renderKey).join(', ')} keys to navigate.
       `),
@@ -113,8 +110,9 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         });
       },
       html: markdown(`
-        The task will consist of ${trial.trialsLength} puzzles with the connections shown below. The connections will be displayed at all times. After you complete the puzzles, we'll ask you some questions.
-        Before starting the task, feel free to explore with the ${allKeys.map(renderKey).join(', ')} keys.
+        The task will consist of ${trial.trialsLength} trials with the connections shown below. The connections will be displayed at all times.
+
+        Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys.
 
         Whenever you're ready: <button>Start the task</button>
       `),

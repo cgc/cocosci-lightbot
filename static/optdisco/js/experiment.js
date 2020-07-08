@@ -338,9 +338,7 @@ async function initializeExperiment() {
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
   var arInstruction = makeSimpleInstruction(`
-    In this last section we will ask you ${config.acceptreject.length} questions about how you navigate.
-
-    We'll show you a start and goal and ask if a circle is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
+    In the next set of trials, we'll show you a start and goal and ask if a location is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
 
     First we'll just practice using P and Q keys to answer Yes/No questions.
   `);
@@ -382,14 +380,70 @@ async function initializeExperiment() {
 
   var timeline = _.flatten([
     inst,
-    makeSimpleInstruction(`First we'll have you visit every ${renderSmallEmoji(null, 'GraphNavigation-State')}`),
+    makeSimpleInstruction(`
+      First, we will familiarize you to each location and its neighbors. 
+
+      <b>Afterwards, we will quiz you to see if you learned the structure.</b>
+    `),
     vn,
-    busInstruction,
+    // busInstruction,
+    makeSimpleInstruction(`
+      Next, you will perform a series of navigation tasks. 
+
+      Your goal is to navigate to the goal marked with a star in as few steps as possible.
+
+      ${renderSmallEmoji(undefined, 'GraphNavigation-goal')}
+    `),
+    makeSimpleInstruction(`
+      ## ☝️ Helpful hint:
+
+      When navigating to a goal, one strategy is to set __subgoals__. 
+
+      For example, imagine taking a road trip from Miami to Los Angeles 🚗. 
+      You might plan to get to a subgoal in Texas from Miami and 
+      then from there to Los Angeles. 
+
+      <img src="static/optdisco/images/usa.png" style="width:700px">
+
+      In your own words, please explain what you think a subgoal is. 
+
+      [free response box here?] 
+
+      __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
+    `),
     gn,
-    makeSimpleInstruction(`You've completed the ${trials.length} puzzles! Now we'll ask you some questions.`),
     pi([{identifyOneState: true, busStop: true}]),
-    piInstruction,
-    piCheck,
+    makeSimpleInstruction(` 
+      Great job! 
+
+      Now, we want to check how you chose subgoals 🤔. 
+
+      We will show you start and goal locations like before, but you do not have to navigate. Instead, just click on the location you would set as a subgoal if you were to navigate. If you do not have a subgoal, just click on the goal.
+
+      After answering a comprehension question, you will perform a practice round.
+      `),
+    // piInstruction,
+    // piCheck,
+    {
+      type: 'survey-multi-choice',
+      preamble: `
+        <h1>Comprehension check</h1>
+      `,
+        // Please answer the following question to ensure you understand.
+      questions: [
+        {
+          prompt: 'For the next rounds, what should you select?',
+          options: [
+            '&nbsp;Only the goal',
+            '&nbsp;Anything',
+            '&nbsp;A subgoal that comes to mind or anything',
+            '&nbsp;A subgoal that comes to mind or the goal'
+          ],
+          required: true
+        }
+
+      ]
+    },
     pi([
       {start: 0, goal: 4, practice: true},
       {start: 5, goal: 9, practice: true},

@@ -388,7 +388,7 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
 
   const cg = new CircleGraph({...trial, edgeShow});
   root.innerHTML = `
-    Visit all the ${renderSmallEmoji(null, 'GraphNavigation-State')}, then return to where you started.
+    Visit *all* the locations connected to your starting location.
   `;
   root.appendChild(cg.el);
   cg.el.querySelector('.GraphNavigation-current').classList.add('GraphNavigation-visited');
@@ -420,11 +420,11 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
   const solution = bfs(graph, start, goal).path;
 
   const intro = trial.busStop ? `
-    <p>Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.</p>
+    <p>Imagine a version of this task that includes instant teleportation to one location of your choice. The task is otherwise exactly the same: you navigate between the same locations along the same connections, but you can also teleport to the location you choose.</p>
 
-    <p>If you did the task again, which circle would you choose to use for instant teleportation?</p>
+    <p>If you did the task again, which location would you choose to use for instant teleportation?</p>
   ` : `
-    <p>What's the first circle you think of when navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}?</p>
+    <p>On this trial, what location would you set as a subgoal? (If none, click on the goal).</p>
   `;
 
   const cg = new CircleGraph({...trial, start: null});
