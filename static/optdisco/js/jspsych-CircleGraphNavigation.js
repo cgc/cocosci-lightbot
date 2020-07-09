@@ -77,12 +77,13 @@ export class CircleGraph {
     return p;
   }
 
-  clickTransition() {
+  clickTransition(options) {
+    options = options || {};
     /*
     Returns a promise that is resolved with {state} when there is a click
     corresponding to a valid state transition.
     */
-    const invalidStates = new Set([this.state, this.options.goal]);
+    const invalidStates = new Set([this.state, this.options.goal].concat(options.invalidStates || []));
 
     for (const s of this.options.graph.states) {
       if (invalidStates.has(s)) {
@@ -431,7 +432,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   instruction.innerHTML = '<br />';
   Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 0; });
 
-  await setTimeoutPromise(1000);
+  await setTimeoutPromise(500);
 
   cg.setCurrentState(trial.start, {showCurrentEdges: false});
 
@@ -443,7 +444,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     const left = 3-t;
     instruction.textContent = `Click on the connected locations! ${left} click${left==1?'':'s'} left.`;
 
-    const {state} = await cg.clickTransition();
+    const {state} = await cg.clickTransition({invalidStates: data.states});
     data.states.push(state);
     data.times.push(Date.now() - start);
 
@@ -457,11 +458,27 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     }
   }
 
-  await completeModal(`
-    You correctly guessed ${totalCorrect} of them!
+  Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 1; });
+  instruction.innerHTML = `
+    You correctly guessed ${totalCorrect}. Press spacebar or click to continue.
+  `;
 
-    Press spacebar or click to continue.
-  `);
+  for (const state of trial.graph.graph[trial.start]) {
+    if (data.states.includes(state)) {
+      continue;
+    }
+    const el = cg.el.querySelector(`.GraphNavigation-State-${state}`);
+    el.classList.remove('PathIdentification-selectable');
+    el.style.border = '4px solid green';
+    el.style.backgroundColor = 'white';
+  }
+
+  await documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
 
   root.innerHTML = '';
   jsPsych.finishTrial(data);
