@@ -50,3 +50,7 @@ pip install --global-option=build_ext \
 6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list --active`.
 7. Verify all workers have been paid with `worker list --submitted`.
 8. Download data with `python bin/fetch_data.py $CODE_VERSION`.
+
+## Adding new OpenMoji
+
+To add new OpenMoji, you need to edit `static/optdisco/images/openmoji/copyscript.py` by adding in the new emoji to copy in. You'll first have to download the OpenMoji SVG Color pack from [their site](https://openmoji.org/) and change paths in the script to work for your installation. Then run `copyscript.py`.

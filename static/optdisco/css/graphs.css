@@ -55,7 +55,7 @@
   position: absolute;
   background-color: black;
 
-  transition: height 300ms, opacity 300ms;
+  transition: opacity 300ms;
 }
 .GraphNavigation-edge.is-faded {
   opacity: 0.1;
@@ -66,7 +66,7 @@
 }
 
 .GraphNavigation-current {
-  background-image: url('/static/optdisco/images/openmoji/26AB.svg');
+  background-image: url('/static/optdisco/images/openmoji/2733.svg');
 }
 .GraphNavigation-goal {
   background-image: url('/static/optdisco/images/openmoji/2B50.svg');
