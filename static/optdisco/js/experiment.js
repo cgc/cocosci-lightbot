@@ -260,8 +260,8 @@ async function initializeExperiment() {
     }
   };
 
-  var vn = {
-    type: 'VisitNeighbors',
+  var cgt = {
+    type: 'CGTransition',
     graph,
     graphics: gfx,
     stateOrder,
@@ -383,7 +383,7 @@ async function initializeExperiment() {
 
       <b>Afterwards, we will quiz you to see if you learned the structure.</b>
     `),
-    vn,
+    cgt,
     // busInstruction,
     makeSimpleInstruction(`
       Next, you will perform a series of navigation tasks. 

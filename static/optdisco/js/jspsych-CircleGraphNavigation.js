@@ -389,6 +389,7 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
   const cg = new CircleGraph({...trial, edgeShow});
   root.innerHTML = `
     Visit *all* the locations connected to your starting location.
+    Then return to the start place!
   `;
   root.appendChild(cg.el);
   cg.el.querySelector('.GraphNavigation-current').classList.add('GraphNavigation-visited');
@@ -403,6 +404,62 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
 
   await completeModal(`
     ### Success!
+    Press spacebar or click to continue.
+  `);
+
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+}));
+
+addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
+  console.log(trial);
+
+  const instruction = document.createElement('div');
+  root.appendChild(instruction);
+  instruction.innerHTML = 'Study the connections. You\'ll be quizzed on them in a bit! Press spacebar to continue.';
+
+  const cg = new CircleGraph({...trial, start: null});
+  root.appendChild(cg.el);
+
+  await documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
+
+  instruction.innerHTML = '<br />';
+  Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 0; });
+
+  await setTimeoutPromise(1000);
+
+  cg.setCurrentState(trial.start, {showCurrentEdges: false});
+
+  const start = Date.now();
+  const data = {states: [], times: []};
+  let totalCorrect = 0;
+
+  for (const t of _.range(3)) {
+    const left = 3-t;
+    instruction.textContent = `Click on the connected locations! ${left} click${left==1?'':'s'} left.`;
+
+    const {state} = await cg.clickTransition();
+    data.states.push(state);
+    data.times.push(Date.now() - start);
+
+    const el = cg.el.querySelector(`.GraphNavigation-State-${state}`);
+    el.classList.remove('PathIdentification-selectable');
+
+    const correct = trial.graph.graph[trial.start].includes(state);
+    el.style.backgroundColor = correct ? 'green' : 'red';
+    if (correct) {
+      totalCorrect++;
+    }
+  }
+
+  await completeModal(`
+    You correctly guessed ${totalCorrect} of them!
+
     Press spacebar or click to continue.
   `);
 
