@@ -5,72 +5,6 @@ import './jspsych-CircleGraphNavigationInstruction.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 import config from './configuration/trials.js';
 
-const instructions = (gfx) => (
-    [{
-      type: "html-button-response",
-      // We use the handy markdown function (defined in utils.js) to format our text.
-      stimulus: markdown(`
-      # Instructions
-
-      Thanks for accepting our HIT! In this HIT, you will play a game
-      with these pictures:
-
-      <div>
-      ${_(_.shuffle(graphics)).chunk(8).map((c) => c.map(renderSmallEmoji).join("")).join("<br>")}
-      </div>
-
-      Each picture is associated with several other pictures. For example, this picture
-
-      <div>${renderSmallEmoji("🍫")}</div>
-
-      might be associated with these three pictures:
-
-      <div>${renderSmallEmoji("🔮")}${renderSmallEmoji("🐳")}${renderSmallEmoji("🎁")}</div>
-      `),
-      choices: ['Continue'],
-      button_html: '<button id="continuebutton" class="btn btn-primary">%choice%</button>',
-      on_load: function (trial) {
-        document.getElementById("continuebutton").style.display = "none";
-        setTimeout(() => {document.getElementById("continuebutton").style.display = "block";}, 3000)
-      }
-    },
-    {
-      type: "html-button-response",
-      stimulus: markdown(`
-      # Instructions
-
-      In the first part of this task, you will need to learn the
-      associations between the different pictures.
-
-      <div>${renderSmallEmoji("⚙️")}${renderSmallEmoji("⚙️")}${renderSmallEmoji("⚙️")}</div>
-
-      You will be given a series of **learning trials**.
-      On each trial, you will be shown one picture and
-      will need to identify its associations out of several
-      other pictures.
-
-      <div>${renderSmallEmoji("🚲")}${renderSmallEmoji("🚲")}${renderSmallEmoji("🚲")}</div>
-
-      Whenever you make a mistake, you will be shown the answers in
-      <span style="color: greenyellow; background-color: darkgrey">green</span>.
-      Don't be surprised if you make a lot of mistakes at first!
-
-      <div>${renderSmallEmoji("🐒")}${renderSmallEmoji("🐒")}${renderSmallEmoji("🐒")}</div>
-
-      The learning trials will get progressively harder.
-      Once you are able to correctly identify **every** association
-      **without making a mistake** on the hardest trials, you can continue
-      to the main part of the task.
-      `),
-      choices: ['Continue'],
-      button_html: '<button id="continuebutton" class="btn btn-primary">%choice%</button>',
-      on_load: function (trial) {
-        document.getElementById("continuebutton").style.display = "none";
-        setTimeout(() => {document.getElementById("continuebutton").style.display = "block";}, 3000)
-      }
-    }]
-);
-
 const debrief = () => [{
   type: 'survey-multi-choice',
   preamble: markdown(`
@@ -105,28 +39,6 @@ const debrief = () => [{
      'rows': 2, columns: 60}
   ]
 }];
-
-const piInstruction = () => ({
-  type: "html-button-response",
-  // We use the handy markdown function (defined in utils.js) to format our text.
-  stimulus: markdown(`
-    In this next section we'll ask you a few questions about how you navigate.
-
-    First, we'll ask you to tell us how you would navigate between two pictures by selecting the pictures you would pass through. Make sure you've only selected the relevant pictures. There is a limit of 15 clicks before you move on to the next question.
-  `),
-  choices: ['Continue'],
-  button_html: '<button class="btn btn-primary">%choice%</button>',
-});
-
-const piInstruction2 = () => ({
-  type: "html-button-response",
-  // We use the handy markdown function (defined in utils.js) to format our text.
-  stimulus: markdown(`
-    Now, we'll ask you to tell us just one picture you'll navigate through.
-  `),
-  choices: ['Continue'],
-  button_html: '<button class="btn btn-primary">%choice%</button>',
-});
 
 const makeSimpleInstruction = (text) => ({
   type: "html-button-response",
@@ -265,7 +177,7 @@ async function initializeExperiment() {
     graph,
     graphics: gfx,
     stateOrder,
-    timeline: _.shuffle(_.range(10)).map(start => ({start})),
+    timeline: config.transitionOrders,
     graphRenderOptions,
   };
 
@@ -379,14 +291,14 @@ async function initializeExperiment() {
   var timeline = _.flatten([
     inst,
     makeSimpleInstruction(`
-      First, we will familiarize you to each location and its neighbors. 
+      First, we will familiarize you to each location and its neighbors.
 
       <b>Afterwards, we will quiz you to see if you learned the structure.</b>
     `),
     cgt,
     // busInstruction,
     makeSimpleInstruction(`
-      Next, you will perform a series of navigation tasks. 
+      Next, you will perform a series of navigation tasks.
 
       Your goal is to navigate to the goal marked with a star in as few steps as possible.
 
@@ -395,26 +307,26 @@ async function initializeExperiment() {
     makeSimpleInstruction(`
       ## ☝️ Helpful hint:
 
-      When navigating to a goal, one strategy is to set __subgoals__. 
+      When navigating to a goal, one strategy is to set __subgoals__.
 
-      For example, imagine taking a road trip from Miami to Los Angeles 🚗. 
-      You might plan to get to a subgoal in Texas from Miami and 
-      then from there to Los Angeles. 
+      For example, imagine taking a road trip from Miami to Los Angeles 🚗.
+      You might plan to get to a subgoal in Texas from Miami and
+      then from there to Los Angeles.
 
       <img src="static/optdisco/images/usa.png" style="width:700px">
 
-      In your own words, please explain what you think a subgoal is. 
+      In your own words, please explain what you think a subgoal is.
 
-      [free response box here?] 
+      [free response box here?]
 
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
     `),
     gn,
     pi([{identifyOneState: true, busStop: true}]),
-    makeSimpleInstruction(` 
-      Great job! 
+    makeSimpleInstruction(`
+      Great job!
 
-      Now, we want to check how you chose subgoals 🤔. 
+      Now, we want to check how you chose subgoals 🤔.
 
       We will show you start and goal locations like before, but you do not have to navigate. Instead, just click on the location you would set as a subgoal if you were to navigate. If you do not have a subgoal, just click on the goal.
 

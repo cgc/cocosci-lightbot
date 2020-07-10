@@ -416,11 +416,15 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   console.log(trial);
 
   const instruction = document.createElement('div');
+  instruction.classList.add('GraphNavigation-instruction');
   root.appendChild(instruction);
-  instruction.innerHTML = 'Study the connections. You\'ll be quizzed on them in a bit! Press spacebar to continue.';
+  instruction.innerHTML = `Study the connections of the ${renderSmallEmoji(null, 'GraphNavigation-cue')}. You\'ll be quizzed on one of them. Press spacebar to continue.`;
 
   const cg = new CircleGraph({...trial, start: null});
   root.appendChild(cg.el);
+
+  const cues = trial.cues.map(state => cg.el.querySelector(`.GraphNavigation-State-${state}`));
+  cues.forEach(cue => cue.classList.add('GraphNavigation-cue'));
 
   await documentEventPromise('keypress', (e) => {
     if (e.keyCode == 32) {
@@ -434,6 +438,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
 
   await setTimeoutPromise(500);
 
+  cues.forEach(cue => cue.classList.remove('GraphNavigation-cue'));
   cg.setCurrentState(trial.start, {showCurrentEdges: false});
 
   const start = Date.now();

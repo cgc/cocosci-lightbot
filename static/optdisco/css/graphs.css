@@ -73,6 +73,12 @@
 }
 .GraphNavigation-probe {
   background-image: url('/static/optdisco/images/openmoji/2754.svg');
+  background-color: white;
+  border: 3px solid black !important;
+  border-radius: 100% !important;
+}
+.GraphNavigation-cue {
+  background-image: url('/static/optdisco/images/openmoji/2734.svg');
 }
 .GraphNavigation-key {
   position: absolute;
