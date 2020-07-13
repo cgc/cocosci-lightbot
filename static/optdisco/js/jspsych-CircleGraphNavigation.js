@@ -444,6 +444,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   const start = Date.now();
   const data = {states: [], times: []};
   let totalCorrect = 0;
+  const neighbors = trial.graph.graph[trial.start];
 
   for (const t of _.range(3)) {
     const left = 3-t;
@@ -455,9 +456,9 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
 
     const el = cg.el.querySelector(`.GraphNavigation-State-${state}`);
     el.classList.remove('PathIdentification-selectable');
+    el.style.backgroundColor = 'grey';
 
-    const correct = trial.graph.graph[trial.start].includes(state);
-    el.style.backgroundColor = correct ? 'green' : 'red';
+    const correct = neighbors.includes(state);
     if (correct) {
       totalCorrect++;
     }
@@ -468,14 +469,23 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     You correctly guessed ${totalCorrect}. Press spacebar or click to continue.
   `;
 
-  for (const state of trial.graph.graph[trial.start]) {
-    if (data.states.includes(state)) {
-      continue;
-    }
+  for (const state of new Set(neighbors.concat(data.states))) {
     const el = cg.el.querySelector(`.GraphNavigation-State-${state}`);
     el.classList.remove('PathIdentification-selectable');
-    el.style.border = '4px solid green';
-    el.style.backgroundColor = 'white';
+
+    if (neighbors.includes(state)) {
+      // Correct selection
+      if (data.states.includes(state)) {
+        el.style.backgroundColor = 'green';
+      // Correct, but not selected
+      } else {
+        el.style.border = '4px solid green';
+        el.style.backgroundColor = 'white';
+      }
+    } else {
+      // Incorrect selection
+      el.style.backgroundColor = 'red';
+    }
   }
 
   await documentEventPromise('keypress', (e) => {
