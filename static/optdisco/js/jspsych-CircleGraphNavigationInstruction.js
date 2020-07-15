@@ -68,7 +68,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {},
       html: markdown(`
-        You can move to different locations by typing the letter shown on the line. Your current location is indicated by ${renderSmallEmoji(null, 'GraphNavigation-current')}.
+        Your current location is indicated by ${renderSmallEmoji(null, 'GraphNavigation-current')}. You can move to different locations by typing the letter shown on the line. Try it now.
       `),
       makePromise: () => {
         cg.setCurrentState(start);

@@ -162,3 +162,40 @@ export function runTimer(root, ms) {
   // Set text rendering. Also gives us a promise for completion.
   return runTimerText(root.querySelector('.Timer-number'), ms);
 }
+
+addPlugin('HTMLForm', async function(root, trial) {
+  /*
+  This plugin is a bit of a kitchen sink. Mostly have wanted something that is a halfway
+  reasonable HTML instruction/form page.
+
+  This plugin will generate a page with trial.stimulus content and a continue button.
+  It will automatically gather from all input[type=text] and textarea elements in the stimulus.
+  */
+  root.innerHTML = `
+    ${markdown(trial.stimulus)}
+    <button class="btn btn-primary HTMLForm-continue">Continue</button>
+    <br /><br />
+  `;
+  const start = Date.now();
+
+  await new Promise((resolve, reject) => {
+    const el = root.querySelector('.HTMLForm-continue');
+    el.addEventListener('click', function(e) { resolve(e); });
+  });
+
+  const data = {
+    rt: Date.now() - start,
+    responses: {},
+  };
+
+  // Counter is used to automatically label unnamed inputs.
+  let counter = 0;
+  for (const el of Array.from(root.querySelectorAll('input[type=text],textarea'))) {
+    const name = el.getAttribute('name') || `Q${counter++}`;
+    data.responses[name] = el.value;
+  }
+
+  console.log(data);
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+});

@@ -83,7 +83,7 @@ export class CircleGraph {
     Returns a promise that is resolved with {state} when there is a click
     corresponding to a valid state transition.
     */
-    const invalidStates = new Set([this.state, this.options.goal].concat(options.invalidStates || []));
+    const invalidStates = new Set(options.invalidStates || [this.state, this.options.goal]);
 
     for (const s of this.options.graph.states) {
       if (invalidStates.has(s)) {
@@ -363,7 +363,7 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
 
   const cg = new CircleGraph(trial);
   root.innerHTML = `
-  Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'GraphNavigation-goal')}
+  Navigate to ${renderSmallEmoji(trial.graphics[trial.goal], 'GraphNavigation-goal')}. It might be helpful to set subgoals.
   `;
   root.appendChild(cg.el);
 
@@ -450,7 +450,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     const left = 3-t;
     instruction.textContent = `Click on the connected locations! ${left} click${left==1?'':'s'} left.`;
 
-    const {state} = await cg.clickTransition({invalidStates: data.states});
+    const {state} = await cg.clickTransition({invalidStates: [trial.start].concat(data.states)});
     data.states.push(state);
     data.times.push(Date.now() - start);
 
@@ -529,7 +529,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
     practice: trial.practice,
   };
 
-  const {state} = await cg.clickTransition();
+  const {state} = await cg.clickTransition({invalidStates: [trial.start]});
 
   data.states.push(state);
   data.times.push(Date.now() - startTime);

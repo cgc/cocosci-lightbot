@@ -16,6 +16,7 @@ const debrief = () => [{
   button_label: 'Submit',
   questions: [
     {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
+    {prompt: "In general, do you consider yourself detail-oriented or a big picture thinker?", name: 'detail-big-picture', options: ['Detail-Oriented', 'Big Picture Thinker', 'Both', 'Neither'], required:true},
   ],
 }, {
   type: 'survey-text',
@@ -27,10 +28,8 @@ const debrief = () => [{
   `),
   button_label: 'Submit',
   questions: [
-    {'prompt': 'What strategy did you use to answer the questions?',
+    {'prompt': 'What strategy did you use to navigate?',
      'rows': 2, columns: 60},
-//    {'prompt': 'How did you make the decision about which picture to use for instant teleportation?',
-//     'rows': 2, columns: 60},
     {'prompt': 'Was anything confusing or hard to understand?',
      'rows': 2, columns: 60},
     {'prompt': 'Do you have any suggestions on how we can improve the instructions or interface?',
@@ -286,7 +285,11 @@ async function initializeExperiment() {
     > If you did the task again, which circle would you choose to use for instant teleportation?
   `);
 
-  let updateProgress = makeUpdateProgress(trials.length + config.probes.length + config.acceptreject.length);
+  let updateProgress = makeUpdateProgress(
+    config.transitionOrders.length +
+    trials.length +
+    config.probes.length +
+    config.acceptreject.length);
 
   var timeline = _.flatten([
     inst,
@@ -304,7 +307,9 @@ async function initializeExperiment() {
 
       ${renderSmallEmoji(undefined, 'GraphNavigation-goal')}
     `),
-    makeSimpleInstruction(`
+    {
+      type: 'HTMLForm',
+      stimulus: `
       ## ☝️ Helpful hint:
 
       When navigating to a goal, one strategy is to set __subgoals__.
@@ -317,10 +322,11 @@ async function initializeExperiment() {
 
       In your own words, please explain what you think a subgoal is.
 
-      [free response box here?]
+      <textarea name="subgoal"></textarea>
 
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
-    `),
+      `,
+    },
     gn,
     pi([{identifyOneState: true, busStop: true}]),
     makeSimpleInstruction(`
