@@ -328,7 +328,6 @@ async function initializeExperiment() {
       `,
     },
     gn,
-    pi([{identifyOneState: true, busStop: true}]),
     makeSimpleInstruction(`
       Great job!
 
@@ -375,6 +374,7 @@ async function initializeExperiment() {
     ]),
     practiceOver,
     ar(config.acceptreject),
+    pi([{identifyOneState: true, busStop: true}]),
     debrief(),
   ]);
 
