@@ -1,4 +1,4 @@
-import {parseHTML, runTimer, completeModal, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
+import {parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
 import {bfs} from './graphs.js';
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
@@ -159,7 +159,7 @@ const stateTemplate = (state, graphic, options) => {
 
 export const renderSmallEmoji = (graphic, cls) => `
 <span class="GraphNavigation withGraphic">
-  <span style="position: relative; border-width:1px !important;width:4rem;height:4rem;display:inline-block;margin: 0 0 -0.5rem 0;" class="GraphNavigation-State State ${cls||''}"><img src="${graphicsUrl(graphic)}" /></span>
+  <span style="position: relative; border-width:1px !important;width:4rem;height:4rem;display:inline-block;margin: 0 0 -0.5rem 0;" class="GraphNavigation-State State ${cls||''}">${graphic?`<img src="${graphicsUrl(graphic)}" />`:''}</span>
 </span>
 `;
 
@@ -383,11 +383,12 @@ async function waitForSpace() {
   });
 }
 
-addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
-  console.log(trial);
-
+async function maybeShowMap(root, trial) {
+  const data = {showMap: trial.showMap};
   if (trial.showMap) {
-    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null});
+    const start = Date.now();
+
+    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null});
     root.innerHTML = `
       Occasionally, you will be able to see an unscrambled map of all the connections. This map has the same connections you normally see.
 
@@ -396,7 +397,16 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
     root.appendChild(planar.el);
     await waitForSpace();
     root.innerHTML = '';
+
+    data.rt = Date.now() - start;
   }
+  return data;
+}
+
+addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
+  console.log(trial);
+
+  const mapData = await maybeShowMap(root, trial);
 
   const cg = new CircleGraph(trial);
   root.innerHTML = `
@@ -408,13 +418,11 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
 
   console.log(data);
 
-  await completeModal(`
-    ### Success!
-    Press spacebar or click to continue.
-  `);
+  await endTrialScreen(root);
 
   root.innerHTML = '';
   data.practice = trial.practice;
+  data.mapData = mapData;
   jsPsych.finishTrial(data);
 }));
 
@@ -441,10 +449,7 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
     return state == trial.start && neighbors.every(n => states.has(n));
   }});
 
-  await completeModal(`
-    ### Success!
-    Press spacebar or click to continue.
-  `);
+  await endTrialScreen(root);
 
   root.innerHTML = '';
   jsPsych.finishTrial(data);
@@ -543,6 +548,8 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
     throw new Error('No path selection supported. Only one-state selection.');
   }
 
+  const mapData = await maybeShowMap(root, trial);
+
   const {start, goal, graph, graphics, stateOrder} = trial;
   const solution = bfs(graph, start, goal).path;
 
@@ -551,7 +558,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
     <p>If you did the task again, which location would you choose to use for instant teleportation?</p>
   ` : `
-    <p>On this trial, what location would you set as a subgoal? (If none, click on the goal).</p>
+    <p>When navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}, what location would you set as a subgoal? (If none, click on the goal).</p>
   `;
 
   const cg = new CircleGraph({...trial, start: null});
@@ -571,8 +578,9 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
   data.states.push(state);
   data.times.push(Date.now() - startTime);
+  data.mapData = mapData;
 
-  await completeModal('Press spacebar or click to continue.');
+  await endTrialScreen(root);
 
   root.innerHTML = '';
   jsPsych.finishTrial(data);
@@ -659,6 +667,8 @@ addPlugin('AcceptRejectPractice', trialErrorHandling(async function(root, trial)
 addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
 
+  const mapData = await maybeShowMap(root, trial);
+
   const intro = `
   <p>Navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}.
   Will you pass ${renderSmallEmoji(graphics[probe], 'GraphNavigation-probe')}?<br />
@@ -684,6 +694,7 @@ addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
   console.log(data);
   data.practice = trial.practice;
   data.rt = Date.now() - startTime;
+  data.mapData = mapData;
 
   await endTrialScreen(root);
 

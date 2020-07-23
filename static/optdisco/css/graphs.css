@@ -74,7 +74,7 @@
 .GraphNavigation-probe {
   background-image: url('/static/optdisco/images/openmoji/2754.svg');
   background-color: white;
-  border: 3px solid black !important;
+  border: 2px solid black !important;
   border-radius: 100% !important;
 }
 .GraphNavigation-cue {
@@ -112,6 +112,7 @@
   height: 20pt;
   color: white;
   background-color: black;
+  text-align: center;
 
   opacity: 0;
   transition: opacity 300ms;

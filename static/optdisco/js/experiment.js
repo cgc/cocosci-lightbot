@@ -17,6 +17,7 @@ const debrief = () => [{
   questions: [
     {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
     {prompt: "In general, do you consider yourself detail-oriented or a big picture thinker?", name: 'detail-big-picture', options: ['Detail-Oriented', 'Big Picture Thinker', 'Both', 'Neither'], required:true},
+    {prompt: "Did you take a picture of the map? If you did, how often did you have to look at it? Note: Your completed HIT will be accepted regardless of your answer to this question.", name: 'picture-map', options: ['Did not take picture', 'Rarely looked at picture', 'Sometimes looked at picture', 'Often looked at picture'], required:true},
   ],
 }, {
   type: 'survey-text',
@@ -192,12 +193,19 @@ async function initializeExperiment() {
     graphRenderOptions,
   };
 
+  function addShowMap(trials) {
+    /*
+    For now, we show the map every other trial.
+    */
+    return trials.map((t, idx) => ({...t, showMap: (idx % 2) == 0}));
+  }
+
   var gn = (trials) => ({
     type: 'CircleGraphNavigation',
     graph,
     graphics: gfx,
     stateOrder,
-    timeline: trials.map((t, idx) => ({...t, showMap: (idx % 2) == 0})),
+    timeline: addShowMap(trials),
     graphRenderOptions,
     planarOptions,
     on_finish() {
@@ -244,10 +252,10 @@ async function initializeExperiment() {
     graph,
     graphics: gfx,
     stateOrder,
-    timeline,
+    timeline: addShowMap(timeline),
     //timeLimit: timeLimit,
     identifyOneState: true,
-    graphRenderOptions,
+    graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
     planarOptions,
     on_finish() {
       updateProgress();
@@ -283,8 +291,8 @@ async function initializeExperiment() {
     graph,
     graphics: gfx,
     stateOrder,
-    timeline,
-    graphRenderOptions,
+    timeline: addShowMap(timeline),
+    graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
     planarOptions,
     on_finish() {
       updateProgress();
@@ -322,7 +330,7 @@ async function initializeExperiment() {
 
       Your goal is to navigate to the goal marked yellow in as few steps as possible.
 
-      ${renderSmallEmoji('❔', 'GraphNavigation-goal')}
+      ${renderSmallEmoji(null, 'GraphNavigation-goal')}
     `),
     {
       type: 'HTMLForm',
@@ -339,7 +347,7 @@ async function initializeExperiment() {
 
       In your own words, please explain what you think a subgoal is.
 
-      <textarea name="subgoal"></textarea>
+      <textarea cols="50" rows="3" name="subgoal"></textarea>
 
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
       `,
@@ -417,7 +425,7 @@ async function initializeExperiment() {
     auto_update_progress_bar: false,
     auto_preload: false,
     exclusions: {
-      // min_width: 800,
+      min_width: 800,
       // min_height: 600
     },
   });

@@ -93,6 +93,9 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     },
     {
       pre: async () => {
+        // Remove height limit from instructions for this last step.
+        instruction.classList.remove('GraphNavigation-instruction');
+        instruction.style.textAlign = 'left';
         // Remove goal
         cg.options.goal = null;
         cg.el.querySelector('.GraphNavigation-goal').classList.remove('GraphNavigation-goal');
@@ -110,11 +113,12 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         });
       },
       html: markdown(`
-        This HIT will consist of puzzles and questions using the connections shown below. The connections will be displayed at all times.
+        This HIT will consist of navigation puzzles and questions using the connections below.
+        - During navigation puzzles, ${trial.graphRenderOptions.onlyShowCurrentEdges ? 'the connections will only be displayed for your current location' : 'the connections will be displayed at all times'}.
+        - Afterwards, we’ll hide the connections and ask you some questions.
+        - Throughout the HIT, you’ll periodically see a map that unscrambles the connections, making it easier to see how the locations are laid out.
 
-        Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys.
-
-        Whenever you're ready: <button>Continue</button>
+        Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys. Whenever you're ready: <button>Continue</button>
       `),
       makePromise: makeButtonPromise,
     },
