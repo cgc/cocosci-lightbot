@@ -177,7 +177,8 @@ async function initializeExperiment() {
     trialsLength: trials.length,
     stateOrder,
     timeline: [{start: 0, goal: 1}],
-    graphRenderOptions,
+    graphRenderOptions: {...graphRenderOptions, onlyShowCurrentEdges: false},
+    onlyShowCurrentEdges,
     on_finish() {
       updateProgress();
       saveData();

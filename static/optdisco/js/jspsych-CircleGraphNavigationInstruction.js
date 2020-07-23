@@ -114,7 +114,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       },
       html: markdown(`
         This HIT will consist of navigation puzzles and questions using the connections below.
-        - During navigation puzzles, ${trial.graphRenderOptions.onlyShowCurrentEdges ? 'the connections will only be displayed for your current location' : 'the connections will be displayed at all times'}.
+        - During navigation puzzles, **${trial.onlyShowCurrentEdges ? 'the connections will only be displayed for your current location' : 'the connections will be displayed at all times'}**.
         - Afterwards, we’ll hide the connections and ask you some questions.
         - Throughout the HIT, you’ll periodically see a map that unscrambles the connections, making it easier to see how the locations are laid out.
 
