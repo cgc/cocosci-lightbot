@@ -95,7 +95,7 @@ const solway2cKeys = [
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
-  const onlyShowCurrentEdges = _.sample([true, false]);
+  const onlyShowCurrentEdges = Boolean(CONDITION);
   psiturk.recordUnstructuredData('onlyShowCurrentEdges', onlyShowCurrentEdges);
 
   const stateOrderIdx = _.random(config.stateOrders.length-1);

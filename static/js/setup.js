@@ -21,7 +21,14 @@ if (DEBUG) {
   };
 } else {
   console.log("# =============================== #\n# ========= NORMAL MODE ========= #\n# =============================== #");
-  CONDITION = parseInt(condition);
+    
+  CONDITION = function() {
+    let searchParams = new URLSearchParams(location.search);
+    let cond = searchParams.get('condition') || condition; // from exp.html
+    cond = parseInt(cond);
+    return isNaN(cond) ? 0 : cond;
+  }();
+  console.log('CONDITION = ', CONDITION)
   LOG_DEBUG = function(...args) {
     return null;
   };
