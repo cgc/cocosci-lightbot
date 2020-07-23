@@ -101,7 +101,11 @@ export function addPlugin(name, func) {
 export function parseHTML(html) {
   var parser = new DOMParser();
   var parsed = parser.parseFromString(html, 'text/html');
-  return parsed.getRootNode().body;
+  const children = parsed.getRootNode().body.children;
+  if (children.length != 1) {
+    throw new Error(`parseHTML can only parse HTML with 1 child node. Found ${children.length} nodes.`);
+  }
+  return children[0];
 }
 
 export function setTimeoutPromise(ms) {

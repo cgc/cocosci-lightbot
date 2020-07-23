@@ -47,7 +47,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
       pre: () => {},
       html: markdown(`
         Thanks for accepting our HIT! In this HIT, you will play a game
-        with these locations.
+        with these pictures.
 
         <button>Next</button>
       `),
@@ -58,8 +58,8 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
       },
       html: markdown(`
-        Each location is connected with several other locations, shown by a line between them.
-        For example, the two locations below are connected.
+        Each picture is connected with several other pictures, shown by a line between them.
+        For example, the two pictures below are connected.
 
         <button>Next</button>
       `),
@@ -68,7 +68,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {},
       html: markdown(`
-        Your current location is indicated by ${renderSmallEmoji(null, 'GraphNavigation-current')}. You can move to different locations by typing the letter shown on the line. Try it now.
+        Your current location is marked green ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')}. You can move to different locations by typing the letter shown on the line. Try it now.
       `),
       makePromise: () => {
         cg.setCurrentState(start);
@@ -82,7 +82,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
       },
       html: markdown(`
-        Great! Your goal is marked with a star ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.
+        Great! Your goal is marked yellow ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.
 
         Press the ${allKeys.map(renderKey).join(', ')} keys to navigate.
       `),
@@ -110,11 +110,11 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         });
       },
       html: markdown(`
-        The task will consist of ${trial.trialsLength} trials with the connections shown below. The connections will be displayed at all times.
+        This HIT will consist of puzzles and questions using the connections shown below. The connections will be displayed at all times.
 
         Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys.
 
-        Whenever you're ready: <button>Start the task</button>
+        Whenever you're ready: <button>Continue</button>
       `),
       makePromise: makeButtonPromise,
     },

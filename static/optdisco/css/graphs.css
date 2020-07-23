@@ -80,6 +80,30 @@
 .GraphNavigation-cue {
   background-image: url('/static/optdisco/images/openmoji/2734.svg');
 }
+
+.GraphNavigation.withGraphic .GraphNavigation-State {
+  border: 2px solid black;
+  margin: 1.5rem;
+  height: 7rem;
+  width: 7rem;
+  border-radius: 100%;
+
+  background-image: none;
+  background-color: white;
+}
+.GraphNavigation.withGraphic .GraphNavigation-current {
+  background-image: none;
+  background-color: #4caf50;
+}
+.GraphNavigation.withGraphic .GraphNavigation-goal {
+  background-image: none;
+  background-color: #ffeb3b;
+}
+.GraphNavigation.withGraphic .GraphNavigation-probe {
+  background-image: none;
+  background-color: #2196f3;
+}
+
 .GraphNavigation-key {
   position: absolute;
   border-radius: 5px;
@@ -100,23 +124,23 @@
 
 .GraphNavigation-key-J,
 .GraphNavigation-currentEdge-J {
-  background-color: darkorange;
+  background-color: #ff9800;
 }
 .GraphNavigation-key-K,
 .GraphNavigation-currentEdge-K {
-  background-color: violet;
+  background-color: #9c27b0;
 }
 .GraphNavigation-key-L,
 .GraphNavigation-currentEdge-L {
-  background-color: mediumturquoise;
+  background-color: #00bcd4;
 }
 .GraphNavigation-key-I,
 .GraphNavigation-currentEdge-I {
-  background-color: red;
+  background-color: #f44336;
 }
 
 .GraphNavigation-instruction {
-  height: 100px;
+  height: 120px;
 }
 
 .State {
@@ -133,7 +157,10 @@
   user-select: none;
 }
 
-.State > img {
+.GraphNavigation .State > img {
+  display: none;
+}
+.GraphNavigation.withGraphic .State > img {
   display: block;
 }
 

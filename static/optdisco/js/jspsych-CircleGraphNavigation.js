@@ -39,6 +39,7 @@ export class CircleGraph {
     setCurrentState(this.el, this.options.graph, this.state, {
       edgeShow: this.options.edgeShow,
       successorKeys: this.options.successorKeys,
+      onlyShowCurrentEdges: this.options.graphRenderOptions.onlyShowCurrentEdges,
       ...options,
     });
   }
@@ -95,11 +96,12 @@ export class CircleGraph {
 
     return new Promise(function(resolve, reject) {
       function handler(e) {
-        if (!e.target.classList.contains('PathIdentification-selectable')) {
+        const el = $(e.target).closest('.PathIdentification-selectable').get(0);
+        if (!el) {
           return;
         }
         e.preventDefault();
-        const state = parseInt(e.target.getAttribute('data-state'), 10);
+        const state = parseInt(el.getAttribute('data-state'), 10);
 
         document.removeEventListener('click', handler);
         resolve({state});
@@ -151,12 +153,14 @@ const stateTemplate = (state, graphic, options) => {
     cls += ' GraphNavigation-probe';
   }
   return `
-  <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}"></div>
+  <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}"><img src="${graphicsUrl(graphic)}" /></div>
   `;
 };
 
 export const renderSmallEmoji = (graphic, cls) => `
-<span style="border-radius:100%;width:4rem;height:4rem;display:inline-block;margin-bottom:-1rem;" class="${cls||''}"></span>
+<span class="GraphNavigation withGraphic">
+  <span style="position: relative; border-width:1px !important;width:4rem;height:4rem;display:inline-block;margin: 0 0 -0.5rem 0;" class="GraphNavigation-State State ${cls||''}"><img src="${graphicsUrl(graphic)}" /></span>
+</span>
 `;
 
 function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
@@ -263,7 +267,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   }
 
   return `
-  <div class="GraphNavigation NoPicture" style="width: ${width}px; height: ${height}px;">
+  <div class="GraphNavigation withGraphic" style="width: ${width}px; height: ${height}px;">
     ${keys.join('')}
     ${succ.join('')}
     ${states.join('')}
@@ -319,6 +323,12 @@ function setCurrentState(display_element, graph, state, options) {
     return;
   }
 
+  if (options.onlyShowCurrentEdges) {
+    for (const el of display_element.querySelectorAll('.GraphNavigation-edge,.GraphNavigation-key')) {
+      el.style.opacity = 0;
+    }
+  }
+
   graph.graph[state].forEach((successor, idx) => {
     if (!options.edgeShow(state, successor)) {
       return;
@@ -328,11 +338,17 @@ function setCurrentState(display_element, graph, state, options) {
     let el = queryEdge(display_element, state, successor);
     el.classList.add('GraphNavigation-currentEdge');
     el.classList.add(`GraphNavigation-currentEdge-${successorKeys[idx]}`);
+    if (options.onlyShowCurrentEdges) {
+      el.style.opacity = 1;
+    }
 
     // Now setting active keys
     el = display_element.querySelector(`.GraphNavigation-key-${state}-${successor}`);
     el.classList.add('GraphNavigation-currentKey');
     el.classList.add(`GraphNavigation-currentKey-${successorKeys[idx]}`);
+    if (options.onlyShowCurrentEdges) {
+      el.style.opacity = 1;
+    }
   });
 }
 
@@ -358,8 +374,29 @@ function enableHoverEdges(display_element, graph) {
   }
 }
 
+async function waitForSpace() {
+  return documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
+}
+
 addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
   console.log(trial);
+
+  if (trial.showMap) {
+    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null});
+    root.innerHTML = `
+      Occasionally, you will be able to see an unscrambled map of all the connections. This map has the same connections you normally see.
+
+      <br /><br />Take a moment to look at the map, then press spacebar when you want to continue.
+    `;
+    root.appendChild(planar.el);
+    await waitForSpace();
+    root.innerHTML = '';
+  }
 
   const cg = new CircleGraph(trial);
   root.innerHTML = `
@@ -377,6 +414,7 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
   `);
 
   root.innerHTML = '';
+  data.practice = trial.practice;
   jsPsych.finishTrial(data);
 }));
 

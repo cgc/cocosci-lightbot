@@ -95,6 +95,9 @@ const solway2cKeys = [
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
+  const onlyShowCurrentEdges = _.sample([true, false]);
+  psiturk.recordUnstructuredData('onlyShowCurrentEdges', onlyShowCurrentEdges);
+
   const stateOrderIdx = _.random(config.stateOrders.length-1);
   psiturk.recordUnstructuredData('stateOrderIdx', stateOrderIdx);
 
@@ -114,20 +117,29 @@ async function initializeExperiment() {
   const stateOrder = config.stateOrders[stateOrderIdx];
 
   const graphRenderOptions = {
+    onlyShowCurrentEdges,
+    /* Good parameters for no-picture.
     scaleEdgeFactor: 1,
     width: 450,
     height: 450,
     radiusX: 175,
     radiusY: 175,
     successorKeys: bestKeys(graph, stateOrder),
-    /*
-    For Solway planarization.
+    */
+    // Parameters with picture.
+    width: 500,
+    height: 500,
+    radiusX: 210,
+    radiusY: 210,
+    successorKeys: bestKeys(graph, stateOrder),
+  };
+  const planarOptions = {
+    // For Solway planarization.
     fixedXY: solway2cXY,
     keyDistanceFactor: 1.35,
     scaleEdgeFactor: 1,
     width: 800,
     height: 400,
-    */
   };
 
   let length3 = 0;
@@ -180,18 +192,19 @@ async function initializeExperiment() {
     graphRenderOptions,
   };
 
-  var gn = {
+  var gn = (trials) => ({
     type: 'CircleGraphNavigation',
     graph,
     graphics: gfx,
     stateOrder,
-    timeline: trials,
+    timeline: trials.map((t, idx) => ({...t, showMap: (idx % 2) == 0})),
     graphRenderOptions,
+    planarOptions,
     on_finish() {
       updateProgress();
       saveData();
     }
-  };
+  });
 
   var piInstruction = makeSimpleInstruction(`
     In this next section, we want to understand how you are planning your
@@ -235,6 +248,7 @@ async function initializeExperiment() {
     //timeLimit: timeLimit,
     identifyOneState: true,
     graphRenderOptions,
+    planarOptions,
     on_finish() {
       updateProgress();
       saveData();
@@ -271,6 +285,7 @@ async function initializeExperiment() {
     stateOrder,
     timeline,
     graphRenderOptions,
+    planarOptions,
     on_finish() {
       updateProgress();
       saveData();
@@ -293,19 +308,21 @@ async function initializeExperiment() {
 
   var timeline = _.flatten([
     inst,
+    /*
     makeSimpleInstruction(`
       First, we will familiarize you to each location and its neighbors.
 
       <b>Afterwards, we will quiz you to see if you learned the structure.</b>
     `),
     cgt,
+    */
     // busInstruction,
     makeSimpleInstruction(`
-      Next, you will perform a series of navigation tasks.
+      First, you will perform a series of navigation tasks. We'll start with some practice.
 
-      Your goal is to navigate to the goal marked with a star in as few steps as possible.
+      Your goal is to navigate to the goal marked yellow in as few steps as possible.
 
-      ${renderSmallEmoji(undefined, 'GraphNavigation-goal')}
+      ${renderSmallEmoji('❔', 'GraphNavigation-goal')}
     `),
     {
       type: 'HTMLForm',
@@ -327,7 +344,13 @@ async function initializeExperiment() {
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
       `,
     },
-    gn,
+    gn([
+      {start: 1, goal: 3},
+      {start: 6, goal: 8},
+      {start: 1, goal: 5},
+    ]),
+    practiceOver,
+    gn(trials),
     makeSimpleInstruction(`
       Great job!
 
