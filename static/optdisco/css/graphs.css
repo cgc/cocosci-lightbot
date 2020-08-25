@@ -113,6 +113,7 @@
   color: white;
   background-color: black;
   text-align: center;
+  font-size: 12pt;
 
   opacity: 0;
   transition: opacity 300ms;
@@ -123,20 +124,20 @@
   opacity: 1;
 }
 
-.GraphNavigation-key-J,
-.GraphNavigation-currentEdge-J {
+.GraphNavigation-key-49,
+.GraphNavigation-currentEdge-49 {
   background-color: #ff9800;
 }
-.GraphNavigation-key-K,
-.GraphNavigation-currentEdge-K {
+.GraphNavigation-key-50,
+.GraphNavigation-currentEdge-50 {
   background-color: #9c27b0;
 }
-.GraphNavigation-key-L,
-.GraphNavigation-currentEdge-L {
+.GraphNavigation-key-51,
+.GraphNavigation-currentEdge-51 {
   background-color: #00bcd4;
 }
-.GraphNavigation-key-I,
-.GraphNavigation-currentEdge-I {
+.GraphNavigation-key-40,
+.GraphNavigation-currentEdge-40 {
   background-color: #f44336;
 }
 

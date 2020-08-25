@@ -8,6 +8,9 @@ export class CircleGraph {
     this.options = options;
     options.edgeShow = options.edgeShow || (() => true);
     options.successorKeys = options.graphRenderOptions.successorKeys || options.stateOrder.map(() => SUCCESSOR_KEYS);
+    let gro = options.graphRenderOptions;
+    // We have a rendering function for keys. Defaults to identity for keys that can be rendered directly.
+    gro.successorKeysRender = gro.successorKeysRender || (key => key);
 
     this.el = parseHTML(renderCircleGraph(
       options.graph, options.graphics, options.goal, options.stateOrder,
@@ -65,7 +68,7 @@ export class CircleGraph {
     Returns a promise that is resolved with {state} when there is a keypress
     corresponding to a valid state transition.
     */
-    const p = documentEventPromise('keypress', (e) => {
+    const p = documentEventPromise('keydown', (e) => {
       const state = this.keyCodeToState(e.keyCode);
       if (state !== null) {
         e.preventDefault();
@@ -163,6 +166,11 @@ export const renderSmallEmoji = (graphic, cls) => `
 </span>
 `;
 
+function keyForCSSClass(key) {
+  // Using charcode here, for unrenderable keys like arrows.
+  return key.charCodeAt(0);
+}
+
 function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   options = options || {};
   options.edgeShow = options.edgeShow || (() => true);
@@ -231,11 +239,11 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
     // We also add the key labels here
     const mul = keyDistanceFactor * blockSize / 2;
     keys.push(`
-      <div class="GraphNavigation-key GraphNavigation-key-${state}-${successor} GraphNavigation-key-${key}" style="
+      <div class="GraphNavigation-key GraphNavigation-key-${state}-${successor} GraphNavigation-key-${keyForCSSClass(key)}" style="
         transform: translate(
           ${x + blockSize/2 - keyWidth/2 + mul * (sx-x)/norm}px,
           ${y + blockSize/2 - keyHeight/2 + mul * (sy-y)/norm}px)
-      ">${key}</div>
+      ">${options.successorKeysRender(key)}</div>
     `);
   }
 
@@ -307,8 +315,8 @@ function setCurrentState(display_element, graph, state, options) {
   removeClass('GraphNavigation-currentEdge')
   removeClass('GraphNavigation-currentKey')
   for (const key of allKeys) {
-    removeClass(`GraphNavigation-currentEdge-${key}`)
-    removeClass(`GraphNavigation-currentKey-${key}`)
+    removeClass(`GraphNavigation-currentEdge-${keyForCSSClass(key)}`)
+    removeClass(`GraphNavigation-currentKey-${keyForCSSClass(key)}`)
   }
 
   // Can call this to clear out current state too.
@@ -337,7 +345,7 @@ function setCurrentState(display_element, graph, state, options) {
     // Set current edges
     let el = queryEdge(display_element, state, successor);
     el.classList.add('GraphNavigation-currentEdge');
-    el.classList.add(`GraphNavigation-currentEdge-${successorKeys[idx]}`);
+    el.classList.add(`GraphNavigation-currentEdge-${keyForCSSClass(successorKeys[idx])}`);
     if (options.onlyShowCurrentEdges) {
       el.style.opacity = 1;
     }
@@ -345,7 +353,7 @@ function setCurrentState(display_element, graph, state, options) {
     // Now setting active keys
     el = display_element.querySelector(`.GraphNavigation-key-${state}-${successor}`);
     el.classList.add('GraphNavigation-currentKey');
-    el.classList.add(`GraphNavigation-currentKey-${successorKeys[idx]}`);
+    el.classList.add(`GraphNavigation-currentKey-${keyForCSSClass(successorKeys[idx])}`);
     if (options.onlyShowCurrentEdges) {
       el.style.opacity = 1;
     }

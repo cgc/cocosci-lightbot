@@ -1,4 +1,4 @@
-import {Graph, bestKeys} from './graphs.js';
+import {Graph, bestKeys, clockwiseKeys} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
@@ -56,6 +56,15 @@ function makeUpdateProgress(total) {
   };
 }
 
+function toNewKey(key) {
+  return {
+    I: String.fromCharCode(38), // Up
+    J: String.fromCharCode(37), // Left
+    K: String.fromCharCode(40), // Down
+    L: String.fromCharCode(39), // Right
+  }[key];
+}
+
 /*
 x,y coordinates for the solway graph from Figure 2c.
 */
@@ -80,6 +89,7 @@ const solway2cXY = [
   return [scaleFactor*x, scaleFactor*y];
 });
 
+// This mapping corresponds to the planarization specified by solway2cXY
 const solway2cKeys = [
   ['I', 'L', 'K'],
   ['J', 'K', 'L'],
@@ -132,7 +142,14 @@ async function initializeExperiment() {
     height: 500,
     radiusX: 210,
     radiusY: 210,
-    successorKeys: bestKeys(graph, stateOrder),
+    /*
+    successorKeysRender: (key) => ({
+      37: "\u2190", 38: "\u2191",
+      39: "\u2192", 40: "\u2193",
+    }[key.charCodeAt(0)]),
+    successorKeys: bestKeys(graph, stateOrder).map(keys => keys.map(key => toNewKey(key))),
+    */
+    successorKeys: clockwiseKeys(graph, stateOrder),
   };
   const planarOptions = {
     // For Solway planarization.

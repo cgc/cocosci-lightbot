@@ -124,3 +124,47 @@ export function bestKeys(graph, stateOrder) {
 
   return mapping;
 }
+
+function sortidx(test) {
+  function cmp(a, b) {
+    return test[a] < test[b] ? -1 : test[a] > test[b] ? +1 : 0;
+  }
+  return Array.from(Array(test.length).keys()).sort(cmp);
+}
+
+export function clockwiseKeys(graph, stateOrder) {
+  /*
+  This algorithms tries to map keys to radial states (ordered by stateOrder)
+  in a way that minimizes distance between their angle and that of the assigned direction.
+  */
+  const keys = ['1', '2', '3'];
+
+  const angles = {};
+  const xy = {};
+  stateOrder.forEach((state, order) => {
+    const a = order * 2 * Math.PI / graph.states.length;
+    angles[state] = a;
+    xy[state] = [Math.cos(a), Math.sin(a)];
+  });
+
+  const mapping = [];
+
+  for (const curr of graph.states) {
+    const neighbors = graph.graph[curr];
+
+    const neighborAngles = [];
+    for (const n of neighbors) {
+      const diff = [xy[n][0] - xy[curr][0], xy[n][1] - xy[curr][1]];
+      let angle = Math.atan2(diff[1], diff[0]);
+      if (angle < angles[curr]) {
+        angle += Math.PI * 2;
+      }
+      neighborAngles.push(angle);
+    }
+
+    const order = sortidx(neighborAngles);
+    mapping.push(order.map(idx => keys[idx]));
+  }
+
+  return mapping;
+}

@@ -7,7 +7,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   const {start, goal, graph, graphics, stateOrder} = trial;
   const intermed = 2; // HACK!
 
-  const allKeys = _.unique(_.flatten(trial.graphRenderOptions.successorKeys));
+  const allKeys = _.unique(_.flatten(trial.graphRenderOptions.successorKeys)).sort();
 
   function edgeShow(state, succ) {
     const valid = new Set([2]);
