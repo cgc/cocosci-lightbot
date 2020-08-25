@@ -97,8 +97,8 @@ export class CircleGraph {
       el.classList.add('PathIdentification-selectable');
     }
 
-    return new Promise(function(resolve, reject) {
-      function handler(e) {
+    return new Promise((resolve, reject) => {
+      const handler = (e) => {
         const el = $(e.target).closest('.PathIdentification-selectable').get(0);
         if (!el) {
           return;
@@ -106,11 +106,11 @@ export class CircleGraph {
         e.preventDefault();
         const state = parseInt(el.getAttribute('data-state'), 10);
 
-        document.removeEventListener('click', handler);
+        this.el.removeEventListener('click', handler);
         resolve({state});
       }
 
-      document.addEventListener('click', handler);
+      this.el.addEventListener('click', handler);
     });
   }
 
