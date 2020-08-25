@@ -94,7 +94,7 @@ def download_datafiles(codeversion, name):
     ret = "".join(data)
     response = Response(
         ret,
-        content_type="text/csv",
+        content_type="text/csv; charset=utf-8",
         headers={
             'Content-Disposition': 'attachment;filename=%s.csv' % name
         })

@@ -12,6 +12,7 @@ import json
 from collections import defaultdict
 import configparser
 import hashlib
+import cgi
 
 logging.basicConfig(level="INFO")
 
@@ -60,7 +61,8 @@ def fetch(site_root, filename, version, auth, force=True):
     # download the data
     r = requests.get(url, auth=auth)
     r.raise_for_status()
-    data = r.text
+    mimetype, options = cgi.parse_header(r.headers['content-type'])
+    data = r.text.encode(options.get('charset', 'latin1')).decode('utf-8')
     logging.info("Fetched succesfully: %s", url)
 
     # write out the data file
