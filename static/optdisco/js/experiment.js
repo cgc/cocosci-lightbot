@@ -333,7 +333,7 @@ async function initializeExperiment() {
         if (!correct) {
           $('fieldset').prop('disabled', true).find('label').css('opacity', 0.5);
           $('fieldset').find(':input').prop('checked', false);
-          $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again first.')
+          $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again.')
           setTimeout(() => {
             $('fieldset').prop('disabled', false).find('label').css('opacity', 1.0);
           }, 3000);
