@@ -26,19 +26,11 @@ export class CircleGraph {
 
     // Making sure it is easy to clean up event listeners...
     this.cancellables = [];
-
-    this.initializeHideStates();
   }
 
-  initializeHideStates() {
-    if (!this.options.hideStates) {
-      return;
-    }
-
+  async showMap() {
     const start = Date.now();
-    // HACK: might be ideal in the future to make this promise-based. For now,
-    // we'll store click/timing data in this variable.
-    this.data = {states: [], times: []};
+    const data = {states: [], times: []};
 
     this.el.classList.add('hideStates');
 
@@ -56,9 +48,13 @@ export class CircleGraph {
 
       // Record click
       const state = parseInt(el.getAttribute('data-state'), 10);
-      this.data.states.push(state);
-      this.data.times.push(Date.now() - start);
+      data.states.push(state);
+      data.times.push(Date.now() - start);
     });
+
+    await waitForSpace();
+
+    return data;
   }
 
   cancel() {
@@ -426,25 +422,29 @@ async function waitForSpace() {
 
 async function maybeShowMap(root, trial) {
   const data = {showMap: trial.showMap};
-  if (trial.showMap) {
-    const start = Date.now();
-
-    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null, hideStates: true});
-    root.innerHTML = markdown(`
-      Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
-
-      You will see this map every two trials. **Click** on a circle **to reveal** the picture for it.
-
-      Take a moment to look at the map, then **press spacebar to continue**.
-    `);
-    root.appendChild(planar.el);
-    await waitForSpace();
-    root.innerHTML = '';
-
-    data.rt = Date.now() - start;
-    data.states = planar.data.states;
-    data.times = planar.data.times;
+  if (!trial.showMap) {
+    return data;
   }
+  const start = Date.now();
+
+  // Show map
+  const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null});
+  root.innerHTML = markdown(`
+    Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
+
+    You will see this map every two trials. **Click** on a circle **to reveal** the picture for it.
+
+    Take a moment to look at the map, then **press spacebar to continue**.
+  `);
+  root.appendChild(planar.el);
+
+  // Wait for map, collect data
+  const mapInteractions = await planar.showMap();
+  Object.assign(data, mapInteractions);
+  data.rt = Date.now() - start;
+
+  root.innerHTML = '';
+
   return data;
 }
 
