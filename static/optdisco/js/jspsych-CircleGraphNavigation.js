@@ -1,4 +1,4 @@
-import {parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin} from './utils.js';
+import {parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise} from './utils.js';
 import {bfs} from './graphs.js';
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
@@ -26,6 +26,39 @@ export class CircleGraph {
 
     // Making sure it is easy to clean up event listeners...
     this.cancellables = [];
+
+    this.initializeHideStates();
+  }
+
+  initializeHideStates() {
+    if (!this.options.hideStates) {
+      return;
+    }
+
+    const start = Date.now();
+    // HACK: might be ideal in the future to make this promise-based. For now,
+    // we'll store click/timing data in this variable.
+    this.data = {states: [], times: []};
+
+    this.el.classList.add('hideStates');
+
+    this.el.addEventListener('click', (e) => {
+      const el = $(e.target).closest('.State').get(0);
+      if (!el) {
+        return;
+      }
+
+      // Hide all states, except the one clicked.
+      for (const s of this.el.querySelectorAll('.State')) {
+        s.classList.remove('is-visible');
+      }
+      el.classList.add('is-visible');
+
+      // Record click
+      const state = parseInt(el.getAttribute('data-state'), 10);
+      this.data.states.push(state);
+      this.data.times.push(Date.now() - start);
+    });
   }
 
   cancel() {
@@ -396,17 +429,21 @@ async function maybeShowMap(root, trial) {
   if (trial.showMap) {
     const start = Date.now();
 
-    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null});
-    root.innerHTML = `
-      Occasionally, you will be able to see an unscrambled map of all the connections. This map has the same connections you normally see.
+    const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null, hideStates: true});
+    root.innerHTML = markdown(`
+      Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
 
-      <br /><br />Take a moment to look at the map, then press spacebar when you want to continue.
-    `;
+      You will see this map every two trials. **Click** on a circle **to reveal** the picture for it.
+
+      Take a moment to look at the map, then **press spacebar to continue**.
+    `);
     root.appendChild(planar.el);
     await waitForSpace();
     root.innerHTML = '';
 
     data.rt = Date.now() - start;
+    data.states = planar.data.states;
+    data.times = planar.data.times;
   }
   return data;
 }
@@ -424,13 +461,12 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
 
   const data = await cg.navigate();
 
-  console.log(data);
-
   await endTrialScreen(root);
 
   root.innerHTML = '';
   data.practice = trial.practice;
   data.mapData = mapData;
+  console.log(data);
   jsPsych.finishTrial(data);
 }));
 
@@ -561,13 +597,15 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
   const {start, goal, graph, graphics, stateOrder} = trial;
   const solution = bfs(graph, start, goal).path;
 
-  const intro = trial.busStop ? `
-    <p>Imagine a version of this task that includes instant teleportation to one location of your choice. The task is otherwise exactly the same: you navigate between the same locations along the same connections, but you can also teleport to the location you choose.</p>
+  const intro = trial.copy == 'busStop' ? `
+    <p>Imagine a version of this task that includes <b>instant teleportation</b> to one location of your choice. The task is otherwise exactly the same: you navigate between the same locations along the same connections, but you can also teleport to the location you choose.</p>
 
     <p>If you did the task again, which location would you choose to use for instant teleportation?</p>
-  ` : `
+  ` : trial.copy == 'solway2014' ? `
+    <p>Plan how to get from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Choose a location you would visit along the way.</p>
+  ` : trial.copy == 'subgoal' ? `
     <p>When navigating from ${renderSmallEmoji(graphics[start], 'GraphNavigation-current')} to ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}, what location would you set as a subgoal? (If none, click on the goal).</p>
-  `;
+  ` : `ERROR: Invalid trial copy ${trial}`;
 
   const cg = new CircleGraph({...trial, start: null});
   cg.setCurrentState(start, {showCurrentEdges: false});
@@ -578,11 +616,16 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
   const data = {
     times: [],
     states: [],
-    busStop: trial.busStop,
+    copy: trial.copy,
     practice: trial.practice,
   };
 
-  const {state} = await cg.clickTransition({invalidStates: [trial.start]});
+  const invalidStates = {
+    subgoal: [trial.start],
+    solway2014: [trial.start, trial.goal],
+    busStop: [],
+  }[trial.copy];
+  const {state} = await cg.clickTransition({invalidStates});
 
   data.states.push(state);
   data.times.push(Date.now() - startTime);
@@ -593,39 +636,6 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
   root.innerHTML = '';
   jsPsych.finishTrial(data);
 }));
-
-class PromiseCancellation extends Error {
-  constructor() {
-    super("PromiseCancellation");
-    this.name = this.message;
-  }
-}
-
-function documentEventPromise(eventName, fn) {
-  // Adds event handler to document that runs until the function `fn` returns a truthy value.
-  const el = document;
-  let cancel;
-  const p = new Promise((resolve, reject) => {
-
-    // Can be cancelled. Results in Error of PromiseCancellation.
-    cancel = function() {
-      el.removeEventListener(eventName, handler);
-      reject(new PromiseCancellation());
-    };
-
-    function handler(e) {
-      const rv = fn(e);
-      if (rv) {
-        el.removeEventListener(eventName, handler);
-        resolve(rv);
-      }
-    }
-
-    el.addEventListener(eventName, handler);
-  });
-  p.cancel = () => cancel();
-  return p;
-}
 
 function endTrialScreen(root, msg) {
   root.innerHTML = `<h2 style="margin-top: 20vh;margin-bottom:100vh;">${msg || ''}Press spacebar to continue.</h2>`;

@@ -166,6 +166,19 @@
   display: block;
 }
 
+/* Implementing map view, with click-based reveal. */
+.GraphNavigation.hideStates .State > img {
+  opacity: 0;
+  transition: opacity 200ms;
+  cursor: pointer;
+}
+.GraphNavigation.hideStates .State:hover {
+  background-color: lightgrey;
+}
+.GraphNavigation.hideStates .State.is-visible > img {
+  opacity: 1;
+}
+
 .SuccState {
     border: 5px solid greenyellow;
 }

@@ -18,6 +18,7 @@ const debrief = () => [{
     {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
     {prompt: "In general, do you consider yourself detail-oriented or a big picture thinker?", name: 'detail-big-picture', options: ['Detail-Oriented', 'Big Picture Thinker', 'Both', 'Neither'], required:true},
     {prompt: "Did you take a picture of the map? If you did, how often did you have to look at it? Note: Your completed HIT will be accepted regardless of your answer to this question.", name: 'picture-map', options: ['Did not take picture', 'Rarely looked at picture', 'Sometimes looked at picture', 'Often looked at picture'], required:true},
+    {prompt: "Did you draw the map out? If you did, how often did you have to look at it? Note: Your completed HIT will be accepted regardless of your answer to this question.", name: 'draw-map', options: ['Did not draw map', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
   ],
 }, {
   type: 'survey-text',
@@ -41,11 +42,8 @@ const debrief = () => [{
 }];
 
 const makeSimpleInstruction = (text) => ({
-  type: "html-button-response",
-  // We use the handy markdown function (defined in utils.js) to format our text.
+  type: "SimpleInstruction",
   stimulus: markdown(text),
-  choices: ['Continue'],
-  button_html: '<button class="btn btn-primary">%choice%</button>',
 });
 
 function makeUpdateProgress(total) {
@@ -265,8 +263,9 @@ async function initializeExperiment() {
     ]
   }
 
-  var pi = (timeline) => ({
+  var pi = (copy, timeline) => ({
     type: 'CirclePathIdentification',
+    copy,
     graph,
     graphics: gfx,
     stateOrder,
@@ -296,7 +295,7 @@ async function initializeExperiment() {
     Now, we'll move on to the real questions.
   `);
 
-  const expectedResponses = _.shuffle(new Array(5).fill('Q').concat(new Array(5).fill('P'))).map(er => ({expectedResponse: er}));
+  const expectedResponses = _.shuffle(new Array(3).fill('Q').concat(new Array(3).fill('P'))).map(er => ({expectedResponse: er}));
   var arKeyPractice = {
     type: 'AcceptRejectPractice',
     acceptRejectKeys,
@@ -325,6 +324,25 @@ async function initializeExperiment() {
     >
     > If you did the task again, which circle would you choose to use for instant teleportation?
   `);
+
+  function formWithValidation({stimulus, validate}) {
+    return {
+      type: 'HTMLForm',
+      validate: formData => {
+        const correct = validate(formData);
+        if (!correct) {
+          $('fieldset').prop('disabled', true).find('label').css('opacity', 0.5);
+          $('fieldset').find(':input').prop('checked', false);
+          $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again first.')
+          setTimeout(() => {
+            $('fieldset').prop('disabled', false).find('label').css('opacity', 1.0);
+          }, 3000);
+        }
+        return correct;
+      },
+      stimulus,
+    };
+  }
 
   let updateProgress = makeUpdateProgress(
     config.transitionOrders.length +
@@ -377,6 +395,55 @@ async function initializeExperiment() {
     ]),
     practiceOver,
     gn(trials),
+
+    /* Solway 2014-style question */
+    formWithValidation({
+      validate: formData => formData.comprehension == 'Any location you would visit',
+      stimulus: markdown(`
+      Great job!
+
+      Now, we will show you start and goal locations like before, but you do not have to navigate. Instead, just click on a location you would visit along your route. It can be any location you would visit. **The connections between locations will be hidden**, so make sure to study the unscrambled map.
+
+      After answering this comprehension question, you will perform a practice round.<br />
+      <br />
+      <h3>For the next rounds, what should you select?</h3>
+      <br />
+      <span class="validation" style="color: red; font-weight: bold;"></span><br />
+      <label><input type="radio" name="comprehension" value="The location just before the goal" />The location just before the goal</label><br />
+      <label><input type="radio" name="comprehension" value="Any location you would visit" />Any location you would visit</label><br />
+      <label><input type="radio" name="comprehension" value="The first location you would visit" />The first location you would visit</label><br />
+      <label><input type="radio" name="comprehension" value="Any location" />Any location</label><br />
+      `),
+    }),
+    pi('solway2014', [
+      {start: 0, goal: 4, practice: true},
+      {start: 5, goal: 9, practice: true},
+    ]),
+    practiceOver,
+    pi('solway2014', config.probes),
+
+    /* Now, the subgoal questions */
+    formWithValidation({
+      validate: formData => formData.comprehension == 'A subgoal that comes to mind or the goal',
+      stimulus: `
+      Great job!
+
+      Now, we want to check how you chose subgoals 🤔.
+
+      We will show you start and goal locations like before, but you do not have to navigate. Instead, just click on the location you would set as a subgoal if you were to navigate. If you do not have a subgoal, just click on the goal.
+
+      After answering this comprehension question, you will perform a practice round.<br />
+      <br />
+      <h3>For the next rounds, what should you select?</h3>
+      <br />
+      <span class="validation" style="color: red; font-weight: bold;"></span><br />
+      <label><input type="radio" name="comprehension" value="Only the goal" />Only the goal</label><br />
+      <label><input type="radio" name="comprehension" value="Anything" />Anything</label><br />
+      <label><input type="radio" name="comprehension" value="A subgoal that comes to mind or anything" />A subgoal that comes to mind or anything</label><br />
+      <label><input type="radio" name="comprehension" value="A subgoal that comes to mind or the goal" />A subgoal that comes to mind or the goal</label><br />
+      `,
+    }),
+    /*
     makeSimpleInstruction(`
       Great job!
 
@@ -386,8 +453,6 @@ async function initializeExperiment() {
 
       After answering a comprehension question, you will perform a practice round.
       `),
-    // piInstruction,
-    // piCheck,
     {
       type: 'survey-multi-choice',
       preamble: `
@@ -408,12 +473,13 @@ async function initializeExperiment() {
 
       ]
     },
-    pi([
+    */
+    pi('subgoal', [
       {start: 0, goal: 4, practice: true},
       {start: 5, goal: 9, practice: true},
     ]),
     practiceOver,
-    pi(config.probes),
+    pi('subgoal', config.probes),
     arInstruction,
     arKeyPractice,
     makeSimpleInstruction("Now we'll try some practice questions."),
@@ -423,7 +489,7 @@ async function initializeExperiment() {
     ]),
     practiceOver,
     ar(config.acceptreject),
-    pi([{identifyOneState: true, busStop: true}]),
+    pi('busStop', [{identifyOneState: true}]),
     debrief(),
   ]);
 

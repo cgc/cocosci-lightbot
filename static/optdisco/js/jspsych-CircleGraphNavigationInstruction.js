@@ -38,7 +38,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
 
   function renderKey(key) {
     return `<span
-      class="GraphNavigation-key GraphNavigation-key-${key}"
+      class="GraphNavigation-key GraphNavigation-key-${key.charCodeAt(0)}"
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
 

@@ -167,6 +167,39 @@ export function runTimer(root, ms) {
   return runTimerText(root.querySelector('.Timer-number'), ms);
 }
 
+class PromiseCancellation extends Error {
+  constructor() {
+    super("PromiseCancellation");
+    this.name = this.message;
+  }
+}
+
+export function documentEventPromise(eventName, fn) {
+  // Adds event handler to document that runs until the function `fn` returns a truthy value.
+  const el = document;
+  let cancel;
+  const p = new Promise((resolve, reject) => {
+
+    // Can be cancelled. Results in Error of PromiseCancellation.
+    cancel = function() {
+      el.removeEventListener(eventName, handler);
+      reject(new PromiseCancellation());
+    };
+
+    function handler(e) {
+      const rv = fn(e);
+      if (rv) {
+        el.removeEventListener(eventName, handler);
+        resolve(rv);
+      }
+    }
+
+    el.addEventListener(eventName, handler);
+  });
+  p.cancel = () => cancel();
+  return p;
+}
+
 addPlugin('HTMLForm', async function(root, trial) {
   /*
   This plugin is a bit of a kitchen sink. Mostly have wanted something that is a halfway
@@ -176,30 +209,73 @@ addPlugin('HTMLForm', async function(root, trial) {
   It will automatically gather from all input[type=text] and textarea elements in the stimulus.
   */
   root.innerHTML = `
-    ${markdown(trial.stimulus)}
-    <button class="btn btn-primary HTMLForm-continue">Continue</button>
+    <form class="HTMLForm-form"><fieldset>
+      ${markdown(trial.stimulus)}
+      <input type="submit" class="btn btn-primary HTMLForm-continue" name="_submit" value="Continue" />
+    </fieldset></form>
     <br /><br />
   `;
+  const form = root.querySelector('.HTMLForm-form');
   const start = Date.now();
 
-  await new Promise((resolve, reject) => {
-    const el = root.querySelector('.HTMLForm-continue');
-    el.addEventListener('click', function(e) { resolve(e); });
-  });
+  // Validate that all form elements are named.
+  const error = Array.from($(form).find(':input')).map((el) => el.getAttribute('name') ? '' : `Found input tag without name: ${el}\n`).join('');
+  if (error) {
+    alert(error);
+    return;
+  }
 
   const data = {
-    rt: Date.now() - start,
-    responses: {},
+    responses: [],
+    rt: [],
   };
 
-  // Counter is used to automatically label unnamed inputs.
-  let counter = 0;
-  for (const el of Array.from(root.querySelectorAll('input[type=text],textarea'))) {
-    const name = el.getAttribute('name') || `Q${counter++}`;
-    data.responses[name] = el.value;
+  const continue_ = () => new Promise((resolve, reject) => {
+    function handler(e) {
+      // Stop form handling.
+      e.preventDefault();
+      // Remove listener
+      form.removeEventListener('submit', handler);
+      // Format data
+      const fd = {};
+      for (const pair of new FormData(form)) {
+        fd[pair[0]] = pair[1];
+      }
+      data.responses.push(fd);
+      // Collect RT
+      data.rt.push(Date.now() - start);
+      // Resolve promise
+      resolve(fd);
+    }
+    form.addEventListener('submit', handler);
+  });
+
+  let formData = await continue_();
+
+  if (trial.validate) {
+    while (!trial.validate(formData)) {
+      formData = await continue_();
+    }
   }
 
   console.log(data);
   root.innerHTML = '';
   jsPsych.finishTrial(data);
+});
+
+addPlugin('SimpleInstruction', async function(root, trial) {
+  /*
+  A simple plugin that shows an instruction. Spacebar is used to progress.
+  */
+  root.innerHTML = trial.stimulus + markdown('\n\nPress spacebar to continue.');
+
+  await documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
+
+  root.innerHTML = '';
+  jsPsych.finishTrial();
 });
