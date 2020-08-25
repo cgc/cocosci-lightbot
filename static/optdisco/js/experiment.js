@@ -371,9 +371,9 @@ async function initializeExperiment() {
       `,
     },
     gn([
-      {start: 1, goal: 3},
-      {start: 6, goal: 8},
-      {start: 1, goal: 5},
+      {start: 1, goal: 3, practice: true},
+      {start: 6, goal: 8, practice: true},
+      {start: 1, goal: 5, practice: true},
     ]),
     practiceOver,
     gn(trials),
