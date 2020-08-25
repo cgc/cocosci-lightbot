@@ -402,7 +402,11 @@ async function initializeExperiment() {
       stimulus: markdown(`
       Great job!
 
-      Now, we will show you start and goal locations like before, but you do not have to navigate. Instead, just click on a location you would visit along your route. It can be any location you would visit. **The connections between locations will be hidden**, so make sure to study the unscrambled map.
+      Now, we will show you start and goal locations like before, but you do not have to navigate.
+
+      Instead, just click on a location you would visit along your route. It can be any location you would visit.
+
+      **The connections between locations will be hidden**, so make sure to study the unscrambled map.
 
       After answering this comprehension question, you will perform a practice round.<br />
       <br />
