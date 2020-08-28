@@ -100,6 +100,16 @@ startExperiment = function(config) {
   return jsPsych.init(_.extend(defaults, config));
 };
 
+function completeHIT() {
+  if (new URLSearchParams(location.search).get('hitId') == 'prolific') {
+    $(window).off("beforeunload");
+    $('#jspsych-target').html('');
+    $('#prolific-complete').show();
+    return;
+  }
+  return psiturk.completeHIT();
+}
+
 submitHit = function() {
   var promptResubmit, triesLeft;
   console.log('submitHit');
@@ -122,7 +132,7 @@ submitHit = function() {
       });
     }
   };
-  return saveData().then(psiturk.completeHIT).catch(promptResubmit).then(psiturk.completeHIT);
+  return saveData().then(completeHIT).catch(promptResubmit).then(completeHIT);
 };
 
 handleError = function(e) {
