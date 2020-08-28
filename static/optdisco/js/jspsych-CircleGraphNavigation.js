@@ -28,31 +28,37 @@ export class CircleGraph {
     this.cancellables = [];
   }
 
-  async showMap() {
+  async showMap(options={}) {
     const start = Date.now();
-    const data = {states: [], times: []};
+    const data = {states: [], times: [], durations: []};
 
     this.el.classList.add('hideStates');
 
-    this.el.addEventListener('click', (e) => {
-      const el = $(e.target).closest('.State').get(0);
-      if (!el) {
-        return;
-      }
-
-      // Hide all states, except the one clicked.
-      for (const s of this.el.querySelectorAll('.State')) {
-        s.classList.remove('is-visible');
-      }
-      el.classList.add('is-visible');
-
-      // Record click
+    for (const el of this.el.querySelectorAll('.State')) {
       const state = parseInt(el.getAttribute('data-state'), 10);
-      data.states.push(state);
-      data.times.push(Date.now() - start);
-    });
+      let enter;
+      el.addEventListener('mouseenter', (e) => {
+        el.classList.add('is-visible');
+        // When visible, we mark state & time.
+        data.states.push(state);
+        data.times.push(Date.now() - start);
+        // Record time we show to compute a duration.
+        enter = Date.now();
+        // Event listener
+        options.onmouseenter && options.onmouseenter(state);
+      });
+      el.addEventListener('mouseleave', (e) => {
+        el.classList.remove('is-visible');
+        // When hiding, we record duration of visibility.
+        data.durations.push(Date.now() - enter);
+        // Event listener
+        options.onmouseleave && options.onmouseleave(state);
+      });
+    }
 
-    await waitForSpace();
+    if (!options.skipWait) {
+      await waitForSpace();
+    }
 
     return data;
   }
@@ -174,6 +180,39 @@ export class CircleGraph {
 
     return data;
   }
+
+  changeXY(xy) {
+    /*
+    This function is a pretty big hack only intended for use when animating between
+    the two projections.
+    */
+    const gro = this.options.graphRenderOptions;
+    //this.el.classList.add('animate'); // HACK
+    xy = graphXY(
+      this.options.stateOrder,
+      gro.width || 600, gro.height || 600,
+      gro.radiusX || 250,
+      gro.radiusY || 250,
+      gro.scaleEdgeFactor || 0.95,
+      xy,
+    );
+    const states = Array.from(this.el.querySelectorAll('.State'));
+    const blockSize = 100; // HACK
+    for (const el of states) {
+      const s = parseInt(el.dataset.state, 10);
+      const [x, y] = xy.coordinate[s];
+      el.style.transform = `translate(${x-blockSize/2}px, ${y-blockSize/2}px)`;
+      for (const ns of this.options.graph.graph[s]) {
+        if (s >= ns) {
+          continue;
+        }
+        const e = xy.edge(s, ns);
+        const edge = this.el.querySelector(`.GraphNavigation-edge-${s}-${ns}`);
+        edge.style.width = `${e.norm}px`;
+        edge.style.transform = `translate(${x}px,${y}px) rotate(${e.rot}rad)`;
+      }
+    }
+  }
 }
 
 const stateTemplate = (state, graphic, options) => {
@@ -200,53 +239,16 @@ function keyForCSSClass(key) {
   return key.charCodeAt(0);
 }
 
-function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
-  options = options || {};
-  options.edgeShow = options.edgeShow || (() => true);
-  const successorKeys = options.successorKeys;
+function graphXY(stateOrder, width, height, radiusX, radiusY, scaleEdgeFactor, fixedXY) {
   /*
-  An optional parameter is fixedXY. This requires x,y coordinates that are in
-  [-1, 1]. The choice of range is a bit arbitrary; results from code that assumes
-  the output of sin/cos.
+  This function computes the pixel placement of nodes and edges, given the parameters.
   */
-  const fixedXY = options.fixedXY;
-  // Controls how far the key is from the node center. Scales keyWidth/2.
-  const keyDistanceFactor = options.keyDistanceFactor || 1.4;
-  // Scales edges and keys in. Good for when drawn in a circle
-  // since it can help avoid edges overlapping neighboring nodes.
-  const scaleEdgeFactor = options.scaleEdgeFactor || 0.95;
-
-  const width = options.width || 600;
-  const height = options.height || 600;
-  const blockSize = 100;
-  const radiusY = options.radiusY || 250;
-  const radiusX = options.radiusX || 250;
-  const offsetX = width / 2 - blockSize / 2;
-  const offsetY = height / 2 - blockSize / 2;
-
-  const stateToXY = {};
-
-  stateOrder.forEach((state, idx) => {
-    if (fixedXY) {
-      let x = fixedXY[state][0] * radiusX + offsetX;
-      let y = fixedXY[state][1] * radiusY + offsetY;
-      stateToXY[state] = [x, y];
-      return;
-    }
-    const angle = idx * 2 * Math.PI / graph.states.length;
-    let x = Math.cos(angle) * radiusX + offsetX;
-    let y = Math.sin(angle) * radiusY + offsetY;
-    stateToXY[state] = [x, y];
-  });
-
-  const states = stateOrder.map(state => {
-    const [x, y] = stateToXY[state];
-    return stateTemplate(state, gfx[state], {
-      probe: state == options.probe,
-      goal: state == goal,
-      style: `transform: translate(${x}px,${y}px);`,
-    });
-  });
+  width = width || 600;
+  height = height || 600;
+  radiusY = radiusY || 250;
+  radiusX = radiusX || 250;
+  const offsetX = width / 2;
+  const offsetY = height / 2;
 
   function scaleEdge(pos, offset) {
     /*
@@ -254,6 +256,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
     */
     return (pos - offset) * scaleEdgeFactor + offset;
   }
+
   function scaleCoordinate([x, y]) {
     return [
       scaleEdge(x, offsetX),
@@ -261,17 +264,84 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
     ];
   }
 
+  const coordinate = {};
+  const scaled = {};
+
+  stateOrder.forEach((state, idx) => {
+    let x, y;
+    if (fixedXY) {
+      [x, y] = fixedXY[state];
+    } else {
+      const angle = idx * 2 * Math.PI / stateOrder.length;
+      x = Math.cos(angle);
+      y = Math.sin(angle);
+    }
+    x = x * radiusX + offsetX;
+    y = y * radiusY + offsetY;
+    coordinate[state] = [x, y];
+    scaled[state] = scaleCoordinate([x, y]);
+  });
+
+  return {
+    coordinate,
+    scaled,
+    edge(state, successor) {
+      const [x, y] = scaled[state];
+      const [sx, sy] = scaled[successor];
+      const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
+      const rot = Math.atan2(sy-y, sx-x);
+      return {norm, rot};
+    },
+  };
+}
+
+function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
+  options = options || {};
+  options.edgeShow = options.edgeShow || (() => true);
+  const successorKeys = options.successorKeys;
+  /*
+  fixedXY: Optional parameter. This requires x,y coordinates that are in
+  [-1, 1]. The choice of range is a bit arbitrary; results from code that assumes
+  the output of sin/cos.
+  */
+  // Controls how far the key is from the node center. Scales keyWidth/2.
+  const keyDistanceFactor = options.keyDistanceFactor || 1.4;
+
+  const width = options.width || 600;
+  const height = options.height || 600;
+  const blockSize = 100;
+
+  const xy = graphXY(
+    stateOrder,
+    width, height,
+    options.radiusX || 250,
+    options.radiusY || 250,
+    // Scales edges and keys in. Good for when drawn in a circle
+    // since it can help avoid edges overlapping neighboring nodes.
+    options.scaleEdgeFactor || 0.95,
+    options.fixedXY,
+  );
+
+  const states = stateOrder.map(state => {
+    const [x, y] = xy.coordinate[state];
+    return stateTemplate(state, gfx[state], {
+      probe: state == options.probe,
+      goal: state == goal,
+      style: `transform: translate(${x - blockSize/2}px,${y - blockSize/2}px);`,
+    });
+  });
+
   function addKey(key, state, successor, norm) {
-    const [x, y] = scaleCoordinate(stateToXY[state]);
-    const [sx, sy] = scaleCoordinate(stateToXY[successor]);
+    const [x, y] = xy.scaled[state];
+    const [sx, sy] = xy.scaled[successor];
     const [keyWidth, keyHeight] = [20, 28]; // HACK get from CSS
     // We also add the key labels here
     const mul = keyDistanceFactor * blockSize / 2;
     keys.push(`
       <div class="GraphNavigation-key GraphNavigation-key-${state}-${successor} GraphNavigation-key-${keyForCSSClass(key)}" style="
         transform: translate(
-          ${x + blockSize/2 - keyWidth/2 + mul * (sx-x)/norm}px,
-          ${y + blockSize/2 - keyHeight/2 + mul * (sy-y)/norm}px)
+          ${x - keyWidth/2 + mul * (sx-x)/norm}px,
+          ${y - keyHeight/2 + mul * (sy-y)/norm}px)
       ">${options.successorKeysRender(key)}</div>
     `);
   }
@@ -279,27 +349,25 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   const succ = [];
   const keys = [];
   for (const state of graph.states) {
-    let [x, y] = scaleCoordinate(stateToXY[state]);
+    let [x, y] = xy.scaled[state];
 
     graph.graph[state].forEach((successor, idx) => {
       if (state >= successor) {
         return;
       }
-      let [sx, sy] = scaleCoordinate(stateToXY[successor]);
-      const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
-      const rot = Math.atan2(sy-y, sx-x);
+      const e = xy.edge(state, successor);
       const opacity = options.edgeShow(state, successor) ? 1 : 0;
       succ.push(`
         <div class="GraphNavigation-edge GraphNavigation-edge-${state}-${successor}" style="
-        width: ${norm}px;
+        width: ${e.norm}px;
         opacity: ${opacity};
-        transform: translate(${x+blockSize/2}px,${y+blockSize/2}px) rotate(${rot}rad);
+        transform: translate(${x}px,${y}px) rotate(${e.rot}rad);
         "></div>
       `);
 
       // We also add the key labels here
-      addKey(successorKeys[state][idx], state, successor, norm);
-      addKey(successorKeys[successor][graph.graph[successor].indexOf(state)], successor, state, norm);
+      addKey(successorKeys[state][idx], state, successor, e.norm);
+      addKey(successorKeys[successor][graph.graph[successor].indexOf(state)], successor, state, e.norm);
     });
   }
 
@@ -432,7 +500,7 @@ async function maybeShowMap(root, trial) {
   root.innerHTML = markdown(`
     Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
 
-    You will see this map every two trials. **Click** on a circle **to reveal** the picture for it.
+    You will see this map every two trials. **Hover to reveal** the picture for it.
 
     Take a moment to look at the map, then **press spacebar to continue**.
   `);
@@ -447,6 +515,95 @@ async function maybeShowMap(root, trial) {
 
   return data;
 }
+
+addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
+  const opts = {width: 800, height: 600, radiusX: 210, radiusY: 210, scaleEdgeFactor: 1.};
+  const cg = new CircleGraph({
+    ...trial,
+    graphRenderOptions: {...trial.graphRenderOptions, ...opts},
+    start: null, goal: null, probe: null,
+  });
+  // Computing the angle-based coordinates to interpolate with our fixed ones.
+  const anglebased = new Array(trial.stateOrder.length);
+  const interp = new Array(trial.stateOrder.length);
+  trial.stateOrder.forEach((state, idx) => {
+    const angle = idx * 2 * Math.PI / trial.stateOrder.length;
+    anglebased[state] = [Math.cos(angle), Math.sin(angle)];
+    interp[state] = [0, 0];
+  });
+  function interpolateXY(percent) {
+    /*
+    We don't simply animate the transform/width
+    attributes since they lead to something strange looking;
+    Each attribute animates independently, but the mapping
+    from x/y to rot/width is not linear, so the edges don't
+    track the nodes. We're instead computing a frame-by-frame
+    linear interpolation of desired XY, then mapping that to
+    the necessary transform/width parameters for edges.
+    */
+    const from = anglebased;
+    const to = trial.planarOptions.fixedXY;
+    // Compute interpolation between the two positions.
+    for (let s = 0; s < trial.stateOrder.length; s++) {
+      interp[s][0] = (1-percent) * from[s][0] + percent * to[s][0];
+      interp[s][1] = (1-percent) * from[s][1] + percent * to[s][1];
+    }
+    cg.changeXY(interp);
+  }
+  // Rendering
+  interpolateXY(0);
+  const inst = document.createElement('p');
+  inst.style.minHeight = '60px';
+  inst.style.marginBottom = '-50px';
+  root.appendChild(inst);
+  root.appendChild(cg.el);
+
+  // Intro
+  inst.innerHTML = 'Every other trial, we will show you an unscrambled map.<br />Press spacebar to unscramble this map.';
+  await waitForSpace();
+
+  // Animating...
+  inst.textContent = '';
+  const animDuration = 2000;
+  const animStart = Date.now();
+  function animateFrame() {
+    let percent = (Date.now() - animStart) / animDuration;
+    if (percent >= 1) {
+      interpolateXY(1);
+      return
+    }
+    interpolateXY(percent);
+    window.requestAnimationFrame(animateFrame);
+  }
+  animateFrame();
+  window.requestAnimationFrame(animateFrame);
+  await setTimeoutPromise(animDuration);
+
+  // Map
+  const limit = 3;
+  const locations = new Set();
+  inst.innerHTML = markdown(`You need to **hover to see the icons**. Hover over ${limit} different locations.`);
+  cg.el.querySelectorAll('img').forEach(el => el.style.transition = 'opacity 600ms');
+  let resolve;
+  const p = new Promise((res, rej) => {resolve = res});
+  await cg.showMap({
+    skipWait: true,
+    onmouseenter(s) {
+      locations.add(s);
+      if (locations.size >= limit) {
+        resolve();
+        return;
+      }
+      inst.textContent = `${limit-locations.size} left!`
+    }
+  });
+  await p;
+
+  // End
+  inst.textContent = 'Great job! Now press spacebar to continue the HIT.'
+  await waitForSpace();
+  jsPsych.finishTrial();
+}));
 
 addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
   console.log(trial);

@@ -104,8 +104,7 @@ const solway2cKeys = [
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
-  const onlyShowCurrentEdges = Boolean(CONDITION);
-  psiturk.recordUnstructuredData('onlyShowCurrentEdges', onlyShowCurrentEdges);
+  const onlyShowCurrentEdges = true;
 
   const stateOrderIdx = _.random(config.stateOrders.length-1);
   psiturk.recordUnstructuredData('stateOrderIdx', stateOrderIdx);
@@ -213,7 +212,7 @@ async function initializeExperiment() {
     /*
     For now, we show the map every other trial.
     */
-    return trials.map((t, idx) => ({...t, showMap: (idx % 2) == 0}));
+    return trials.map((t, idx) => ({showMap: (idx % 2) == 0, ...t}));
   }
 
   var gn = (trials) => ({
@@ -389,7 +388,17 @@ async function initializeExperiment() {
       `,
     },
     gn([
-      {start: 1, goal: 3, practice: true},
+      {start: 1, goal: 3, practice: true, showMap: false},
+    ]),
+    {
+      type: 'MapInstruction',
+      graph,
+      graphics: gfx,
+      stateOrder,
+      graphRenderOptions,
+      planarOptions,
+    },
+    gn([
       {start: 6, goal: 8, practice: true},
       {start: 1, goal: 5, practice: true},
     ]),
