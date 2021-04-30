@@ -7,7 +7,7 @@ const stateTemplate = (state, graphic) => `
 
 function render(graph, gfx, state, goal) {
   let succ = '';
-  let successors = graph.graph[state];
+  let successors = graph.successors(state);
   successors = jsPsych.randomization.repeat(successors, 1);
   for (const s of successors) {
     succ += stateTemplate(s, gfx[s])

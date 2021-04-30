@@ -3,7 +3,26 @@ import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
-import config from './configuration/trials.js';
+import allconfig from './configuration/configuration.js';
+
+function formWithValidation({stimulus, validate}) {
+  return {
+    type: 'HTMLForm',
+    validate: formData => {
+      const correct = validate(formData);
+      if (!correct) {
+        $('fieldset').prop('disabled', true).find('label').css('opacity', 0.5);
+        $('fieldset').find(':input').prop('checked', false);
+        $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again.')
+        setTimeout(() => {
+          $('fieldset').prop('disabled', false).find('label').css('opacity', 1.0);
+        }, 3000);
+      }
+      return correct;
+    },
+    stimulus,
+  };
+}
 
 const debrief = () => [{
   type: 'survey-multi-choice',
@@ -87,42 +106,30 @@ const solway2cXY = [
   return [scaleFactor*x, scaleFactor*y];
 });
 
-// This mapping corresponds to the planarization specified by solway2cXY
-const solway2cKeys = [
-  ['I', 'L', 'K'],
-  ['J', 'K', 'L'],
-  ['J', 'I', 'K'],
-  ['J', 'I', 'L'],
-  ['I', 'K', 'L'],
-  ['J', 'I', 'K'],
-  ['J', 'K', 'L'],
-  ['I', 'K', 'L'],
-  ['J', 'I', 'L'],
-  ['I', 'J', 'K'],
-];
+const QUERY = new URLSearchParams(location.search);
 
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
   const onlyShowCurrentEdges = true;
+  const cond = QUERY.hasOwnProperty('condition') ? QUERY.condition : CONDITION;
+  console.log('cond', cond)
+  const configuration = allconfig.conditions[cond];
+  console.log('configuration', configuration)
 
-  const stateOrderIdx = _.random(config.stateOrders.length-1);
-  psiturk.recordUnstructuredData('stateOrderIdx', stateOrderIdx);
-
-  const taskOrderIdx = _.random(config.taskOrders.length-1);
-  psiturk.recordUnstructuredData('taskOrderIdx', taskOrderIdx);
-
-  //const timeLimit = _.sample([4*1000, 8*1000, 12*1000]);
-  //psiturk.recordUnstructuredData('timeLimit', timeLimit);
-
+  /*
   const acceptRejectKeys = _.sample([
     {accept: 'P', reject: 'Q'},
     {accept: 'Q', reject: 'P'},
   ]);
   psiturk.recordUnstructuredData('acceptRejectKeys', acceptRejectKeys);
+  */
 
-  const graph = new Graph(config.graph);
-  const stateOrder = config.stateOrders[stateOrderIdx];
+  const graph = new Graph(configuration.adjacency);
+  const stateOrder = configuration.circle_embedding.order; // HACK HACK HACK HACK
+
+  const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
+  psiturk.recordUnstructuredData('gfx', gfx);
 
   const graphRenderOptions = {
     onlyShowCurrentEdges,
@@ -150,62 +157,26 @@ async function initializeExperiment() {
   };
   const planarOptions = {
     // For Solway planarization.
-    fixedXY: solway2cXY,
+    fixedXY: configuration.map_embedding.coordinates,
     keyDistanceFactor: 1.35,
     scaleEdgeFactor: 1,
     width: 800,
     height: 400,
   };
 
-  let length3 = 0;
-  const trials = config.taskOrders[taskOrderIdx].filter((t, idx) => {
-    const cross = (t.start<5)^(t.goal<5);
-    if (cross) {
-      if (t.optimal > 3) {
-        return true;
-      } else if (t.optimal == 3) {
-        length3++;
-        if (length3 <= 6) {
-          return true;
-        }
-      }
-    }
-    return false;
-  });
-  /*
-  const trials = (
-    config.taskOrders[taskOrderIdx]
-    // HACK this filters for tasks that cross bottlenecks & are longer than 2 steps.
-    .filter(t => ((t.start<5)^(t.goal<5)) && t.optimal > 2)
-    // PRETRIAL
-    .slice(0, 30));
-    */
-  psiturk.recordUnstructuredData('trials', trials);
-  const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
-  psiturk.recordUnstructuredData('gfx', gfx);
-
   var inst = {
     type: 'CircleGraphNavigationInstruction',
     graph,
     graphics: gfx,
-    trialsLength: trials.length,
+    trialsLength: configuration.navigation.length,
     stateOrder,
-    timeline: [{start: 0, goal: 1}],
+    ...configuration.navigation_practice_len2[0],
     graphRenderOptions: {...graphRenderOptions, onlyShowCurrentEdges: false},
     onlyShowCurrentEdges,
     on_finish() {
       updateProgress();
       saveData();
     }
-  };
-
-  var cgt = {
-    type: 'CGTransition',
-    graph,
-    graphics: gfx,
-    stateOrder,
-    timeline: config.transitionOrders,
-    graphRenderOptions,
   };
 
   function addShowMap(trials) {
@@ -231,7 +202,7 @@ async function initializeExperiment() {
 
   var piInstruction = makeSimpleInstruction(`
     In this next section, we want to understand how you are planning your
-    routes. For the next ${config.probes.length} rounds, we will show you a
+    routes. For the next ${configuration.probes.length} rounds, we will show you a
     circle to start at and one to navigate to, just like before.
 
     But, instead of actually navigating from one to the other, we just want you to<br>
@@ -284,16 +255,19 @@ async function initializeExperiment() {
       class="GraphNavigation-key GraphNavigation-key-${key}"
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
+  /*
   var arInstruction = makeSimpleInstruction(`
     In the next set of trials, we'll show you a start and goal and ask if a location is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
 
     First we'll just practice using P and Q keys to answer Yes/No questions.
   `);
+  */
 
   const practiceOver = makeSimpleInstruction(`
     Now, we'll move on to the real questions.
   `);
 
+  /*
   const expectedResponses = _.shuffle(new Array(3).fill('Q').concat(new Array(3).fill('P'))).map(er => ({expectedResponse: er}));
   var arKeyPractice = {
     type: 'AcceptRejectPractice',
@@ -315,51 +289,15 @@ async function initializeExperiment() {
       saveData();
     }
   });
-
-  const busInstruction = makeSimpleInstruction(`
-    While solving these ${trials.length} puzzles, keep in mind the following question which will be asked later:
-
-    > Imagine a version of this task that includes instant teleportation to one circle of your choice. The task is otherwise exactly the same: you navigate between the same circles along the same connections, but you can also teleport to the circle you choose.
-    >
-    > If you did the task again, which circle would you choose to use for instant teleportation?
-  `);
-
-  function formWithValidation({stimulus, validate}) {
-    return {
-      type: 'HTMLForm',
-      validate: formData => {
-        const correct = validate(formData);
-        if (!correct) {
-          $('fieldset').prop('disabled', true).find('label').css('opacity', 0.5);
-          $('fieldset').find(':input').prop('checked', false);
-          $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again.')
-          setTimeout(() => {
-            $('fieldset').prop('disabled', false).find('label').css('opacity', 1.0);
-          }, 3000);
-        }
-        return correct;
-      },
-      stimulus,
-    };
-  }
+  */
 
   let updateProgress = makeUpdateProgress(
-    config.transitionOrders.length +
-    trials.length +
-    config.probes.length +
-    config.acceptreject.length);
+    configuration.navigation.length +
+    configuration.probes.length +
+    1); // one for the bus stop!
 
   var timeline = _.flatten([
     inst,
-    /*
-    makeSimpleInstruction(`
-      First, we will familiarize you to each location and its neighbors.
-
-      <b>Afterwards, we will quiz you to see if you learned the structure.</b>
-    `),
-    cgt,
-    */
-    // busInstruction,
     makeSimpleInstruction(`
       First, you will perform a series of navigation tasks. We'll start with some practice.
 
@@ -387,9 +325,7 @@ async function initializeExperiment() {
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
       `,
     },
-    gn([
-      {start: 1, goal: 3, practice: true, showMap: false},
-    ]),
+    gn(configuration.navigation_practice_len1.map(t => ({...t, showMap: false}))), // hACK do we need this showmap: False???
     {
       type: 'MapInstruction',
       graph,
@@ -398,12 +334,9 @@ async function initializeExperiment() {
       graphRenderOptions,
       planarOptions,
     },
-    gn([
-      {start: 6, goal: 8, practice: true},
-      {start: 1, goal: 5, practice: true},
-    ]),
+    gn(configuration.navigation_practice_len2),
     practiceOver,
-    gn(trials),
+    gn(configuration.navigation),
 
     /* Solway 2014-style question */
     formWithValidation({
@@ -428,12 +361,9 @@ async function initializeExperiment() {
       <label><input type="radio" name="comprehension" value="Any location" />Any location</label><br />
       `),
     }),
-    pi('solway2014', [
-      {start: 0, goal: 4, practice: true},
-      {start: 5, goal: 9, practice: true},
-    ]),
+    pi('solway2014', configuration.navigation_practice_len2),
     practiceOver,
-    pi('solway2014', config.probes),
+    pi('solway2014', configuration.probes),
 
     /* Now, the subgoal questions */
     formWithValidation({
@@ -487,12 +417,10 @@ async function initializeExperiment() {
       ]
     },
     */
-    pi('subgoal', [
-      {start: 0, goal: 4, practice: true},
-      {start: 5, goal: 9, practice: true},
-    ]),
+    pi('subgoal', configuration.navigation_practice_len2),
     practiceOver,
-    pi('subgoal', config.probes),
+    pi('subgoal', configuration.probes),
+    /*
     arInstruction,
     arKeyPractice,
     makeSimpleInstruction("Now we'll try some practice questions."),
@@ -502,6 +430,7 @@ async function initializeExperiment() {
     ]),
     practiceOver,
     ar(config.acceptreject),
+    */
     pi('busStop', [{identifyOneState: true}]),
     debrief(),
   ]);
@@ -512,6 +441,7 @@ async function initializeExperiment() {
     if (type) {
       timeline = timeline.filter(t => t.type == type);
     } else {
+      // If we aren't filtering by a type, we'll cut down the number of trials per type at least.
       timeline = timeline.map(t => ({...t, timeline: t.timeline ? t.timeline.slice(0, 1) : [{}]}));
     }
   }

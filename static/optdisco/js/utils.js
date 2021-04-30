@@ -1,3 +1,41 @@
+function deepCopy(obj) {
+  /*
+  This is a modest update to jsPsych.utils.deepCopy that uses ES6
+  language features and ensures that ES6 class instances have their
+  prototype appropriately copied.
+  */
+  if(!obj) {
+    return obj;
+  } else if(Array.isArray(obj)){
+    return obj.map(el => deepCopy(el));
+  } else if(typeof obj === 'object'){
+    // https://stackoverflow.com/questions/41474986/how-to-clone-a-javascript-es6-class-instance
+    // TODO need this? const copy = Object.getPrototypeOf(obj)==Object.getPrototypeOf({}) ? {} : Object.create(Object.getPrototypeOf(obj));
+    const copy = Object.create(Object.getPrototypeOf(obj));
+    for(const key of Object.keys(obj)){
+      copy[key] = deepCopy(obj[key]);
+    }
+    return copy;
+  } else {
+    return obj;
+  }
+}
+
+jsPsych.utils.deepCopy = deepCopy;
+
+class InvariantError extends Error {
+  // https://wbinnssmith.com/blog/subclassing-error-in-modern-javascript/
+  name = 'InvariantError';
+}
+function invariant(predicate, message) {
+  if (!predicate) {
+    throw new InvariantError(`Invariant not true: ${message||""}`);
+  }
+}
+window.invariant = invariant;
+
+// Ok here's the rest of the module, exposed via ES6 modules
+
 export function showModal(content) {
   $('<div>', {
     class: 'modal',

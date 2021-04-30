@@ -6,7 +6,7 @@ const stateTemplate = (state, graphic, isSucc) => `
 
 function render(graph, gfx, state, stateParams) {
     let other_state_divs = [];
-    let succ_states = graph.graph[state];
+    let succ_states = graph.successors(state);
     // console.log(gfx[state] + ": " + _.map(succ_states, (s) => gfx[s]).join(""));
     let other_states = _.reject(graph.states, (s) => {return (s === state) || (_.includes(succ_states, s))});
     other_states = _.first(other_states, stateParams.nDistractors);
@@ -51,7 +51,7 @@ function showState(el, graph, graphics, state, stateParams) {
     let selected = [];
 
     el.innerHTML = render(graph, graphics, state, stateParams);
-    let succ_left = graph.graph[state];
+    let succ_left = graph.successors(state);
     let other_states = el.querySelector('.GraphTraining-other_states').querySelectorAll('.State');
     let other_states_params = [];
     for (const s of other_states) {
@@ -144,7 +144,7 @@ jsPsych.plugins.OneStepTraining = (function() {
                 for (const ii of _.range(0, state_order.length - 1)) {
                     let curr = state_order[ii];
                     let next = state_order[ii + 1];
-                    if (_.includes(graph.graph[curr], next)) {
+                    if (_.includes(graph.successors(curr), next)) {
                         adj_states = true;
                         break
                     }
@@ -207,7 +207,7 @@ jsPsych.plugins.OneStepTraining = (function() {
                 for (var i = 0; i < 10000; i++) {
                     let nextBox = sampleBox(boxes);
                     let nextBoxIdx = _.random(boxes[nextBox].length - 1);
-                    if (!(_.includes(graph.graph[lastState], boxes[nextBox][nextBoxIdx]) ||
+                    if (!(_.includes(graph.successors(lastState), boxes[nextBox][nextBoxIdx]) ||
                           (lastState === boxes[nextBox][nextBoxIdx]))) {
                         return {nextBox, nextBoxIdx}
                     }

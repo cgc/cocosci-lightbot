@@ -1,5 +1,5 @@
 export function bfs(graph, start, goal, kwargs={}) {
-  const successors = kwargs.successors || (state => graph.graph[state]);
+  const successors = kwargs.successors || (state => graph.successors(state));
 
   function reconstructPath(cameFrom, start, goal) {
     const path = [];
@@ -34,32 +34,27 @@ export function bfs(graph, start, goal, kwargs={}) {
 }
 
 export class Graph {
-  constructor(graph) {
-    // Graph is a list of nodes and next nodes. Assumed to be undirected.
-    function addEdges(graph, node, next_nodes) {
-      if (!graph[node]) {
-        graph[node] = new Set();
-      }
-      for (const n of next_nodes) {
-        graph[node].add(n);
-      }
+  constructor(adjacency) {
+    // Is a list of pairs of states and successors. We assume the graph is directed,
+    // so both directions of an edge should be specified for undirected graphs.
+    // We intentionally take this as a list instead of a dictionary since JSON dictionaries
+    // (which we use as a transport protocol) require strings for keys, but we want to
+    // avoid any complicated data conversion or assumptions here.
+    // We do ultimately make use of a dictionary to map state to successors, which should
+    // work well as long as the input doesn't contain the same state repeated with different
+    // data types.
+    // Graph([[0, [1, 2]], [1, [3, 4]], [2, [5, 6]], ...]) // an example of a binary tree.
+    this._adjacency = {}
+    this.states = [];
+    for (const [state, successors] of adjacency) {
+      this.states.push(state);
+      this._adjacency[state] = [...successors]; // making a copy
     }
-    this.graph = {};
-    this.states = new Set();
-    for (const [node, next_nodes] of graph) {
-      addEdges(this.graph, node, next_nodes);
-      this.states.add(node);
-      for (const next_node of next_nodes) {
-        addEdges(this.graph, next_node, [node]);
-        this.states.add(next_node);
-      }
-    }
-    this.states = [...this.states];
     this.states.sort();
-    for (const key of Object.keys(this.graph)) {
-      // HACK converting back to list...
-      this.graph[key] = [...this.graph[key]];
-    }
+  }
+
+  successors(state) {
+    return this._adjacency[state];
   }
 
   shuffleSuccessors() {
@@ -67,7 +62,7 @@ export class Graph {
     Modifies the graph, shuffling successors.
     */
     for (const state of this.states) {
-      this.graph[state] = jsPsych.randomization.repeat(this.graph[state], 1);
+      this._adjacency[state] = jsPsych.randomization.repeat(this._adjacency[state], 1);
     }
   }
 }
@@ -88,7 +83,7 @@ export function bestKeys(graph, stateOrder) {
   const mapping = [];
 
   for (const curr of graph.states) {
-    const neighbors = graph.graph[curr];
+    const neighbors = graph.successors(curr);
 
     let minCost = Infinity;
     let min;
@@ -134,8 +129,7 @@ function sortidx(test) {
 
 export function clockwiseKeys(graph, stateOrder) {
   /*
-  This algorithms tries to map keys to radial states (ordered by stateOrder)
-  in a way that minimizes distance between their angle and that of the assigned direction.
+  This algorithm maps keys to edges in a clockwise manner.
   */
   const keys = ['1', '2', '3'];
 
@@ -150,10 +144,8 @@ export function clockwiseKeys(graph, stateOrder) {
   const mapping = [];
 
   for (const curr of graph.states) {
-    const neighbors = graph.graph[curr];
-
     const neighborAngles = [];
-    for (const n of neighbors) {
+    for (const n of graph.successors(curr)) {
       const diff = [xy[n][0] - xy[curr][0], xy[n][1] - xy[curr][1]];
       let angle = Math.atan2(diff[1], diff[0]);
       if (angle < angles[curr]) {

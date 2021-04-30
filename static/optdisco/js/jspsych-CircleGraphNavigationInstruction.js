@@ -1,16 +1,18 @@
+import {bfs} from './graphs.js';
 import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
-import {CircleGraph, renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
+import {queryEdge, CircleGraph, renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 
 addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   console.log(trial);
 
   const {start, goal, graph, graphics, stateOrder} = trial;
-  const intermed = 2; // HACK!
+  const intermed = bfs(graph, start, goal).path[1]; // Sort of a hack?
 
   const allKeys = _.unique(_.flatten(trial.graphRenderOptions.successorKeys)).sort();
 
   function edgeShow(state, succ) {
-    const valid = new Set([2]);
+    //const valid = new Set([2]); this right??
+    const valid = new Set([intermed]);
     return valid.has(state) || valid.has(succ);
   }
 
@@ -23,9 +25,9 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   root.appendChild(cg.el);
   const instruction = root.querySelector('.GraphNavigation-instruction');
 
-  cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 0;
-  cg.el.querySelector('.GraphNavigation-edge-1-2').style.opacity = 0;
-  cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 0;
+  for (const successor of graph.successors(intermed)) {
+    queryEdge(cg.el, intermed, successor).style.opacity = 0;
+  }
 
   const goalEl = cg.el.querySelector('.GraphNavigation-goal');
   goalEl.classList.remove('GraphNavigation-goal');
@@ -55,7 +57,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     },
     {
       pre: () => {
-        cg.el.querySelector('.GraphNavigation-edge-0-2').style.opacity = 1;
+        queryEdge(cg.el, start, intermed).style.opacity = 1;
       },
       html: markdown(`
         Each picture is connected with several other pictures, shown by a line between them.
@@ -78,8 +80,9 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {
         goalEl.classList.add('GraphNavigation-goal');
-        cg.el.querySelector('.GraphNavigation-edge-1-2').style.opacity = 1;
-        cg.el.querySelector('.GraphNavigation-edge-2-3').style.opacity = 1;
+        for (const successor of graph.successors(intermed)) {
+          queryEdge(cg.el, intermed, successor).style.opacity = 1;
+        }
       },
       html: markdown(`
         Great! Your goal is marked yellow ${renderSmallEmoji(graphics[goal], 'GraphNavigation-goal')}. Try going there now.

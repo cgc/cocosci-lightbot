@@ -91,7 +91,7 @@ export class CircleGraph {
     if (idx === -1) {
       return null;
     }
-    const succ = this.options.graph.graph[this.state][idx];
+    const succ = this.options.graph.successors(this.state)[idx];
     if (!this.options.edgeShow(this.state, succ)) {
       return null;
     }
@@ -202,7 +202,7 @@ export class CircleGraph {
       const s = parseInt(el.dataset.state, 10);
       const [x, y] = xy.coordinate[s];
       el.style.transform = `translate(${x-blockSize/2}px, ${y-blockSize/2}px)`;
-      for (const ns of this.options.graph.graph[s]) {
+      for (const ns of this.options.graph.successors(s)) {
         if (s >= ns) {
           continue;
         }
@@ -351,7 +351,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   for (const state of graph.states) {
     let [x, y] = xy.scaled[state];
 
-    graph.graph[state].forEach((successor, idx) => {
+    graph.successors(state).forEach((successor, idx) => {
       if (state >= successor) {
         return;
       }
@@ -367,7 +367,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
 
       // We also add the key labels here
       addKey(successorKeys[state][idx], state, successor, e.norm);
-      addKey(successorKeys[successor][graph.graph[successor].indexOf(state)], successor, state, e.norm);
+      addKey(successorKeys[successor][graph.successors(successor).indexOf(state)], successor, state, e.norm);
     });
   }
 
@@ -380,7 +380,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   `;
 }
 
-function queryEdge(root, state, successor) {
+export function queryEdge(root, state, successor) {
   /*
   Returns the edge associated with nodes `state` and `successor`. Since we only
   have undirected graphs, they share an edge, so some logic is needed to find it.
@@ -434,7 +434,7 @@ function setCurrentState(display_element, graph, state, options) {
     }
   }
 
-  graph.graph[state].forEach((successor, idx) => {
+  graph.successors(state).forEach((successor, idx) => {
     if (!options.edgeShow(state, successor)) {
       return;
     }
@@ -466,7 +466,7 @@ function enableHoverEdges(display_element, graph) {
       for (const edge of display_element.querySelectorAll('.GraphNavigation-edge')) {
         edge.classList.add('is-faded');
       }
-      for (const successor of graph.graph[state]) {
+      for (const successor of graph.successors(state)) {
         const el = queryEdge(display_element, state, successor);
         el.classList.remove('is-faded');
       }
@@ -642,7 +642,7 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
   root.appendChild(cg.el);
   cg.el.querySelector('.GraphNavigation-current').classList.add('GraphNavigation-visited');
 
-  const neighbors = trial.graph.graph[trial.start];
+  const neighbors = trial.graph.successors(trial.start);
   const data = await cg.navigate({termination: function(state, states) {
     // Kind of a HACK.
     cg.el.querySelector(`.GraphNavigation-State-${state}`).classList.add('GraphNavigation-visited');
@@ -688,7 +688,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   const start = Date.now();
   const data = {states: [], times: []};
   let totalCorrect = 0;
-  const neighbors = trial.graph.graph[trial.start];
+  const neighbors = trial.graph.successors(trial.start);
 
   for (const t of _.range(3)) {
     const left = 3-t;
