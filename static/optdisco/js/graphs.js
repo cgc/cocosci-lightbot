@@ -131,7 +131,7 @@ export function clockwiseKeys(graph, stateOrder) {
   /*
   This algorithm maps keys to edges in a clockwise manner.
   */
-  const keys = ['1', '2', '3'];
+  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
   const angles = {};
   const xy = {};
@@ -144,6 +144,7 @@ export function clockwiseKeys(graph, stateOrder) {
   const mapping = [];
 
   for (const curr of graph.states) {
+    invariant(graph.successors(curr).length <= keys.length, `Bad configuration: node ${curr} has more neighbors than keys.`);
     const neighborAngles = [];
     for (const n of graph.successors(curr)) {
       const diff = [xy[n][0] - xy[curr][0], xy[n][1] - xy[curr][1]];
@@ -154,8 +155,12 @@ export function clockwiseKeys(graph, stateOrder) {
       neighborAngles.push(angle);
     }
 
-    const order = sortidx(neighborAngles);
-    mapping.push(order.map(idx => keys[idx]));
+    const order = sortidx(neighborAngles); // maps from sorted index to original index.
+    const mapped = new Array(order.length);
+    order.forEach((orig, sorted) => {
+      mapped[orig] = keys[sorted];
+    });
+    mapping.push(mapped);
   }
 
   return mapping;

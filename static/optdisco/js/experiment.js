@@ -65,55 +65,6 @@ const makeSimpleInstruction = (text) => ({
   stimulus: markdown(text),
 });
 
-function makeUpdateProgress(total) {
-  var i = 0;
-  return function() {
-    i += 1;
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // TDOO FIX THIS
-    // how should this work?
-    jsPsych.setProgressBar((i+(i%2==0 ? 0 : total-2*i))/total);
-  };
-}
-
-function toNewKey(key) {
-  return {
-    I: String.fromCharCode(38), // Up
-    J: String.fromCharCode(37), // Left
-    K: String.fromCharCode(40), // Down
-    L: String.fromCharCode(39), // Right
-  }[key];
-}
-
-/*
-x,y coordinates for the solway graph from Figure 2c.
-*/
-const solway2cXY = [
-  [0, 5],
-  [2, 5],
-  [1, 4],
-  [0, 3],
-  [2, 3],
-  [3, 2],
-  [5, 2],
-  [4, 1],
-  [3, 0],
-  [5, 0],
-].map(xy => {
-  // Mapping to [-1, 1], divide by max 5, mult by length of range.
-  let scale = 2/5;
-  let x = (xy[0]*scale - 1);
-  let y = -(xy[1]*scale - 1);
-  [x, y] = [(x + y) / Math.sqrt(2), (y - x) / Math.sqrt(2)];
-  const scaleFactor = 0.97;
-  return [scaleFactor*x, scaleFactor*y];
-});
-
 const QUERY = new URLSearchParams(location.search);
 
 async function initializeExperiment() {
@@ -124,14 +75,6 @@ async function initializeExperiment() {
   console.log('cond', cond)
   const configuration = allconfig.conditions[cond];
   console.log('configuration', configuration)
-
-  /*
-  const acceptRejectKeys = _.sample([
-    {accept: 'P', reject: 'Q'},
-    {accept: 'Q', reject: 'P'},
-  ]);
-  psiturk.recordUnstructuredData('acceptRejectKeys', acceptRejectKeys);
-  */
 
   const graph = new Graph(configuration.adjacency);
 
@@ -148,12 +91,15 @@ async function initializeExperiment() {
     successorKeys: clockwiseKeys(graph, configuration.circle_embedding.order),
   };
   const planarOptions = {
+    type: configuration.map_embedding.type, // HACK
     // For Solway planarization.
     fixedXY: configuration.map_embedding.coordinates,
-//    keyDistanceFactor: 1.35,
+//    keyDistanceFactor: 1.35, can we nix this?
     width: 800,
     height: 450,
     scaleEdgeFactor: 1,
+    // HACK we don't use this, but should really implement something more useful?????
+    successorKeys: clockwiseKeys(graph, configuration.circle_embedding.order),
   };
 
   var inst = {
@@ -164,10 +110,6 @@ async function initializeExperiment() {
     ...configuration.navigation_practice_len2[0],
     graphRenderOptions: {...graphRenderOptions, onlyShowCurrentEdges: false},
     onlyShowCurrentEdges,
-    on_finish() {
-      updateProgress();
-      saveData();
-    }
   };
 
   function addShowMap(trials) {
@@ -184,10 +126,6 @@ async function initializeExperiment() {
     timeline: addShowMap(trials),
     graphRenderOptions,
     planarOptions,
-    on_finish() {
-      updateProgress();
-      saveData();
-    }
   });
 
   var piInstruction = makeSimpleInstruction(`
@@ -233,10 +171,6 @@ async function initializeExperiment() {
     identifyOneState: true,
     graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
     planarOptions,
-    on_finish() {
-      updateProgress();
-      saveData();
-    }
   });
 
   function renderKey(key) {
@@ -244,45 +178,10 @@ async function initializeExperiment() {
       class="GraphNavigation-key GraphNavigation-key-${key}"
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
-  /*
-  var arInstruction = makeSimpleInstruction(`
-    In the next set of trials, we'll show you a start and goal and ask if a location is along the route between them. You'll use the keyboard to respond by pressing ${renderKey(acceptRejectKeys.accept)} for <b>Yes</b> and ${renderKey(acceptRejectKeys.reject)} for <b>No</b>.
-
-    First we'll just practice using P and Q keys to answer Yes/No questions.
-  `);
-  */
 
   const practiceOver = makeSimpleInstruction(`
     Now, we'll move on to the real questions.
   `);
-
-  /*
-  const expectedResponses = _.shuffle(new Array(3).fill('Q').concat(new Array(3).fill('P'))).map(er => ({expectedResponse: er}));
-  var arKeyPractice = {
-    type: 'AcceptRejectPractice',
-    acceptRejectKeys,
-    timeline: expectedResponses,
-  };
-
-  var ar = timeline => ({
-    type: 'AcceptReject',
-    acceptRejectKeys,
-    graph,
-    graphics: gfx,
-    timeline: addShowMap(timeline),
-    graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
-    planarOptions,
-    on_finish() {
-      updateProgress();
-      saveData();
-    }
-  });
-  */
-
-  let updateProgress = makeUpdateProgress(
-    configuration.navigation.length +
-    configuration.probes.length +
-    1); // one for the bus stop!
 
   var timeline = _.flatten([
     inst,
@@ -335,7 +234,7 @@ async function initializeExperiment() {
 
       Instead, just click on a location you would visit along your route. It can be any location you would visit.
 
-      **The connections between locations will be hidden**, so make sure to study the unscrambled map.
+      **The connections between locations will be hidden**, so make sure to study the map with all the connections.
 
       After answering this comprehension question, you will perform a practice round.<br />
       <br />
@@ -373,58 +272,15 @@ async function initializeExperiment() {
       <label><input type="radio" name="comprehension" value="A subgoal that comes to mind or the goal" />A subgoal that comes to mind or the goal</label><br />
       `,
     }),
-    /*
-    makeSimpleInstruction(`
-      Great job!
-
-      Now, we want to check how you chose subgoals 🤔.
-
-      We will show you start and goal locations like before, but you do not have to navigate. Instead, just click on the location you would set as a subgoal if you were to navigate. If you do not have a subgoal, just click on the goal.
-
-      After answering a comprehension question, you will perform a practice round.
-      `),
-    {
-      type: 'survey-multi-choice',
-      preamble: `
-        <h1>Comprehension check</h1>
-      `,
-        // Please answer the following question to ensure you understand.
-      questions: [
-        {
-          prompt: 'For the next rounds, what should you select?',
-          options: [
-            '&nbsp;Only the goal',
-            '&nbsp;Anything',
-            '&nbsp;A subgoal that comes to mind or anything',
-            '&nbsp;A subgoal that comes to mind or the goal'
-          ],
-          required: true
-        }
-
-      ]
-    },
-    */
     pi('subgoal', configuration.navigation_practice_len2),
     practiceOver,
     pi('subgoal', configuration.probes),
-    /*
-    arInstruction,
-    arKeyPractice,
-    makeSimpleInstruction("Now we'll try some practice questions."),
-    ar([
-      {start: 0, goal: 4, probe: 1, practice: true},
-      {start: 5, goal: 9, probe: 8, practice: true},
-    ]),
-    practiceOver,
-    ar(config.acceptreject),
-    */
     pi('busStop', [{identifyOneState: true}]),
     debrief(),
   ]);
 
   if (location.pathname == '/testexperiment') {
-    const searchParams = new URLSearchParams(location.search);
-    const type = searchParams.get('type');
+    const type = QUERY.get('type');
     if (type) {
       timeline = timeline.filter(t => t.type == type);
     } else {
@@ -432,6 +288,8 @@ async function initializeExperiment() {
       timeline = timeline.map(t => ({...t, timeline: t.timeline ? t.timeline.slice(0, 1) : [{}]}));
     }
   }
+
+  configureProgress(timeline);
 
   return startExperiment({
     timeline,
@@ -443,6 +301,32 @@ async function initializeExperiment() {
       // min_height: 600
     },
   });
+}
+
+function configureProgress(timeline) {
+  let done = 0;
+  function on_finish() {
+    done++;
+    jsPsych.setProgressBar(done/total);
+    saveData();
+  }
+
+  let total = 0;
+  for (const entry of timeline) {
+    invariant(entry.type);
+    if (entry.timeline) {
+      for (const subentry of entry.timeline) {
+        // We don't permit recursion!
+        invariant(!subentry.type);
+        invariant(!subentry.timeline);
+      }
+      total += entry.timeline.length;
+    } else {
+      total++;
+    }
+    invariant(!entry.on_finish, 'No on_finish should be specified.');
+    entry.on_finish = on_finish;
+  }
 }
 
 $(window).on('load', function() {

@@ -27,7 +27,7 @@ class InvariantError extends Error {
   // https://wbinnssmith.com/blog/subclassing-error-in-modern-javascript/
   name = 'InvariantError';
 }
-function invariant(predicate, message) {
+export function invariant(predicate, message) {
   if (!predicate) {
     throw new InvariantError(`Invariant not true: ${message||""}`);
   }

@@ -124,21 +124,49 @@
   opacity: 1;
 }
 
-.GraphNavigation-key-49,
+.GraphNavigation-key-49, /* for "1" */
 .GraphNavigation-currentEdge-49 {
-  background-color: #ff9800;
+  background-color: #1f77b4;
 }
-.GraphNavigation-key-50,
+
+.GraphNavigation-key-50, /* for "2" */
 .GraphNavigation-currentEdge-50 {
-  background-color: #9c27b0;
+  background-color: #ff7f0e;
 }
-.GraphNavigation-key-51,
+
+.GraphNavigation-key-51, /* for "3" */
 .GraphNavigation-currentEdge-51 {
-  background-color: #00bcd4;
+  background-color: #2ca02c;
 }
-.GraphNavigation-key-40,
-.GraphNavigation-currentEdge-40 {
-  background-color: #f44336;
+
+.GraphNavigation-key-52, /* for "4" */
+.GraphNavigation-currentEdge-52 {
+  background-color: #d62728;
+}
+
+.GraphNavigation-key-53, /* for "5" */
+.GraphNavigation-currentEdge-53 {
+  background-color: #9467bd;
+}
+
+.GraphNavigation-key-54, /* for "6" */
+.GraphNavigation-currentEdge-54 {
+  background-color: #8c564b;
+}
+
+.GraphNavigation-key-55, /* for "7" */
+.GraphNavigation-currentEdge-55 {
+  background-color: #e377c2;
+}
+
+.GraphNavigation-key-56, /* for "8" */
+.GraphNavigation-currentEdge-56 {
+  background-color: #7f7f7f;
+}
+
+.GraphNavigation-key-57, /* for "9" */
+.GraphNavigation-currentEdge-57 {
+  background-color: #bcbd22;
 }
 
 .GraphNavigation-instruction {

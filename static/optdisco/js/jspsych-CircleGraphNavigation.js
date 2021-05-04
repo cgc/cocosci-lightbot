@@ -1,7 +1,6 @@
 import {makePromise, parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise} from './utils.js';
 import {bfs} from './graphs.js';
 
-const SUCCESSOR_KEYS = ['J', 'K', 'L'];
 const BLOCK_SIZE = 100;
 // replace BLOCK_SIZE with hi=parseHTML('<div class="State" style="display: block;position: fixed;left: 200vw;"></div>');document.body.append(hi);console.log(hi.offsetWidth);hi.remove();console.log(hi.offsetWidth)
 
@@ -9,7 +8,7 @@ export class CircleGraph {
   constructor(options) {
     this.options = options;
     options.edgeShow = options.edgeShow || (() => true);
-    options.successorKeys = options.graphRenderOptions.successorKeys || options.graph.states.map(() => SUCCESSOR_KEYS);
+    options.successorKeys = options.graphRenderOptions.successorKeys;
     let gro = options.graphRenderOptions;
     // We have a rendering function for keys. Defaults to identity for keys that can be rendered directly.
     gro.successorKeysRender = gro.successorKeysRender || (key => key);
@@ -514,13 +513,23 @@ async function maybeShowMap(root, trial) {
 
   // Show map
   const planar = new CircleGraph({...trial, graphRenderOptions: trial.planarOptions, start: null, goal: null, probe: null});
-  root.innerHTML = markdown(`
-    Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
+  if (trial.planarOptions.type == 'graphviz') {
+    root.innerHTML = markdown(`
+      Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
 
-    You will see this map every two trials. **Hover to reveal** the picture for it.
+      You will see this map every two trials. **Hover to reveal** the picture for it.
 
-    Take a moment to look at the map, then **press spacebar to continue**.
-  `);
+      Take a moment to look at the map, then **press spacebar to continue**.
+    `);
+  } else {
+    root.innerHTML = markdown(`
+      Here is a map of all the connections you will use to navigate.
+
+      You will see this map every two trials. **Hover to reveal** the picture for it.
+
+      Take a moment to look at the map, then **press spacebar to continue**.
+    `);
+  }
   root.appendChild(planar.el);
 
   // Wait for map, collect data
@@ -533,7 +542,47 @@ async function maybeShowMap(root, trial) {
   return data;
 }
 
+async function simpleMapInstruction(root, trial) {
+  const limit = 3;
+
+  const cg = new CircleGraph({
+    ...trial,
+    start: null, goal: null, probe: null,
+  });
+
+  const inst = document.createElement('p');
+  inst.innerHTML = markdown(`Every other trial, we will show you a map with all the connections.<br /><br />You need to **hover to see the icons**. Hover over ${limit} different locations.`);
+  root.appendChild(inst);
+  root.appendChild(cg.el);
+
+  // Then we show map. We ask participants to hover over a few.
+  const locations = new Set();
+  const {promise, resolve} = makePromise();
+  await cg.showMap({
+    skipWait: true,
+    onmouseenter(s) {
+      locations.add(s);
+      if (locations.size >= limit) {
+        resolve();
+        return;
+      }
+      inst.innerHTML = `<br /><br />${limit-locations.size} left!`;
+    }
+  });
+  await promise;
+
+  // End
+  inst.innerHTML = '<br /><br />Great job! Now press spacebar to continue the HIT.'
+  await waitForSpace();
+  jsPsych.finishTrial();
+}
+
 addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
+  if (_.isEqual(trial.graphRenderOptions.fixedXY, trial.planarOptions.fixedXY)) {
+    await simpleMapInstruction(root, trial);
+    return
+  }
+
   const cg = new CircleGraph({
     ...trial,
     start: null, goal: null, probe: null,
