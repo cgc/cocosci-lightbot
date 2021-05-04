@@ -1,19 +1,21 @@
-import {parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise} from './utils.js';
+import {makePromise, parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise} from './utils.js';
 import {bfs} from './graphs.js';
 
 const SUCCESSOR_KEYS = ['J', 'K', 'L'];
+const BLOCK_SIZE = 100;
+// replace BLOCK_SIZE with hi=parseHTML('<div class="State" style="display: block;position: fixed;left: 200vw;"></div>');document.body.append(hi);console.log(hi.offsetWidth);hi.remove();console.log(hi.offsetWidth)
 
 export class CircleGraph {
   constructor(options) {
     this.options = options;
     options.edgeShow = options.edgeShow || (() => true);
-    options.successorKeys = options.graphRenderOptions.successorKeys || options.stateOrder.map(() => SUCCESSOR_KEYS);
+    options.successorKeys = options.graphRenderOptions.successorKeys || options.graph.states.map(() => SUCCESSOR_KEYS);
     let gro = options.graphRenderOptions;
     // We have a rendering function for keys. Defaults to identity for keys that can be rendered directly.
     gro.successorKeysRender = gro.successorKeysRender || (key => key);
 
     this.el = parseHTML(renderCircleGraph(
-      options.graph, options.graphics, options.goal, options.stateOrder,
+      options.graph, options.graphics, options.goal,
       {
         edgeShow: options.edgeShow,
         successorKeys: options.successorKeys,
@@ -181,33 +183,42 @@ export class CircleGraph {
     return data;
   }
 
-  changeXY(xy) {
+  setXY(xy) {
     /*
     This function is a pretty big hack only intended for use when animating between
-    the two projections.
+    the two projections. Given an XY object with properties coordinate (for states) and scaled
+    (for edges/keys), it updates the coordinates of the rendered graph.
     */
-    const gro = this.options.graphRenderOptions;
-    //this.el.classList.add('animate'); // HACK
-    xy = graphXY(
-      this.options.stateOrder,
-      gro.width || 600, gro.height || 600,
-      gro.radiusX || 250,
-      gro.radiusY || 250,
-      gro.scaleEdgeFactor || 0.95,
-      xy,
-    );
-    const states = Array.from(this.el.querySelectorAll('.State'));
-    const blockSize = 100; // HACK
-    for (const el of states) {
+
+    // We cache these references since we know this will be called many times.
+    if (!this._setXY_states) {
+      this._setXY_states = Array.from(this.el.querySelectorAll('.State'));
+      this._setXY_edges = {};
+      const graph = this.options.graph;
+      for (const s of graph.states) {
+        this._setXY_edges[s] = {};
+        for (const ns of this.options.graph.successors(s)) {
+          if (s >= ns) {
+            continue;
+          }
+          this._setXY_edges[s][ns] = this.el.querySelector(`.GraphNavigation-edge-${s}-${ns}`);
+        }
+      }
+    }
+
+    for (const el of this._setXY_states) {
+      // Set the coordinate for this state.
       const s = parseInt(el.dataset.state, 10);
       const [x, y] = xy.coordinate[s];
-      el.style.transform = `translate(${x-blockSize/2}px, ${y-blockSize/2}px)`;
+      el.style.transform = `translate(${x-BLOCK_SIZE/2}px, ${y-BLOCK_SIZE/2}px)`;
+
+      // Set coordinates for edges
       for (const ns of this.options.graph.successors(s)) {
         if (s >= ns) {
           continue;
         }
-        const e = xy.edge(s, ns);
-        const edge = this.el.querySelector(`.GraphNavigation-edge-${s}-${ns}`);
+        const e = normrot(xy.scaled[s], xy.scaled[ns]); // HACK we assume that there's no `edge` property.
+        const edge = this._setXY_edges[s][ns];
         edge.style.width = `${e.norm}px`;
         edge.style.transform = `translate(${x}px,${y}px) rotate(${e.rot}rad)`;
       }
@@ -239,63 +250,72 @@ function keyForCSSClass(key) {
   return key.charCodeAt(0);
 }
 
-function graphXY(stateOrder, width, height, radiusX, radiusY, scaleEdgeFactor, fixedXY) {
+function graphXY(graph, width, height, scaleEdgeFactor, fixedXY) {
   /*
   This function computes the pixel placement of nodes and edges, given the parameters.
   */
-  width = width || 600;
-  height = height || 600;
-  radiusY = radiusY || 250;
-  radiusX = radiusX || 250;
-  const offsetX = width / 2;
-  const offsetY = height / 2;
+  invariant(0 <= scaleEdgeFactor && scaleEdgeFactor <= 1);
 
-  function scaleEdge(pos, offset) {
-    /*
-    We scale edges/keys in to ensure that short connections avoid overlapping node borders.
-    */
-    return (pos - offset) * scaleEdgeFactor + offset;
+  // We make sure to bound our positioning to make sure that our blocks are never cropped.
+  const widthNoMargin = width - BLOCK_SIZE;
+  const heightNoMargin = height - BLOCK_SIZE;
+
+  // We compute bounds for each dimension.
+  const maxX = Math.max.apply(null, fixedXY.map(xy => xy[0]));
+  const minX = Math.min.apply(null, fixedXY.map(xy => xy[0]));
+  const rangeX = maxX-minX;
+  const maxY = Math.max.apply(null, fixedXY.map(xy => xy[1]));
+  const minY = Math.min.apply(null, fixedXY.map(xy => xy[1]));
+  const rangeY = maxY-minY;
+
+  // We determine the appropriate scaling factor for the dimensions by comparing the
+  // aspect ratio of the bounding box of the embedding with the aspect ratio of our
+  // rendering viewport.
+  let scale;
+  if (rangeX/rangeY > widthNoMargin/heightNoMargin) {
+    scale = widthNoMargin / rangeX;
+  } else {
+    scale = heightNoMargin / rangeY;
   }
 
-  function scaleCoordinate([x, y]) {
-    return [
-      scaleEdge(x, offsetX),
-      scaleEdge(y, offsetY),
-    ];
-  }
+  // We can now compute an appropriate margin for each dimension that will center our graph.
+  let marginX = (width - rangeX * scale) / 2;
+  let marginY = (height - rangeY * scale) / 2;
 
+  // Now we compute our coordinates.
   const coordinate = {};
   const scaled = {};
-
-  stateOrder.forEach((state, idx) => {
-    let x, y;
-    if (fixedXY) {
-      [x, y] = fixedXY[state];
-    } else {
-      const angle = idx * 2 * Math.PI / stateOrder.length;
-      x = Math.cos(angle);
-      y = Math.sin(angle);
-    }
-    x = x * radiusX + offsetX;
-    y = y * radiusY + offsetY;
+  for (const state of graph.states) {
+    let [x, y] = fixedXY[state];
+    // We subtract the min, rescale, and offset appropriately.
+    x = (x-minX) * scale + marginX;
+    y = (y-minY) * scale + marginY;
     coordinate[state] = [x, y];
-    scaled[state] = scaleCoordinate([x, y]);
-  });
+    // We rescale for edges/keys by centering over the origin, scaling, then translating to the original position.
+    scaled[state] = [
+      (x - width/2) * scaleEdgeFactor + width/2,
+      (y - height/2) * scaleEdgeFactor + height/2,
+    ];
+  }
 
   return {
     coordinate,
     scaled,
     edge(state, successor) {
-      const [x, y] = scaled[state];
-      const [sx, sy] = scaled[successor];
-      const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
-      const rot = Math.atan2(sy-y, sx-x);
-      return {norm, rot};
+      return normrot(scaled[state], scaled[successor]);
     },
   };
 }
 
-function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
+function normrot([x, y], [sx, sy]) {
+  // This function returns the length/norm and angle of rotation
+  // needed for a line starting at [x, y] to end at [sx, sy].
+  const norm = Math.sqrt(Math.pow(x-sx, 2) + Math.pow(y-sy, 2));
+  const rot = Math.atan2(sy-y, sx-x);
+  return {norm, rot};
+}
+
+function renderCircleGraph(graph, gfx, goal, options) {
   options = options || {};
   options.edgeShow = options.edgeShow || (() => true);
   const successorKeys = options.successorKeys;
@@ -307,27 +327,24 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
   // Controls how far the key is from the node center. Scales keyWidth/2.
   const keyDistanceFactor = options.keyDistanceFactor || 1.4;
 
-  const width = options.width || 600;
-  const height = options.height || 600;
-  const blockSize = 100;
+  const width = options.width;
+  const height = options.height;
 
   const xy = graphXY(
-    stateOrder,
+    graph,
     width, height,
-    options.radiusX || 250,
-    options.radiusY || 250,
     // Scales edges and keys in. Good for when drawn in a circle
     // since it can help avoid edges overlapping neighboring nodes.
     options.scaleEdgeFactor || 0.95,
     options.fixedXY,
   );
 
-  const states = stateOrder.map(state => {
+  const states = graph.states.map(state => {
     const [x, y] = xy.coordinate[state];
     return stateTemplate(state, gfx[state], {
       probe: state == options.probe,
       goal: state == goal,
-      style: `transform: translate(${x - blockSize/2}px,${y - blockSize/2}px);`,
+      style: `transform: translate(${x - BLOCK_SIZE/2}px,${y - BLOCK_SIZE/2}px);`,
     });
   });
 
@@ -336,7 +353,7 @@ function renderCircleGraph(graph, gfx, goal, stateOrder, options) {
     const [sx, sy] = xy.scaled[successor];
     const [keyWidth, keyHeight] = [20, 28]; // HACK get from CSS
     // We also add the key labels here
-    const mul = keyDistanceFactor * blockSize / 2;
+    const mul = keyDistanceFactor * BLOCK_SIZE / 2;
     keys.push(`
       <div class="GraphNavigation-key GraphNavigation-key-${state}-${successor} GraphNavigation-key-${keyForCSSClass(key)}" style="
         transform: translate(
@@ -517,20 +534,24 @@ async function maybeShowMap(root, trial) {
 }
 
 addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
-  const opts = {width: 800, height: 600, radiusX: 210, radiusY: 210, scaleEdgeFactor: 1.};
   const cg = new CircleGraph({
     ...trial,
-    graphRenderOptions: {...trial.graphRenderOptions, ...opts},
     start: null, goal: null, probe: null,
   });
-  // Computing the angle-based coordinates to interpolate with our fixed ones.
-  const anglebased = new Array(trial.stateOrder.length);
-  const interp = new Array(trial.stateOrder.length);
-  trial.stateOrder.forEach((state, idx) => {
-    const angle = idx * 2 * Math.PI / trial.stateOrder.length;
-    anglebased[state] = [Math.cos(angle), Math.sin(angle)];
-    interp[state] = [0, 0];
-  });
+
+  // Start by pre-allocating the interpolated coordinates.
+  const interp = {
+    coordinate: new Array(trial.graph.states.length),
+    scaled: new Array(trial.graph.states.length),
+  };
+  for (const state of trial.graph.states) {
+    interp.coordinate[state] = [0, 0];
+    interp.scaled[state] = [0, 0];
+  }
+  // Compute our start and end coordinates.
+  const from = graphXY(trial.graph, trial.graphRenderOptions.width, trial.graphRenderOptions.height, trial.graphRenderOptions.scaleEdgeFactor || 0.95, trial.graphRenderOptions.fixedXY);
+  const to = graphXY(trial.graph, trial.planarOptions.width, trial.planarOptions.height, trial.planarOptions.scaleEdgeFactor || 0.95, trial.planarOptions.fixedXY);
+
   function interpolateXY(percent) {
     /*
     We don't simply animate the transform/width
@@ -541,20 +562,20 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
     linear interpolation of desired XY, then mapping that to
     the necessary transform/width parameters for edges.
     */
-    const from = anglebased;
-    const to = trial.planarOptions.fixedXY;
     // Compute interpolation between the two positions.
-    for (let s = 0; s < trial.stateOrder.length; s++) {
-      interp[s][0] = (1-percent) * from[s][0] + percent * to[s][0];
-      interp[s][1] = (1-percent) * from[s][1] + percent * to[s][1];
+    for (const s of trial.graph.states) {
+      for (const key of ['coordinate', 'scaled']) {
+        interp[key][s][0] = (1-percent) * from[key][s][0] + percent * to[key][s][0];
+        interp[key][s][1] = (1-percent) * from[key][s][1] + percent * to[key][s][1];
+      }
     }
-    cg.changeXY(interp);
+    cg.setXY(interp);
   }
   // Rendering
   interpolateXY(0);
   const inst = document.createElement('p');
   inst.style.minHeight = '60px';
-  inst.style.marginBottom = '-50px';
+//  inst.style.marginBottom = '-50px';
   root.appendChild(inst);
   root.appendChild(cg.el);
 
@@ -579,13 +600,18 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
   window.requestAnimationFrame(animateFrame);
   await setTimeoutPromise(animDuration);
 
-  // Map
+  // With interpolated animation over, we fade out opacity.
+  const fadeDur = 500;
+  cg.el.querySelectorAll('img').forEach(el => el.style.transition = `opacity ${fadeDur}ms`);
+  cg.el.classList.add('hideStates');
+  await setTimeoutPromise(fadeDur);
+  cg.el.querySelectorAll('img').forEach(el => el.style.transition = '');
+
+  // Then we show map. We ask participants to hover over a few.
   const limit = 3;
   const locations = new Set();
   inst.innerHTML = markdown(`You need to **hover to see the icons**. Hover over ${limit} different locations.`);
-  cg.el.querySelectorAll('img').forEach(el => el.style.transition = 'opacity 600ms');
-  let resolve;
-  const p = new Promise((res, rej) => {resolve = res});
+  const {promise, resolve} = makePromise();
   await cg.showMap({
     skipWait: true,
     onmouseenter(s) {
@@ -594,10 +620,10 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
         resolve();
         return;
       }
-      inst.textContent = `${limit-locations.size} left!`
+      inst.textContent = `${limit-locations.size} left!`;
     }
   });
-  await p;
+  await promise;
 
   // End
   inst.textContent = 'Great job! Now press spacebar to continue the HIT.'
@@ -751,7 +777,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
   const mapData = await maybeShowMap(root, trial);
 
-  const {start, goal, graph, graphics, stateOrder} = trial;
+  const {start, goal, graph, graphics} = trial;
   const solution = bfs(graph, start, goal).path;
 
   const intro = trial.copy == 'busStop' ? `
@@ -840,7 +866,7 @@ addPlugin('AcceptRejectPractice', trialErrorHandling(async function(root, trial)
 }));
 
 addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
-  const {start, goal, graph, graphics, stateOrder, probe, acceptRejectKeys: keys} = trial;
+  const {start, goal, graph, graphics, probe, acceptRejectKeys: keys} = trial;
 
   const mapData = await maybeShowMap(root, trial);
 

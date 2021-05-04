@@ -160,3 +160,12 @@ export function clockwiseKeys(graph, stateOrder) {
 
   return mapping;
 }
+
+export function DEPRECATED_circleOrderToXY(stateOrder) {
+  return stateOrder.map((state, idx) => {
+    const angle = idx * 2 * Math.PI / stateOrder.length;
+    let x = (Math.cos(angle) + 1) / 2;
+    let y = (Math.sin(angle) + 1) / 2;
+    return [x, y];
+  });
+}

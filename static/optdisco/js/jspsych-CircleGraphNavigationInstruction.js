@@ -5,7 +5,7 @@ import {queryEdge, CircleGraph, renderSmallEmoji} from './jspsych-CircleGraphNav
 addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   console.log(trial);
 
-  const {start, goal, graph, graphics, stateOrder} = trial;
+  const {start, goal, graph, graphics} = trial;
   const intermed = bfs(graph, start, goal).path[1]; // Sort of a hack?
 
   const allKeys = _.unique(_.flatten(trial.graphRenderOptions.successorKeys)).sort();

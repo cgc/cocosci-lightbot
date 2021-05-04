@@ -1,4 +1,4 @@
-import {Graph, bestKeys, clockwiseKeys} from './graphs.js';
+import {Graph, clockwiseKeys} from './graphs.js';
 import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
@@ -69,7 +69,15 @@ function makeUpdateProgress(total) {
   var i = 0;
   return function() {
     i += 1;
-    jsPsych.setProgressBar(i/total);
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // TDOO FIX THIS
+    // how should this work?
+    jsPsych.setProgressBar((i+(i%2==0 ? 0 : total-2*i))/total);
   };
 }
 
@@ -126,42 +134,26 @@ async function initializeExperiment() {
   */
 
   const graph = new Graph(configuration.adjacency);
-  const stateOrder = configuration.circle_embedding.order; // HACK HACK HACK HACK
 
   const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
   psiturk.recordUnstructuredData('gfx', gfx);
 
+  // TODO TODO TODO: for circle graphs, we can do scaleEdgeFactor, but for planar they look bad
   const graphRenderOptions = {
     onlyShowCurrentEdges,
-    /* Good parameters for no-picture.
-    scaleEdgeFactor: 1,
-    width: 450,
+    fixedXY: configuration.circle_embedding.coordinates,
+    width: 800,
     height: 450,
-    radiusX: 175,
-    radiusY: 175,
-    successorKeys: bestKeys(graph, stateOrder),
-    */
-    // Parameters with picture.
-    width: 500,
-    height: 500,
-    radiusX: 210,
-    radiusY: 210,
-    /*
-    successorKeysRender: (key) => ({
-      37: "\u2190", 38: "\u2191",
-      39: "\u2192", 40: "\u2193",
-    }[key.charCodeAt(0)]),
-    successorKeys: bestKeys(graph, stateOrder).map(keys => keys.map(key => toNewKey(key))),
-    */
-    successorKeys: clockwiseKeys(graph, stateOrder),
+    scaleEdgeFactor: 0.95,
+    successorKeys: clockwiseKeys(graph, configuration.circle_embedding.order),
   };
   const planarOptions = {
     // For Solway planarization.
     fixedXY: configuration.map_embedding.coordinates,
-    keyDistanceFactor: 1.35,
-    scaleEdgeFactor: 1,
+//    keyDistanceFactor: 1.35,
     width: 800,
-    height: 400,
+    height: 450,
+    scaleEdgeFactor: 1,
   };
 
   var inst = {
@@ -169,7 +161,6 @@ async function initializeExperiment() {
     graph,
     graphics: gfx,
     trialsLength: configuration.navigation.length,
-    stateOrder,
     ...configuration.navigation_practice_len2[0],
     graphRenderOptions: {...graphRenderOptions, onlyShowCurrentEdges: false},
     onlyShowCurrentEdges,
@@ -190,7 +181,6 @@ async function initializeExperiment() {
     type: 'CircleGraphNavigation',
     graph,
     graphics: gfx,
-    stateOrder,
     timeline: addShowMap(trials),
     graphRenderOptions,
     planarOptions,
@@ -238,7 +228,6 @@ async function initializeExperiment() {
     copy,
     graph,
     graphics: gfx,
-    stateOrder,
     timeline: addShowMap(timeline),
     //timeLimit: timeLimit,
     identifyOneState: true,
@@ -280,7 +269,6 @@ async function initializeExperiment() {
     acceptRejectKeys,
     graph,
     graphics: gfx,
-    stateOrder,
     timeline: addShowMap(timeline),
     graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
     planarOptions,
@@ -330,7 +318,6 @@ async function initializeExperiment() {
       type: 'MapInstruction',
       graph,
       graphics: gfx,
-      stateOrder,
       graphRenderOptions,
       planarOptions,
     },

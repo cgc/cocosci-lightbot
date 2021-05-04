@@ -46,15 +46,25 @@ export function showModal(content) {
   }).appendTo($('#jspsych-target'));
 };
 
+export function makePromise() {
+  /*
+  A utility to avoid the awkwardness of constructing a promise where you don't intend to run code in
+  the promise callback.
+  */
+  let resolve, reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {promise, resolve, reject};
+}
+
 export function completeModal(md, options) {
   options = options || {};
   // By default, Enter (code=13) and Space (code=32) submits.
   const keyCodeSubmit = new Set(options.keyCodeSubmit || [13, 32]);
 
-  let resolve;
-  let promise = new Promise(function(res, rej) {
-    resolve = res;
-  });
+  const {promise, resolve} = makePromise();
   const button = $('<button>', {
     class: 'btn btn-success',
     text: 'Continue',
@@ -152,8 +162,7 @@ export function setTimeoutPromise(ms) {
 
 // Initially in https://jsfiddle.net/zoradude5/j4ogytfp/39/
 function runTimerText(el, ms) {
-  let resolve;
-  const p = new Promise((res, rej) => { resolve = res; });
+  const {promise, resolve} = makePromise();
 
   const start = new Date();
 
@@ -183,7 +192,7 @@ function runTimerText(el, ms) {
   // Run the first render manually.
   update();
 
-  return p;
+  return promise;
 }
 
 export function runTimer(root, ms) {
