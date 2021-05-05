@@ -49,7 +49,8 @@ pip install --global-option=build_ext \
 5. Use sanity script to keep track of HITs & automatically scale down Heroku: `python bin/sanity.py cocosci-optdisco`.
 6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list --active`.
 7. Verify all workers have been paid with `worker list --submitted`.
-8. Download data with `python bin/fetch_data.py $CODE_VERSION`.
+8. Download data with `PORT= ON_HEROKU=1 DATABASE_URL=$(heroku config:get DATABASE_URL) bin/fetch_data.py $CODE_VERSION`.
+
 
 ## Adding new OpenMoji
 

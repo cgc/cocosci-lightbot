@@ -68,40 +68,6 @@ def get_participants(codeversion):
     )
 
 
-@custom_code.route('/data/<codeversion>/<name>', methods=['GET'])
-@myauth.requires_auth
-@nocache
-def download_datafiles(codeversion, name):
-    contents = {
-        "trialdata": lambda p: p.get_trial_data(),
-        "eventdata": lambda p: p.get_event_data(),
-        "questiondata": lambda p: p.get_question_data()
-    }
-
-    if name not in contents:
-        abort(404)
-
-    query = get_participants(codeversion)
-    data = []
-    for p in query:
-        try:
-            data.append(contents[name](p))
-        except TypeError:
-            current_app.logger.error("Error loading {} for {}".format(name, p))
-            current_app.logger.error(format_exc())
-
-    # current_app.logger.critical('data %s', data)
-    ret = "".join(data)
-    response = Response(
-        ret,
-        content_type="text/csv; charset=utf-8",
-        headers={
-            'Content-Disposition': 'attachment;filename=%s.csv' % name
-        })
-
-    return response
-
-
 
 
 #----------------------------------------------
