@@ -179,7 +179,7 @@ async function initializeExperiment() {
       style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
   }
 
-  const practiceOver = makeSimpleInstruction(`
+  const makePracticeOver = () => makeSimpleInstruction(`
     Now, we'll move on to the real questions.
   `);
 
@@ -221,7 +221,7 @@ async function initializeExperiment() {
       planarOptions,
     },
     gn(configuration.navigation_practice_len2),
-    practiceOver,
+    makePracticeOver(),
     gn(configuration.navigation),
 
     /* Solway 2014-style question */
@@ -248,7 +248,7 @@ async function initializeExperiment() {
       `),
     }),
     pi('solway2014', configuration.navigation_practice_len2),
-    practiceOver,
+    makePracticeOver(),
     pi('solway2014', configuration.probes),
 
     /* Now, the subgoal questions */
@@ -273,7 +273,7 @@ async function initializeExperiment() {
       `,
     }),
     pi('subgoal', configuration.navigation_practice_len2),
-    practiceOver,
+    makePracticeOver(),
     pi('subgoal', configuration.probes),
     pi('busStop', [{identifyOneState: true}]),
     debrief(),
@@ -285,7 +285,12 @@ async function initializeExperiment() {
       timeline = timeline.filter(t => t.type == type);
     } else {
       // If we aren't filtering by a type, we'll cut down the number of trials per type at least.
-      timeline = timeline.map(t => ({...t, timeline: t.timeline ? t.timeline.slice(0, 1) : [{}]}));
+      timeline = timeline.map(t => {
+        if (t.timeline) {
+          t.timeline = t.timeline.slice(0, 2);
+        }
+        return t;
+      });
     }
   }
 
@@ -324,7 +329,7 @@ function configureProgress(timeline) {
     } else {
       total++;
     }
-    invariant(!entry.on_finish, 'No on_finish should be specified.');
+    invariant(!entry.on_finish, 'No on_finish should be specified. This might be happening because a timeline element is being reused.');
     entry.on_finish = on_finish;
   }
 }

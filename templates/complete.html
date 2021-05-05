@@ -7,6 +7,8 @@
 
     <link rel="stylesheet" type="text/css" href="static/css/style.css" />
     <script>
+      // HACK This is a complicated way to redirect control to our custom handler
+      // at /complete2 so that user data can be logged to the screen.
       const newpage = '/complete2';
       if (location.pathname != newpage) {
         location.pathname = newpage;
