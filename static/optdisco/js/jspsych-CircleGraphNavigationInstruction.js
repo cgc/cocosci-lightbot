@@ -121,7 +121,9 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         - Afterwards, we’ll hide the connections and ask you some questions.
         - Throughout the HIT, you’ll periodically see a map that shows all the connections, making it easier to see how the locations are laid out.
 
-        Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys. Whenever you're ready: <button>Continue</button>
+        Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys.
+
+        Whenever you're ready: <button>Continue</button>
       `),
       makePromise: makeButtonPromise,
     },
