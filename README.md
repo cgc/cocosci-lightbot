@@ -42,7 +42,7 @@ pip install --global-option=build_ext \
 ```
 
 ## Experiment workflow
-1. Prep code!
+1. Prep code! Make sure cost on consent screen is up to date.
 2. Update `experiment_code_version` and make a git tag marking commit the code was run with.
 3. Scale up Heroku: `heroku ps:scale --app cocosci-optdisco web=1:Hobby`.
 4. Using `./bin/psiturk-herokudb`, ensure `mode live`, submit with `hit create <# HIT> <payment> <expiry>`. Example is `hit create 9 4.00 1`.
