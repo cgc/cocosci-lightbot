@@ -101,12 +101,6 @@ startExperiment = function(config) {
 };
 
 function completeHIT() {
-  if (new URLSearchParams(location.search).get('hitId') == 'prolific') {
-    $(window).off("beforeunload");
-    $('#jspsych-target').html('');
-    $('#prolific-complete').show();
-    return;
-  }
   return psiturk.completeHIT();
 }
 

@@ -32,6 +32,31 @@ def testexperiment():
     return render_template('exp.html', **data)
 
 
+@custom_code.route('/complete', methods=['GET'])
+@nocache
+def debug_complete_prolific():
+    '''
+    This route overwrites the default /complete route to add support for prolific.
+    '''
+
+    # Importing here to avoid a circular import when gunicorn runs the server.
+    from psiturk.experiment import debug_complete
+    # First we run this to make sure data is appropriately saved.
+    original_response = debug_complete()
+
+    # Then, we see whether we should use that response.
+    mode = request.args['mode']
+    user = Participant.query.filter(Participant.uniqueid == request.args['uniqueId']).one()
+    # Our convention for prolific studies are that the hitid is the string `prolific`.
+    # Only when we're serving a sandbox/live (aka non-debug) request do we route people to
+    # a completion code.
+    if mode in ('sandbox', 'live') and user.hitid == 'prolific':
+        return render_template('complete_prolific.html')
+    # Outside of that case, we fall back to the default logic.
+    else:
+        return original_response
+
+
 @custom_code.route('/complete2', methods=['GET'])
 @nocache
 def debug_complete2():

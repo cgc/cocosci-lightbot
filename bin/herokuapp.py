@@ -30,4 +30,7 @@ config.read('config.txt')
 sp = config['Server Parameters']
 print(f'Server listening on ' + sp['host'] + ':' + sp['port'])
 
+app = exp.ExperimentServer().load()
+assert app.url_map.bind('').match('/complete') == ('custom_code.debug_complete_prolific', {}), 'Custom Prolific handler is not correctly configured.'
+
 exp.launch()
