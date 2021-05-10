@@ -349,10 +349,9 @@ function recordError(e) {
     // Sometimes window.onerror passes in empty errors?
     return;
   }
-  errors.push(e);
-  psiturk.recordUnstructuredData('error2', JSON.stringify(errors.map(function(e) {
-    return e.message + e.stack;
-  })));
+  // Since error instances seem to disappear over time (as evidenced by lists of null values), we immediately serialize them here.
+  errors.push(JSON.stringify([e.message, e.stack]));
+  psiturk.recordUnstructuredData('error2', JSON.stringify(errors));
   psiturk.saveData();
 }
 window.onerror = function(message, source, lineno, colno, error) {

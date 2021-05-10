@@ -42,18 +42,22 @@ saveData = function() {
   return new Promise(function(resolve, reject) {
     var timeout;
     if (LOCAL) {
-      resolve('local');
+      resolve();
       return;
     }
-    timeout = delay(5000, function() {
+    timeout = delay(60000, function() {
       console.log('TIMEOUT');
-      return reject('timeout');
+      return reject(new Error('timeout'));
     });
     return psiturk.saveData({
-      error: function() {
+      error: function(model, response, options) {
         clearTimeout(timeout);
         console.log('Error saving data!');
-        return reject('error');
+        const e = new Error(`Error saving data. status: ${response.status}, statusText: ${response.statusText}`);
+        for (const key of ['readyState', 'responseText', 'status', 'statusText']) {
+          e[key] = response[key];
+        }
+        return reject(e);
       },
       success: function() {
         clearTimeout(timeout);
@@ -104,18 +108,26 @@ function completeHIT() {
   return psiturk.completeHIT();
 }
 
+function setTimeoutPromise(ms) {
+  return new Promise((res) => setTimeout(res, ms));
+}
+
 submitHit = function() {
-  var promptResubmit, triesLeft;
   console.log('submitHit');
   $('#jspsych-target').html('<div id="load-icon"></div>');
-  triesLeft = 1;
-  promptResubmit = function() {
+  var triesLeft = 6;
+  var timeoutSec = 1000;
+  var promptResubmit = function() {
     console.log('promptResubmit');
     if (triesLeft) {
       console.log('try again', triesLeft);
       $('#jspsych-target').html(`<div class="alert alert-danger">\n  <strong>Error!</strong>\n  We couldn't contact the database. We will try <b>${triesLeft}</b> more times\n  before attempting to submit your HIT without saving the data.\n\n  <div id="load-icon"></div>\n</div>`);
       triesLeft -= 1;
-      return saveData().catch(promptResubmit);
+      timeoutSec *= 2; // exponential backoff
+      console.log('setTimeoutPromise', timeoutSec);
+      return setTimeoutPromise(timeoutSec).then(function() {
+        return saveData().catch(promptResubmit);
+      });
     } else {
       console.log('GIVE UP');
       $('#jspsych-target').html("<div class=\"alert alert-danger\">\n  <strong>Error!</strong>\n  We couldn't save your data! Please contact cocosci.turk@gmail.com to report\n  the error. Then click the button below.\n</div>\n<br><br>\n<button class='btn btn-primary btn-lg' id=\"resubmit\">I reported the error</button>");
