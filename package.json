@@ -9,7 +9,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "build": "parcel build static/index.js",
+    "build": "parcel build --no-scope-hoist static/index.js",
     "watch": "parcel watch static/index.js"
   },
   "engines": {
