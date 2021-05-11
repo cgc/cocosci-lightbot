@@ -9,12 +9,11 @@ def copy_env_to_config():
     changed = False
     if 'DATABASE_URL' in os.environ:
         c['Database Parameters']['database_url'] = os.environ['DATABASE_URL']
-        changed = True
     if 'PORT' in os.environ:
         c['Server Parameters']['port'] = os.environ['PORT']
-        changed = True
 
-    if changed:
+    corig = configparser.ConfigParser()
+    corig.read('config.txt')
+    if c != corig:
         with open('config.txt', 'w') as out:
             c.write(out)
-
