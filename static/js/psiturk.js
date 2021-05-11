@@ -1,8 +1,7 @@
 import $ from '../lib/jquery-min.js';
 import _ from '../lib/underscore-min.js';
 import Backbone from '../lib/backbone-min.js';
-
-console.log('hi', $)
+// HACK. In newer versions of Backbone jQuery is found with require().
 Backbone.$ = $;
 
 /*
@@ -29,7 +28,7 @@ _.extend(Backbone.Notifications, Backbone.Events);
 var PsiTurk = function(uniqueId, adServerLoc, mode) {
     mode = mode || "live";  // defaults to live mode in case user doesn't pass this
     var self = this;
-    
+
     /****************
      * TASK DATA    *
      ***************/
@@ -38,7 +37,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         id: uniqueId,
         adServerLoc: adServerLoc,
         mode: mode,
-        
+
         defaults: {
             condition: 0,
             counterbalance: 0,
@@ -53,7 +52,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             useragent: "",
             mode: ""
         },
-        
+
         initialize: function() {
             this.set({ useragent: navigator.userAgent });
             this.set({ mode: this.mode });
@@ -72,25 +71,25 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             this.set('data', data);
             this.set({"currenttrial": this.get("currenttrial")+1});
         },
-        
+
         addUnstructuredData: function(field, response) {
             var qd = this.get("questiondata");
             qd[field] = response;
             this.set("questiondata", qd);
         },
-        
+
         getTrialData: function() {
-            return this.get('data');    
+            return this.get('data');
         },
-        
+
         getEventData: function() {
-            return this.get('eventdata');   
+            return this.get('eventdata');
         },
-        
+
         getQuestionData: function() {
-            return this.get('questiondata');    
+            return this.get('questiondata');
         },
-        
+
         addEvent: function(eventtype, value) {
             var interval,
                 ed = this.get('eventdata'),
@@ -109,7 +108,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
 
     /*****************************************************
-    * INSTRUCTIONS 
+    * INSTRUCTIONS
     *   - a simple, default instruction player
     ******************************************************/
     var Instructions = function(parent, pages, callback) {
@@ -117,7 +116,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         var self = this;
         var psiturk = parent;
         var currentscreen = 0, timestamp;
-        var instruction_pages = pages; 
+        var instruction_pages = pages;
         var complete_fn = callback;
         var viewedscreen;
 
@@ -137,7 +136,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             $('.instructionsnav').on('click.psiturk.instructionsnav.next', '.continue', function() {
                 nextPageButtonPress();
             });
-            
+
             // Record the time that an instructions page is first presented
             timestamp = new Date().getTime();
 
@@ -181,12 +180,12 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             $('.continue').unbind('click.psiturk.instructionsnav.next');
             $('.previous').unbind('click.psiturk.instructionsnav.prev');
 
-            // Record that the user has finished the instructions and 
+            // Record that the user has finished the instructions and
             // moved on to the experiment. This changes their status code
             // in the database.
             psiturk.finishInstructions();
 
-            // Move on to the experiment 
+            // Move on to the experiment
             complete_fn();
         };
 
@@ -204,7 +203,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
         return self;
     };
-    
+
     /*  PUBLIC METHODS: */
     self.preloadImages = function(imagenames) {
         $(imagenames).each(function() {
@@ -212,7 +211,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             image.src = this;
         });
     };
-    
+
     self.preloadPages = function(pagenames) {
         // Synchronously preload pages.
         $(pagenames).each(function() {
@@ -233,13 +232,13 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         }
         return self.pages[pagename];
     };
-    
-    
+
+
     // Add a line of data with any number of columns
     self.recordTrialData = function(trialdata) {
         taskdata.addTrialData(trialdata);
     };
-    
+
     // Add data value for a named column. If a value already
     // exists for that column, it will be overwritten
     self.recordUnstructuredData = function(field, value) {
@@ -247,15 +246,15 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
     };
 
     self.getTrialData = function() {
-        return taskdata.getTrialData(); 
+        return taskdata.getTrialData();
     };
-        
+
     self.getEventData = function() {
-        return taskdata.getEventData(); 
+        return taskdata.getEventData();
     };
-        
+
     self.getQuestionData = function() {
-        return taskdata.getQuestionData();  
+        return taskdata.getQuestionData();
     };
 
     // Add bonus to task data
@@ -266,7 +265,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
                     success: callback
                 });
     };
-    
+
     // Save data to server
     self.saveData = function(callbacks) {
         taskdata.save(undefined, callbacks);
@@ -274,17 +273,17 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
     self.startTask = function () {
         self.saveData();
-        
+
         $.ajax("inexp", {
                 type: "POST",
                 data: {uniqueId: self.taskdata.id}
         });
-        
+
         if (self.taskdata.mode != 'debug') {  // don't block people from reloading in debug mode
-            // Provide opt-out 
+            // Provide opt-out
             $(window).on("beforeunload", function(){
                 self.saveData();
-                
+
                 $.ajax("quitter", {
                         type: "POST",
                         data: {uniqueId: self.taskdata.id}
@@ -296,12 +295,12 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         }
 
     };
-    
+
     // Notify app that participant has begun main experiment
     self.finishInstructions = function(optmessage) {
         Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
     };
-    
+
     self.teardownTask = function(optmessage) {
         Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
     };
@@ -333,7 +332,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
     var taskdata = new TaskData();
     taskdata.fetch({async: true});
-    
+
     /*  DATA: */
     self.pages = {};
     self.taskdata = taskdata;
@@ -349,7 +348,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
     });
 
     $(window).focus( function() {
-        Backbone.Notifications.trigger('_psiturk_gainedfocus'); 
+        Backbone.Notifications.trigger('_psiturk_gainedfocus');
     });
 
     // track changes in window size
