@@ -1,8 +1,9 @@
-heroku-server:
-	heroku local
-
 dev: export FLASK_ENV=development
 dev:
+	forego start -f Procfile.dev
+
+dev-python: export FLASK_ENV=development
+dev-python:
 	python bin/herokuapp.py
 
 experiment-scaleup:

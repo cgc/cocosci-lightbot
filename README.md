@@ -16,21 +16,19 @@ virtualenv env
 pip install -r requirements.txt
 ```
 
-Run the server in development mode (template files will be reloaded).
+It also uses Parcel to bundle JavaScript and CSS, which requires installation:
+```
+npm install
+```
+
+You can run the development stack using a Procfile runner (like forego, `brew install forego`):
 ```
 make dev
 ```
 
-To edit JavaScript or CSS, you'll also have to use the JS bundler.
-```
-npm install
-npm run watch
-```
+In place of the Procfile runner, you can run the two processes you need to run the server: the Python server (with `make dev-python`) and the JavaScript bundler (with `npm run watch`).
 
-If you have the Heroku CLI tools installed (can install with `brew install heroku`), you can run the server with
-```
-make heroku-server
-```
+### Try it out!
 
 Now, try out the [entire experiment](http://localhost:22362/) or demo specific plugins:
 - [GraphTraining](http://localhost:22362/testexperiment?type=GraphTraining)
@@ -40,6 +38,8 @@ Push to heroku once you've set it as a git remote:
 ```
 git push heroku master
 ```
+
+### Errors
 
 If you're seeing an `Library not loaded: @rpath/libssl.1.1.dylib ... Reason: image not found` error when running `./bin/psiturk-herokudb', you may need to `pip uninstall psycopg2` and run the following:
 ```
