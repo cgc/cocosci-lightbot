@@ -1,10 +1,9 @@
 import {Graph, clockwiseKeys} from './graphs.js';
-import {invariant, markdown, graphics, graphicsUrl, graphicsLoading} from './utils.js';
+import {invariant, markdown, graphics, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
-import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 import allconfig from './configuration/configuration.js';
-import {handleError, psiturk, saveData, startExperiment, CONDITION, LOG_DEBUG} from '../../js/setup.js';
+import {handleError, psiturk, saveData, startExperiment, CONDITION} from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
@@ -133,39 +132,6 @@ async function initializeExperiment() {
     planarOptions,
   });
 
-  var piInstruction = makeSimpleInstruction(`
-    In this next section, we want to understand how you are planning your
-    routes. For the next ${configuration.probes.length} rounds, we will show you a
-    circle to start at and one to navigate to, just like before.
-
-    But, instead of actually navigating from one to the other, we just want you to<br>
-    **start planning your route and click on the *first circle that comes to mind.***
-
-    First we'll start with some practice questions.
-  `);
-
-  var piCheck = {
-    type: 'survey-multi-choice',
-    preamble: `
-      <h1>Comprehension check</h1>
-
-    `,
-      // Please answer the following question to ensure you understand.
-    questions: [
-      {
-        prompt: 'For the next rounds, which circle should you click on?',
-        options: [
-          '&nbsp;The prettiest circle.',
-          '&nbsp;<i>Any</i> circle on the path between the start and goal.',
-          '&nbsp;The <i>first</i> circle on the path between the start and goal.',
-          '&nbsp;The first circle that comes to mind when planning a route from start to goal.'
-        ],
-        required: true
-      }
-
-    ]
-  }
-
   var pi = (copy, timeline) => ({
     type: 'CirclePathIdentification',
     copy,
@@ -177,12 +143,6 @@ async function initializeExperiment() {
     graphRenderOptions: {...graphRenderOptions, edgeShow: () => false},
     planarOptions,
   });
-
-  function renderKey(key) {
-    return `<span
-      class="GraphNavigation-key GraphNavigation-key-${key}"
-      style="opacity: 1; position: relative; display: inline-block;">${key}</span>`;
-  }
 
   const makePracticeOver = () => makeSimpleInstruction(`
     Now, we'll move on to the real questions.

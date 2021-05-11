@@ -1,5 +1,4 @@
-import {markdown, makePromise, parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant} from './utils.js';
-import {bfs} from './graphs.js';
+import {markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant} from './utils.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
@@ -829,8 +828,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
   const mapData = await maybeShowMap(root, trial);
 
-  const {start, goal, graph, graphics} = trial;
-  const solution = bfs(graph, start, goal).path;
+  const {start, goal, graphics} = trial;
 
   const intro = trial.copy == 'busStop' ? `
     <p>Imagine a version of this task that includes <b>instant teleportation</b> to one location of your choice. The task is otherwise exactly the same: you navigate between the same locations along the same connections, but you can also teleport to the location you choose.</p>
@@ -918,7 +916,7 @@ addPlugin('AcceptRejectPractice', trialErrorHandling(async function(root, trial)
 }));
 
 addPlugin('AcceptReject', trialErrorHandling(async function(root, trial) {
-  const {start, goal, graph, graphics, probe, acceptRejectKeys: keys} = trial;
+  const {start, goal, graphics, probe, acceptRejectKeys: keys} = trial;
 
   const mapData = await maybeShowMap(root, trial);
 
