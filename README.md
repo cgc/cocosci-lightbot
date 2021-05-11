@@ -12,12 +12,19 @@ Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/
 Project uses Python 3. Install dependencies (here, in a virtualenv)
 ```
 virtualenv env
-env/bin/pip install -r requirements.txt
+. env/bin/activate
+pip install -r requirements.txt
 ```
 
 Run the server in development mode (template files will be reloaded).
 ```
 make dev
+```
+
+To edit JavaScript or CSS, you'll also have to use the JS bundler.
+```
+npm install
+npm run watch
 ```
 
 If you have the Heroku CLI tools installed (can install with `brew install heroku`), you can run the server with

@@ -9,7 +9,11 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "parcel build static/index.js",
+    "watch": "parcel watch static/index.js"
+  },
+  "engines": {
+    "node": "14.x"
   },
   "repository": {
     "type": "git",
