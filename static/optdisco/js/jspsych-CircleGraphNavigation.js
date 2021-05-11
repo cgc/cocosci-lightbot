@@ -1,5 +1,8 @@
-import {makePromise, parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise} from './utils.js';
+import {markdown, makePromise, parseHTML, runTimer, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant} from './utils.js';
 import {bfs} from './graphs.js';
+import _ from '../../lib/underscore-min.js';
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
 
 const BLOCK_SIZE = 100;
 // replace BLOCK_SIZE with hi=parseHTML('<div class="State" style="display: block;position: fixed;left: 200vw;"></div>');document.body.append(hi);console.log(hi.offsetWidth);hi.remove();console.log(hi.offsetWidth)
@@ -163,7 +166,7 @@ export class CircleGraph {
       states: [this.state],
     };
 
-    while (true) {
+    while (true) { // eslint-disable-line no-constant-condition
       // State transition
       const {state} = await this.keyTransition();
       // Record information
@@ -737,7 +740,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   const instruction = document.createElement('div');
   instruction.classList.add('GraphNavigation-instruction');
   root.appendChild(instruction);
-  instruction.innerHTML = `Study the connections of the ${renderSmallEmoji(null, 'GraphNavigation-cue')}. You\'ll be quizzed on one of them. Press spacebar to continue.`;
+  instruction.innerHTML = `Study the connections of the ${renderSmallEmoji(null, 'GraphNavigation-cue')}. You'll be quizzed on one of them. Press spacebar to continue.`;
 
   const cg = new CircleGraph({...trial, start: null});
   root.appendChild(cg.el);

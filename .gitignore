@@ -214,3 +214,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 *.swp
+.parcel-cache
+node_modules/
+package-lock.json
+

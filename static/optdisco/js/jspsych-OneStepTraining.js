@@ -1,4 +1,7 @@
 import {completeModal, trialErrorHandling, graphicsUrl} from './utils.js';
+import _ from '../../lib/underscore-min.js';
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
 
 const stateTemplate = (state, graphic, isSucc) => `
 <div class='State' data-state="${state}" data-issucc="${isSucc}"><img src="${graphicsUrl(graphic)}" /></div>

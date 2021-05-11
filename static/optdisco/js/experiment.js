@@ -1,9 +1,13 @@
 import {Graph, clockwiseKeys} from './graphs.js';
-import {graphics, graphicsUrl, graphicsLoading} from './utils.js';
+import {invariant, markdown, graphics, graphicsUrl, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-html-button-response.js';
 import allconfig from './configuration/configuration.js';
+import {handleError, psiturk, saveData, startExperiment, CONDITION, LOG_DEBUG} from '../../js/setup.js';
+import _ from '../../lib/underscore-min.js';
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
 
 function formWithValidation({stimulus, validate}) {
   return {
@@ -71,7 +75,8 @@ async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
   const onlyShowCurrentEdges = true;
-  const cond = QUERY.hasOwnProperty('condition') ? QUERY.condition : CONDITION;
+
+  const cond = Object.prototype.hasOwnProperty.call(QUERY, 'condition') ? QUERY.condition : CONDITION;
   console.log('cond', cond)
   const configuration = allconfig.conditions[cond];
   console.log('configuration', configuration)
@@ -337,10 +342,8 @@ function configureProgress(timeline) {
 $(window).on('load', function() {
   return Promise.all([graphicsLoading, saveData()]).then(function() {
     $('#welcome').hide();
-    return initializeExperiment().catch(handleError);
-  }).catch(function() {
-    return $('#data-error').show();
-  });
+    return initializeExperiment();
+  }).catch(handleError);
 });
 
 const errors = [];
@@ -355,8 +358,10 @@ function recordError(e) {
   psiturk.saveData();
 }
 window.onerror = function(message, source, lineno, colno, error) {
+  console.error(message, error);
   recordError(error);
 };
 window.addEventListener('unhandledrejection', function(event) {
+  console.error(event.reason);
   recordError(event.reason);
 });

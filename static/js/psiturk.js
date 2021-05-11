@@ -1,3 +1,10 @@
+import $ from '../lib/jquery-min.js';
+import _ from '../lib/underscore-min.js';
+import Backbone from '../lib/backbone-min.js';
+
+console.log('hi', $)
+Backbone.$ = $;
+
 /*
  * Requires:
  *     jquery
@@ -112,6 +119,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         var currentscreen = 0, timestamp;
         var instruction_pages = pages; 
         var complete_fn = callback;
+        var viewedscreen;
 
         var loadPage = function() {
 
@@ -200,7 +208,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
     /*  PUBLIC METHODS: */
     self.preloadImages = function(imagenames) {
         $(imagenames).each(function() {
-            image = new Image();
+            const image = new Image();
             image.src = this;
         });
     };
@@ -222,7 +230,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
             throw new Error(
             ["Attemping to load page before preloading: ",
             pagename].join(""));
-        };
+        }
         return self.pages[pagename];
     };
     
@@ -304,6 +312,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
         window.location= self.taskdata.adServerLoc + "?uniqueId=" + self.taskdata.id + '&mode=' + mode;
     }
 
+    let instructionController;
     self.doInstructions = function(pages, callback) {
         instructionController = new Instructions(self, pages, callback);
         instructionController.loadFirstPage();
@@ -323,7 +332,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
     /* initialized local variables */
 
     var taskdata = new TaskData();
-    taskdata.fetch({async: false});
+    taskdata.fetch({async: true});
     
     /*  DATA: */
     self.pages = {};
@@ -360,3 +369,4 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 };
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4
+export {PsiTurk};

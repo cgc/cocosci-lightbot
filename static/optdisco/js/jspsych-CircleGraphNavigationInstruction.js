@@ -1,6 +1,9 @@
 import {bfs} from './graphs.js';
-import {completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
+import {markdown, completeModal, addPlugin, graphicsUrl, parseHTML, setTimeoutPromise} from './utils.js';
 import {queryEdge, CircleGraph, renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
+import _ from '../../lib/underscore-min.js';
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
 
 addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
   console.log(trial);

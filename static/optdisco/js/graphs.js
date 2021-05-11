@@ -1,3 +1,6 @@
+import {invariant} from './utils.js';
+import jsPsych from '../../lib/jspsych-exported.js';
+
 export function bfs(graph, start, goal, kwargs={}) {
   const successors = kwargs.successors || (state => graph.successors(state));
 

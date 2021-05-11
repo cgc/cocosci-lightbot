@@ -1,5 +1,8 @@
 import {completeModal, SetIsEqual, trialErrorHandling, graphicsUrl} from './utils.js';
 import {bfs} from './graphs.js';
+import _ from '../../lib/underscore-min.js';
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
 
 const stateTemplate = (state, graphic, cls) => `
 <div class="State ${cls}" data-state="${state}"><img src="${graphicsUrl(graphic)}" /></div>

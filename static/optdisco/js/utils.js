@@ -1,3 +1,9 @@
+import $ from '../../lib/jquery-min.js';
+import jsPsych from '../../lib/jspsych-exported.js';
+import openmoji from '../images/openmoji/openmoji.js';
+import {handleError} from '../../js/setup.js';
+import showdown from '../../lib/showdown-min.js';
+
 function deepCopy(obj) {
   /*
   This is a modest update to jsPsych.utils.deepCopy that uses ES6
@@ -23,10 +29,12 @@ function deepCopy(obj) {
 
 jsPsych.utils.deepCopy = deepCopy;
 
-class InvariantError extends Error {
-  // https://wbinnssmith.com/blog/subclassing-error-in-modern-javascript/
-  name = 'InvariantError';
-}
+// https://wbinnssmith.com/blog/subclassing-error-in-modern-javascript/
+class InvariantError extends Error {}
+Object.defineProperty(InvariantError.prototype, 'name', {
+  value: 'InvariantError', // can even just reference `MyError.name`
+});
+
 export function invariant(predicate, message) {
   if (!predicate) {
     throw new InvariantError(`Invariant not true: ${message||""}`);
@@ -36,6 +44,13 @@ window.invariant = invariant;
 
 // Ok here's the rest of the module, exposed via ES6 modules
 
+const converter = new showdown.Converter();
+export function markdown(txt) {
+  // Remove leading spaces so as not to interpret indented
+  // blocks as code blocks. Use fenced code blocks instead.
+  return converter.makeHtml(txt.replace(/^[ ]+/gm, ''));
+}
+
 export function showModal(content) {
   $('<div>', {
     class: 'modal',
@@ -44,7 +59,7 @@ export function showModal(content) {
       html: content
     })
   }).appendTo($('#jspsych-target'));
-};
+}
 
 export function makePromise() {
   /*
@@ -113,8 +128,8 @@ export const graphics = [
 ];
 
 export function graphicsUrl(emoji) {
-  const fn = emoji.codePointAt(0).toString(16).toUpperCase() + '.svg';
-  return "static/optdisco/images/openmoji/" + fn;
+  const code = emoji.codePointAt(0).toString(16).toUpperCase();
+  return 'data:image/svg+xml,'+encodeURIComponent(openmoji[code]);
 }
 
 function loadImage(src) {
@@ -124,8 +139,11 @@ function loadImage(src) {
     img.addEventListener("load", () => resolve(img));
     img.addEventListener("error", err => reject(err));
     img.src = src;
+    if (img.src.indexOf('data:image/svg+xml,') == 0) {
+      resolve(img);
+    }
   });
-};
+}
 
 const images = graphics.map(function(emoji) {
   return loadImage(graphicsUrl(emoji));
@@ -137,7 +155,7 @@ export function trialErrorHandling(trial) {
   return async function() {
     return trial.apply(this, arguments).catch(handleError);
   };
-};
+}
 
 export function addPlugin(name, func) {
   jsPsych.plugins[name] = {
