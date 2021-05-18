@@ -39,4 +39,15 @@ if os.getenv('FLASK_ENV') == 'development':
 else:
     app.config.update(SEND_FILE_MAX_AGE_DEFAULT=24*60*60)
 
+@app.after_request
+def after_request_func(response):
+    # Our CDN (fastly) asks us to use no_store for things that should not be stored.
+    # Becuase we have a custom completion handler, and because the default /sync
+    # doesn't provide useful caching headers, we'll try to enforce something definitive
+    # here: Our static files are public and should be cached, but everything else shoudln't be.
+    if not response.cache_control.public:
+        response.cache_control.no_store = True
+        response.cache_control.private = True
+    return response
+
 exp.launch()
