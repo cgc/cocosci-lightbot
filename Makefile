@@ -1,4 +1,3 @@
-dev: export FLASK_ENV=development
 dev:
 	forego start -f Procfile.dev
 

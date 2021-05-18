@@ -6,6 +6,7 @@ env_to_config.copy_env_to_config()
 import configparser
 import psiturk.experiment_server as exp
 import json
+import os
 
 # Verifying our configuration file matches our condition configuration.
 def verify_config_conditions_match_json():
@@ -32,5 +33,10 @@ print(f'Server listening on ' + sp['host'] + ':' + sp['port'])
 
 app = exp.ExperimentServer().load()
 assert app.url_map.bind('').match('/complete') == ('custom_code.debug_complete_prolific', {}), 'Custom Prolific handler is not correctly configured.'
+
+if os.getenv('FLASK_ENV') == 'development':
+    app.config.update(SEND_FILE_MAX_AGE_DEFAULT=0)
+else:
+    app.config.update(SEND_FILE_MAX_AGE_DEFAULT=24*60*60)
 
 exp.launch()
