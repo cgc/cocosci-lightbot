@@ -1,12 +1,8 @@
-# Important: Must be run first to copy environment vars to config
-import env_to_config
-env_to_config.copy_env_to_config()
-
-# Now the code
 import configparser
 import psiturk.experiment_server as exp
 import json
 import os
+import multiprocessing
 
 # Verifying our configuration file matches our condition configuration.
 def verify_config_conditions_match_json():
@@ -25,29 +21,38 @@ def verify_config_conditions_match_json():
     assert int(config['Task Parameters']['num_counters']) == 1
 verify_config_conditions_match_json()
 
-# Now starting the server based on config.
-config = configparser.ConfigParser()
-config.read('config.txt')
-sp = config['Server Parameters']
-print(f'Server listening on ' + sp['host'] + ':' + sp['port'])
+class ExperimentServer(exp.ExperimentServer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # In Heroku, hobby, standard-1x, and standard-2x all have 8 CPU cores
+        # which will exhaust the memory on hobby / 1x. So, we pick up this
+        # env var WEB_CONCURRENCY instead. it's 2 for hobby/standard-1x and 4 for standard-2x
+        cores = os.environ.get('WEB_CONCURRENCY') or multiprocessing.cpu_count()
+        self.user_options['workers'] = str(cores * 2 + 1)
 
-app = exp.ExperimentServer().load()
-assert app.url_map.bind('').match('/complete') == ('custom_code.debug_complete_prolific', {}), 'Custom Prolific handler is not correctly configured.'
+    def load(self):
+        # We run custom code modifying app here to ensure we don't run into psycopg2 "bad record mac"
+        # due to forked workers sharing connections. https://stackoverflow.com/q/22752521
+        app = super().load()
+        assert app.url_map.bind('').match('/complete') == ('custom_code.debug_complete_prolific', {}), 'Custom Prolific handler is not correctly configured.'
 
-if os.getenv('FLASK_ENV') == 'development':
-    app.config.update(SEND_FILE_MAX_AGE_DEFAULT=0)
-else:
-    app.config.update(SEND_FILE_MAX_AGE_DEFAULT=24*60*60)
+        if os.getenv('FLASK_ENV') == 'development':
+            app.config.update(SEND_FILE_MAX_AGE_DEFAULT=0)
+        else:
+            app.config.update(SEND_FILE_MAX_AGE_DEFAULT=24*60*60)
 
-@app.after_request
-def after_request_func(response):
-    # Our CDN (fastly) asks us to use no_store for things that should not be stored.
-    # Becuase we have a custom completion handler, and because the default /sync
-    # doesn't provide useful caching headers, we'll try to enforce something definitive
-    # here: Our static files are public and should be cached, but everything else shoudln't be.
-    if not response.cache_control.public:
-        response.cache_control.no_store = True
-        response.cache_control.private = True
-    return response
+        @app.after_request
+        def after_request_func(response):
+            # https://developer.fastly.com/learning/concepts/cache-freshness/
+            # Our CDN (fastly) asks us to use no_store for things that should not be stored.
+            # Becuase we have a custom completion handler, and because the default /sync
+            # doesn't provide useful caching headers, we'll try to enforce something definitive
+            # here: Our static files are public and should be cached, but everything else shoudln't be.
+            if not response.cache_control.public:
+                response.cache_control.no_store = True
+                response.cache_control.private = True
+            return response
 
-exp.launch()
+        return app
+
+ExperimentServer().run()
