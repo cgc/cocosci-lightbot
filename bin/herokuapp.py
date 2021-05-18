@@ -22,12 +22,12 @@ def verify_config_conditions_match_json():
 verify_config_conditions_match_json()
 
 class ExperimentServer(exp.ExperimentServer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def load_user_config(self):
+        super().load_user_config()
         # In Heroku, hobby, standard-1x, and standard-2x all have 8 CPU cores
         # which will exhaust the memory on hobby / 1x. So, we pick up this
         # env var WEB_CONCURRENCY instead. it's 2 for hobby/standard-1x and 4 for standard-2x
-        cores = os.environ.get('WEB_CONCURRENCY') or multiprocessing.cpu_count()
+        cores = int(os.environ['WEB_CONCURRENCY']) if 'WEB_CONCURRENCY' in os.environ else multiprocessing.cpu_count()
         self.user_options['workers'] = str(cores * 2 + 1)
 
     def load(self):
