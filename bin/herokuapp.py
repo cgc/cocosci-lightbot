@@ -16,7 +16,7 @@ def verify_config_conditions_match_json():
         # now parse as JSON
         dd = json.loads(dd)
     nc_config = int(config['Task Parameters']['num_conds'])
-    nc_json = len(dd['conditions'])
+    nc_json = len(list(dd['conditionToFactors'].values())[0])
     assert nc_config == nc_json, f'Must match number conditions in Psiturk ({nc_config} conditions) and experiment JSON ({nc_json} conditions).'
     assert int(config['Task Parameters']['num_counters']) == 1
 verify_config_conditions_match_json()

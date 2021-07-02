@@ -70,48 +70,76 @@ const makeSimpleInstruction = (text) => ({
 
 const QUERY = new URLSearchParams(location.search);
 
+function configForCondition(allconfig, condition, mapper=(f, v) => v) {
+  allconfig = jsPsych.utils.deepCopy(allconfig);
+  let keyidx = [];
+  for (const [factor, values] of Object.entries(allconfig.conditionToFactors)) {
+    const idx = mapper(factor, values[condition]); // condition is an index into this data structure that is column-wise.
+    keyidx.push([factor.split('.'), idx]);
+  }
+  // We sort to ensure that shorter keys appear first, so that their
+  // conditions are applied before any that are more nested.
+  keyidx = _.sortBy(keyidx, ([keys, idx]) => keys.length);
+  for (const [keys, idx] of keyidx) {
+    // We walk the configuration to reach the parent of the current key.
+    let c = allconfig;
+    for (const key of keys.slice(0, keys.length-1)) {
+      c = c[key];
+    }
+    // We assign the appropriate value to replace the array of potential values.
+    const key = keys[keys.length-1];
+    c[key] = c[key][idx];
+  }
+  return allconfig;
+}
+
 async function initializeExperiment() {
   psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
 
   const onlyShowCurrentEdges = true;
 
-  const cond = Object.prototype.hasOwnProperty.call(QUERY, 'condition') ? QUERY.condition : CONDITION;
-  console.log('cond', cond)
-  const configuration = allconfig.conditions[cond];
-  console.log('configuration', configuration)
+  const configuration = configForCondition(allconfig, CONDITION, function(factorName, condValue) {
+    const key = 'condition.'+factorName;
+    return QUERY.has(key) ? QUERY.get(key) : condValue;
+  });
 
-  const graph = new Graph(configuration.adjacency);
+  console.log('cond', CONDITION, 'configuration', configuration)
 
-  const gfx = jsPsych.randomization.sampleWithoutReplacement(graphics, graph.states.length);
-  psiturk.recordUnstructuredData('gfx', gfx);
+  const graph = new Graph(configuration.graph.adjacency);
+
+  const gfx = configuration.icons;
 
   // TODO TODO TODO: for circle graphs, we can do scaleEdgeFactor, but for planar they look bad
   const graphRenderOptions = {
     onlyShowCurrentEdges,
-    fixedXY: configuration.circle_embedding.coordinates,
+    fixedXY: configuration.embedding.coordinates,
     width: 800,
     height: 450,
     scaleEdgeFactor: 0.95,
-    successorKeys: clockwiseKeys(graph, configuration.circle_embedding.order),
+    // HACK Should think a bit more carefully about this one.
+    // Since the order doesn't necessarily match the xy projection, this won't
+    // exactly be the clockwise algorithm we've made. But it should still be
+    // consistent in the way it maps angles to keys relative to the original ordering.
+    successorKeys: clockwiseKeys(graph, configuration.embedding.order),
   };
   const planarOptions = {
-    type: configuration.map_embedding.type, // HACK
+    type: configuration.embedding.type, // HACK
     // For Solway planarization.
-    fixedXY: configuration.map_embedding.coordinates,
+    fixedXY: configuration.embedding.coordinates,
 //    keyDistanceFactor: 1.35, can we nix this?
     width: 800,
     height: 450,
     scaleEdgeFactor: 1,
     // HACK we don't use this, but should really implement something more useful?????
-    successorKeys: clockwiseKeys(graph, configuration.circle_embedding.order),
+    successorKeys: clockwiseKeys(graph, configuration.embedding.order),
   };
 
   var inst = {
     type: 'CircleGraphNavigationInstruction',
     graph,
     graphics: gfx,
-    trialsLength: configuration.navigation.length,
-    ...configuration.navigation_practice_len2[0],
+    trialsLength: configuration.graph.ordering.navigation.length,
+    ...configuration.graph.ordering.navigation_practice_len2[0],
     graphRenderOptions: {...graphRenderOptions, onlyShowCurrentEdges: false},
     onlyShowCurrentEdges,
   };
@@ -177,7 +205,7 @@ async function initializeExperiment() {
       __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
       `,
     },
-    gn(configuration.navigation_practice_len1.map(t => ({...t, showMap: false}))), // hACK do we need this showmap: False???
+    gn(configuration.graph.ordering.navigation_practice_len1.map(t => ({...t, showMap: false}))), // hACK do we need this showmap: False???
     {
       type: 'MapInstruction',
       graph,
@@ -185,9 +213,9 @@ async function initializeExperiment() {
       graphRenderOptions,
       planarOptions,
     },
-    gn(configuration.navigation_practice_len2),
+    gn(configuration.graph.ordering.navigation_practice_len2),
     makePracticeOver(),
-    gn(configuration.navigation),
+    gn(configuration.graph.ordering.navigation),
 
     /* Solway 2014-style question */
     formWithValidation({
@@ -212,9 +240,9 @@ async function initializeExperiment() {
       <label><input type="radio" name="comprehension" value="Any location" />Any location</label><br />
       `),
     }),
-    pi('solway2014', configuration.navigation_practice_len2),
+    pi('solway2014', configuration.graph.ordering.navigation_practice_len2),
     makePracticeOver(),
-    pi('solway2014', configuration.probes),
+    pi('solway2014', configuration.graph.ordering.probes_solway2014),
 
     /* Now, the subgoal questions */
     formWithValidation({
@@ -237,9 +265,9 @@ async function initializeExperiment() {
       <label><input type="radio" name="comprehension" value="A subgoal that comes to mind or the goal" />A subgoal that comes to mind or the goal</label><br />
       `,
     }),
-    pi('subgoal', configuration.navigation_practice_len2),
+    pi('subgoal', configuration.graph.ordering.navigation_practice_len2),
     makePracticeOver(),
-    pi('subgoal', configuration.probes),
+    pi('subgoal', configuration.graph.ordering.probes_subgoal),
     pi('busStop', [{identifyOneState: true}]),
     debrief(),
   ]);
