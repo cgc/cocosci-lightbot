@@ -41,22 +41,22 @@ if (DEBUG) {
 psiturk = new PsiTurk(window.uniqueId, window.adServerLoc, window.mode);
 
 saveData = function() {
-  console.log(new Date(), 'saveData(): Start.');
+  console.log(Date.now(), 'saveData(): Start.');
   return new Promise(function(resolve, reject) {
     var timeout;
     if (LOCAL) {
-      console.log(new Date(), 'saveData(): no-op because LOCAL is true.');
+      console.log(Date.now(), 'saveData(): no-op because LOCAL is true.');
       resolve();
       return;
     }
     timeout = setTimeout(function() {
-      console.log(new Date(), 'saveData(): Timeout.');
+      console.log(Date.now(), 'saveData(): Timeout.');
       return reject(new Error('timeout'));
     }, 60000);
     return psiturk.saveData({
       error: function(model, response, options) {
         clearTimeout(timeout);
-        console.log(new Date(), 'saveData(): Error saving data!');
+        console.log(Date.now(), 'saveData(): Error saving data!');
         const e = new Error(`Error saving data. status: ${response.status}, statusText: ${response.statusText}`);
         for (const key of ['readyState', 'responseText', 'status', 'statusText']) {
           e[key] = response[key];
@@ -65,7 +65,7 @@ saveData = function() {
       },
       success: function() {
         clearTimeout(timeout);
-        console.log(new Date(), 'saveData(): Success.');
+        console.log(Date.now(), 'saveData(): Success.');
         return resolve();
       }
     });

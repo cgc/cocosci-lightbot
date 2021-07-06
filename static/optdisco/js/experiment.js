@@ -336,14 +336,18 @@ $(window).on('load', function() {
 
 const errors = [];
 function recordError(e) {
-  if (!e) {
-    // Sometimes window.onerror passes in empty errors?
-    return;
+  try {
+    if (!e) {
+      // Sometimes window.onerror passes in empty errors?
+      return;
+    }
+    // Since error instances seem to disappear over time (as evidenced by lists of null values), we immediately serialize them here.
+    errors.push(JSON.stringify([e.message, e.stack]));
+    psiturk.recordUnstructuredData('error2', JSON.stringify(errors));
+    requestSaveData().catch(() => {}); // Don't throw an error here to avoid infinite loops.
+  } catch(inner) {
+    console.log('Error happened while recording error', inner.stack);
   }
-  // Since error instances seem to disappear over time (as evidenced by lists of null values), we immediately serialize them here.
-  errors.push(JSON.stringify([e.message, e.stack]));
-  psiturk.recordUnstructuredData('error2', JSON.stringify(errors));
-  requestSaveData();
 }
 window.onerror = function(message, source, lineno, colno, error) {
   console.error(message, error);

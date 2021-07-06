@@ -373,7 +373,10 @@ export function makeSingletonPromiseQueue(fn) {
 
     // If nothing is queued, then we create the future work.
     // First, we wait for the current work to complete.
-    const w = current.finally(() => {
+    // We discard any raised errors since we only aim
+    // to ensure we follow the promise; if we don't discard them
+    // they are logged at every future promise.
+    const w = current.catch(() => {}).finally(() => {
       // Once the current work is done (successfully or otherwise), our
       // queued promise becomes the current work.
       // Here's some bookkeeping:
