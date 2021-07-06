@@ -30,6 +30,11 @@ class ExperimentServer(exp.ExperimentServer):
         cores = int(os.environ['WEB_CONCURRENCY']) if 'WEB_CONCURRENCY' in os.environ else multiprocessing.cpu_count()
         self.user_options['workers'] = str(cores * 2 + 1)
 
+        # https://docs.gunicorn.org/en/stable/settings.html#access-log-format
+        # Adding response time to the default access log.
+        from gunicorn.config import AccessLogFormat
+        self.user_options['access_log_format'] = AccessLogFormat.default + ' %(M)sms'
+
     def load(self):
         # We run custom code modifying app here to ensure we don't run into psycopg2 "bad record mac"
         # due to forked workers sharing connections. https://stackoverflow.com/q/22752521
