@@ -344,3 +344,49 @@ addPlugin('SimpleInstruction', async function(root, trial) {
   root.innerHTML = '';
   jsPsych.finishTrial();
 });
+
+export function makeSingletonPromiseQueue(fn) {
+  /*
+  This function exposes a singleton promise queue. It is initialized
+  with a function that is called whenever a new promise is queued.
+  The function is expected to return a promise or be async.
+
+  This promise queue permits a single promise to execute at a time
+  and avoids excessive queueing of promises by ensuring only a single
+  future promise can be queued; attempting to queue when there is a queued
+  promise will quietly return the queued promise. Note: if arguments are supplied
+  this will quietly return incorrect return values.
+
+  The guarantee this does provide is that
+  - at most one promise will execute at a time.
+  - a request to queue will result in a future call to the async function.
+  */
+  let current = Promise.resolve(); // We initialize to a no-op Promise to ensure the invariant that this is a promise.
+  let queued = null;
+
+  async function queue() {
+    // If something is queued, we do not queue; instead we return the result
+    // of this queued promise.
+    if (queued) {
+      return await queued;
+    }
+
+    // If nothing is queued, then we create the future work.
+    // First, we wait for the current work to complete.
+    const w = current.finally(() => {
+      // Once the current work is done (successfully or otherwise), our
+      // queued promise becomes the current work.
+      // Here's some bookkeeping:
+      current = w;
+      queued = null;
+      // and the initiation of promise that was queued:
+      return fn.apply(this, arguments);
+    });
+    // We set this future work as the queued element.
+    queued = w;
+
+    // We wait for this queued element to complete.
+    return await w;
+  }
+  return queue;
+}

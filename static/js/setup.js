@@ -1,4 +1,4 @@
-import {markdown} from '../optdisco/js/utils.js';
+import {markdown, makeSingletonPromiseQueue} from '../optdisco/js/utils.js';
 import {PsiTurk} from './psiturk.js';
 import $ from '../lib/jquery-min.js';
 import _ from '../lib/underscore-min.js';
@@ -41,21 +41,22 @@ if (DEBUG) {
 psiturk = new PsiTurk(window.uniqueId, window.adServerLoc, window.mode);
 
 saveData = function() {
-  console.log('saveData');
+  console.log(new Date(), 'saveData(): Start.');
   return new Promise(function(resolve, reject) {
     var timeout;
     if (LOCAL) {
+      console.log(new Date(), 'saveData(): no-op because LOCAL is true.');
       resolve();
       return;
     }
     timeout = setTimeout(function() {
-      console.log('TIMEOUT');
+      console.log(new Date(), 'saveData(): Timeout.');
       return reject(new Error('timeout'));
     }, 60000);
     return psiturk.saveData({
       error: function(model, response, options) {
         clearTimeout(timeout);
-        console.log('Error saving data!');
+        console.log(new Date(), 'saveData(): Error saving data!');
         const e = new Error(`Error saving data. status: ${response.status}, statusText: ${response.statusText}`);
         for (const key of ['readyState', 'responseText', 'status', 'statusText']) {
           e[key] = response[key];
@@ -64,12 +65,13 @@ saveData = function() {
       },
       success: function() {
         clearTimeout(timeout);
-        console.log('Data saved to psiturk server.');
+        console.log(new Date(), 'saveData(): Success.');
         return resolve();
       }
     });
   });
 };
+export const requestSaveData = makeSingletonPromiseQueue(saveData);
 
 // ---------- Test connection to server, then initialize the experiment. ---------- #
 // initializeExperiment is defined in experiment.coffee
@@ -129,6 +131,8 @@ submitHit = function() {
       timeoutSec *= 2; // exponential backoff
       console.log('setTimeoutPromise', timeoutSec);
       return setTimeoutPromise(timeoutSec).then(function() {
+        // We intentionally avoid using the queue here, preferring to directly hit the server; state is no longer changing
+        // following the requestSaveData() that starts this function.
         return saveData().catch(promptResubmit);
       });
     } else {
@@ -141,7 +145,7 @@ submitHit = function() {
       });
     }
   };
-  return saveData().then(completeHIT).catch(promptResubmit).then(completeHIT);
+  return requestSaveData().then(completeHIT).catch(promptResubmit).then(completeHIT);
 };
 
 handleError = function(e) {

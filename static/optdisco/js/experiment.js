@@ -3,7 +3,7 @@ import {invariant, markdown, graphics, graphicsLoading} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
 import allconfig from './configuration/configuration.js';
-import {handleError, psiturk, saveData, startExperiment, CONDITION} from '../../js/setup.js';
+import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
@@ -306,7 +306,7 @@ function configureProgress(timeline) {
   function on_finish() {
     done++;
     jsPsych.setProgressBar(done/total);
-    saveData();
+    requestSaveData();
   }
 
   let total = 0;
@@ -328,7 +328,7 @@ function configureProgress(timeline) {
 }
 
 $(window).on('load', function() {
-  return Promise.all([graphicsLoading, saveData()]).then(function() {
+  return Promise.all([graphicsLoading, requestSaveData()]).then(function() {
     $('#welcome').hide();
     return initializeExperiment();
   }).catch(handleError);
@@ -343,7 +343,7 @@ function recordError(e) {
   // Since error instances seem to disappear over time (as evidenced by lists of null values), we immediately serialize them here.
   errors.push(JSON.stringify([e.message, e.stack]));
   psiturk.recordUnstructuredData('error2', JSON.stringify(errors));
-  psiturk.saveData();
+  requestSaveData();
 }
 window.onerror = function(message, source, lineno, colno, error) {
   console.error(message, error);
