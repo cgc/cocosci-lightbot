@@ -32,9 +32,10 @@ class ExperimentServer(exp.ExperimentServer):
 
         # https://docs.gunicorn.org/en/stable/settings.html#access-log-format
         # Adding response time to the default access log.
+        # D request time in microseconds
+        # https://github.com/benoitc/gunicorn/blob/cf55d2/gunicorn/config.py#L1400
         from gunicorn.config import AccessLogFormat
         self.user_options['access_log_format'] = AccessLogFormat.default + ' %(D)s'
-        #self.user_options['access_log_format'] = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(M)sms'
 
     def load(self):
         # We run custom code modifying app here to ensure we don't run into psycopg2 "bad record mac"
