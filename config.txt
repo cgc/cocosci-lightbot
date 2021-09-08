@@ -29,7 +29,7 @@ secret_key = 'this is my secret key which is hard to guess, i should change this
 adserver_revproxy_host = cocosci-optdisco.herokuapp.com
 
 [Task Parameters]
-experiment_code_version = 1.10
+experiment_code_version = 1.11
 num_conds = 240
 num_counters = 1
 
