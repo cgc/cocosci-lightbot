@@ -2,15 +2,15 @@
   "name": "cocosci-optdisco",
   "version": "1.0.0",
   "description": "Navigation experiments over graphs to characterize hierarchical structure in behavior.",
-  "main": "dist/exp.html",
+  "source": "templates/exp.template.html",
   "dependencies": {
     "eslint": "^7.26.0",
-    "parcel": "^2.0.0-beta.2"
+    "parcel": "^2.0.0-rc.0"
   },
   "devDependencies": {},
   "scripts": {
-    "build": "parcel build --no-scope-hoist templates/exp.template.html --public-url /dist",
-    "watch": "parcel watch templates/exp.template.html --public-url /dist"
+    "build": "parcel build --no-scope-hoist --public-url /dist",
+    "watch": "parcel watch --public-url /dist"
   },
   "engines": {
     "node": "14.x"
