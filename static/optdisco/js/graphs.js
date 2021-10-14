@@ -1,8 +1,16 @@
-import {invariant} from './utils.js';
+import {invariant,shuffle} from './utils.js';
 import jsPsych from '../../lib/jspsych-exported.js';
 
 export function bfs(graph, start, goal, kwargs={}) {
-  const successors = kwargs.successors || (state => graph.successors(state));
+  let successors = kwargs.successors || (state => graph.successors(state));
+  if (kwargs.shuffleSuccessors) {
+    const successorsOrig = successors;
+    successors = (state) => {
+      const copy = Array.from(successorsOrig(state));
+      shuffle(copy);
+      return copy;
+    };
+  }
 
   function reconstructPath(cameFrom, start, goal) {
     const path = [];

@@ -103,6 +103,10 @@
   background-image: none;
   background-color: #2196f3;
 }
+.GraphNavigation.withGraphic .GraphNavigation-cue {
+  background-image: none;
+  background-color: #ccc;
+}
 
 .GraphNavigation-key {
   position: absolute;
@@ -292,4 +296,16 @@
 }
 .Timer-progress.progressing {
   transform: scaleX(1);
+}
+
+@keyframes error {
+  000% { transform: translateX(0px); }
+  025% { transform: translateX(-5px); }
+  050% { transform: translateX(0px); }
+  075% { transform: translateX(+5px); }
+  100% { transform: translateX(0px); }
+}
+
+.animateError {
+  animation: error 150ms 2;
 }

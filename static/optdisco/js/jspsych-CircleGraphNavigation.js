@@ -2,6 +2,7 @@ import {markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTi
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
+import {bfs} from './graphs.js';
 
 const BLOCK_SIZE = 100;
 // replace BLOCK_SIZE with hi=parseHTML('<div class="State" style="display: block;position: fixed;left: 200vw;"></div>');document.body.append(hi);console.log(hi.offsetWidth);hi.remove();console.log(hi.offsetWidth)
@@ -733,6 +734,60 @@ addPlugin('VisitNeighbors', trialErrorHandling(async function(root, trial) {
   jsPsych.finishTrial(data);
 }));
 
+addPlugin('FollowPath', trialErrorHandling(async function(root, trial) {
+  const instruction = document.createElement('div');
+  instruction.classList.add('GraphNavigation-instruction');
+  root.appendChild(instruction);
+  instruction.innerHTML = `Press the key to reach the circle marked ${renderSmallEmoji(null, 'GraphNavigation-cue')}.`;
+
+  const startTime = Date.now();
+  const data = {states: [], times: []};
+
+  let {path} = trial;
+  if (!path) {
+    console.log('WARNING: did not find path. using BFS');
+    path = bfs(trial.graph, trial.start, trial.goal, {shuffleSuccessors: true}).path.concat([trial.goal]);
+  }
+
+  const cg = new CircleGraph(trial);
+  root.appendChild(cg.el);
+
+  invariant(path[0] == trial.start);
+  let nextPathIndex = 1;
+
+  while (true) { // eslint-disable-line no-constant-condition
+    root.querySelector(`.GraphNavigation-State-${path[nextPathIndex-1]}`).classList.remove('GraphNavigation-cue');
+    root.querySelector(`.GraphNavigation-State-${path[nextPathIndex]}`).classList.add('GraphNavigation-cue');
+
+    // State transition
+    const {state} = await cg.keyTransition();
+    // Record information
+    data.states.push(state);
+    data.times.push(Date.now() - startTime);
+
+    if (path[nextPathIndex] == state) {
+      // they're right!
+      cg.setCurrentState(state);
+      nextPathIndex++;
+      if (nextPathIndex == path.length) {
+        break;
+      }
+      // Taking a pause...
+      await setTimeoutPromise(200);
+    } else {
+      // they're wrong!
+      cg.el.classList.add('animateError');
+      await setTimeoutPromise(300);
+      cg.el.classList.remove('animateError');
+    }
+  }
+
+  await endTrialScreen(root);
+
+  root.innerHTML = '';
+  jsPsych.finishTrial(data);
+}));
+
 addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   console.log(trial);
 
@@ -747,19 +802,13 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   const cues = trial.cues.map(state => cg.el.querySelector(`.GraphNavigation-State-${state}`));
   cues.forEach(cue => cue.classList.add('GraphNavigation-cue'));
 
-  await documentEventPromise('keypress', (e) => {
-    if (e.keyCode == 32) {
-      e.preventDefault();
-      return true;
-    }
-  });
+  await waitForSpace();
 
   instruction.innerHTML = '<br />';
   Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 0; });
+  cues.forEach(cue => cue.classList.remove('GraphNavigation-cue'));
 
   await setTimeoutPromise(500);
-
-  cues.forEach(cue => cue.classList.remove('GraphNavigation-cue'));
   cg.setCurrentState(trial.start, {showCurrentEdges: false});
 
   const start = Date.now();
@@ -767,8 +816,8 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
   let totalCorrect = 0;
   const neighbors = trial.graph.successors(trial.start);
 
-  for (const t of _.range(3)) {
-    const left = 3-t;
+  for (const t of _.range(neighbors.length)) {
+    const left = neighbors.length-t;
     instruction.textContent = `Click on the connected locations! ${left} click${left==1?'':'s'} left.`;
 
     const {state} = await cg.clickTransition({invalidStates: [trial.start].concat(data.states)});
@@ -777,7 +826,7 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
 
     const el = cg.el.querySelector(`.GraphNavigation-State-${state}`);
     el.classList.remove('PathIdentification-selectable');
-    el.style.backgroundColor = 'grey';
+    el.classList.add('GraphNavigation-cue');
 
     const correct = neighbors.includes(state);
     if (correct) {
@@ -785,9 +834,14 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     }
   }
 
-  Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 1; });
+  for (const succ of neighbors) {
+    queryEdge(cg.el, trial.start, succ).style.opacity = 1;
+  }
+  // OR???
+  //Array.from(cg.el.querySelectorAll('.GraphNavigation-edge')).forEach(el => { el.style.opacity = 1; });
+
   instruction.innerHTML = `
-    You correctly guessed ${totalCorrect}. Press spacebar or click to continue.
+    You correctly guessed ${totalCorrect} out of ${neighbors.length}. Press spacebar to continue.
   `;
 
   for (const state of new Set(neighbors.concat(data.states))) {
@@ -797,24 +851,18 @@ addPlugin('CGTransition', trialErrorHandling(async function(root, trial) {
     if (neighbors.includes(state)) {
       // Correct selection
       if (data.states.includes(state)) {
-        el.style.backgroundColor = 'green';
+        el.style.boxShadow = '0 0 0 10px #4caf50';
       // Correct, but not selected
       } else {
-        el.style.border = '4px solid green';
-        el.style.backgroundColor = 'white';
+//        el.style.boxShadow = '0 0 0 10px red';
       }
     } else {
       // Incorrect selection
-      el.style.backgroundColor = 'red';
+      el.style.boxShadow = '0 0 0 10px red';
     }
   }
 
-  await documentEventPromise('keypress', (e) => {
-    if (e.keyCode == 32) {
-      e.preventDefault();
-      return true;
-    }
-  });
+  await waitForSpace();
 
   root.innerHTML = '';
   jsPsych.finishTrial(data);
@@ -872,12 +920,7 @@ addPlugin('CirclePathIdentification', trialErrorHandling(async function(root, tr
 
 function endTrialScreen(root, msg) {
   root.innerHTML = `<h2 style="margin-top: 20vh;margin-bottom:100vh;">${msg || ''}Press spacebar to continue.</h2>`;
-  return documentEventPromise('keypress', (e) => {
-    if (e.keyCode == 32) {
-      e.preventDefault();
-      return true;
-    }
-  });
+  return waitForSpace();
 }
 
 function renderKeyInstruction(keys) {
