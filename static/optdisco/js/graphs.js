@@ -1,4 +1,4 @@
-import {invariant,shuffle} from './utils.js';
+import {invariant,random} from './utils.js';
 import jsPsych from '../../lib/jspsych-exported.js';
 
 export function bfs(graph, start, goal, kwargs={}) {
@@ -7,7 +7,7 @@ export function bfs(graph, start, goal, kwargs={}) {
     const successorsOrig = successors;
     successors = (state) => {
       const copy = Array.from(successorsOrig(state));
-      shuffle(copy);
+      random.shuffle(copy);
       return copy;
     };
   }

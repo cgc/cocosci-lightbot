@@ -156,6 +156,7 @@ export class CircleGraph {
   async navigate(options) {
     options = options || {};
     const termination = options.termination || ((state, states) => state == this.options.goal);
+    const onStateVisit = options.onStateVisit || ((s) => {});
     /*
     Higher-order function that stitches together other class methods
     for an interactive key-based navigation.
@@ -165,6 +166,7 @@ export class CircleGraph {
       times: [],
       states: [this.state],
     };
+    onStateVisit(this.state); // We have to log the initial state visit.
 
     while (true) { // eslint-disable-line no-constant-condition
       // State transition
@@ -172,6 +174,7 @@ export class CircleGraph {
       // Record information
       data.states.push(state);
       data.times.push(Date.now() - startTime);
+      onStateVisit(state);
       // Termination condition, intentionally avoiding calling cg.setCurrentState() below to avoid rendering.
       if (termination(state, data.states)) {
         break;
@@ -686,6 +689,10 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
 addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
   console.log(trial);
 
+  if (trial.dynamicProperties) {
+    Object.assign(trial, trial.dynamicProperties());
+  }
+
   const mapData = await maybeShowMap(root, trial);
 
   const cg = new CircleGraph(trial);
@@ -694,7 +701,7 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
   `;
   root.appendChild(cg.el);
 
-  const data = await cg.navigate();
+  const data = await cg.navigate({onStateVisit: trial.onStateVisit});
 
   await endTrialScreen(root);
 

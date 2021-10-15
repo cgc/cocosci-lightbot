@@ -395,13 +395,19 @@ export function makeSingletonPromiseQueue(fn) {
 }
 
 // https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
-export function shuffle(a) {
-    var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        x = a[i];
-        a[i] = a[j];
-        a[j] = x;
-    }
-    return a;
-}
+export const random = {
+  shuffle(a) {
+      var j, x, i;
+      for (i = a.length - 1; i > 0; i--) {
+          j = Math.floor(Math.random() * (i + 1));
+          x = a[i];
+          a[i] = a[j];
+          a[j] = x;
+      }
+      return a;
+  },
+  choice(choices) {
+    var index = Math.floor(Math.random() * choices.length);
+    return choices[index];
+  }
+};

@@ -1,5 +1,6 @@
 import {Graph, clockwiseKeys} from './graphs.js';
-import {invariant, markdown, graphics, graphicsLoading} from './utils.js';
+import {AdaptiveTasks} from './adaptive.js';
+import {invariant, markdown, graphics, graphicsLoading, random} from './utils.js';
 import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
 import './jspsych-CircleGraphNavigationInstruction.js';
 import allconfig from './configuration/configuration.js';
@@ -151,6 +152,8 @@ async function initializeExperiment() {
     return trials.map((t, idx) => ({showMap: (idx % 2) == 0, ...t}));
   }
 
+  const at = new AdaptiveTasks(graph);
+
   var gn = (trials) => ({
     type: 'CircleGraphNavigation',
     graph,
@@ -159,6 +162,26 @@ async function initializeExperiment() {
     graphRenderOptions,
     planarOptions,
   });
+
+  function gnAdaptive(trials) {
+    trials = addShowMap(trials);
+    const trialsAdaptive = [];
+    for (const t of trials) {
+      trialsAdaptive.push(t);
+      trialsAdaptive.push({
+        dynamicProperties: () => at.sampleLowOccTrial(),
+      });
+    }
+    return {
+      type: 'CircleGraphNavigation',
+      graph,
+      graphics: gfx,
+      onStateVisit: (s) => at.onStateVisit(s),
+      timeline: trialsAdaptive,
+      graphRenderOptions,
+      planarOptions,
+    };
+  }
 
   var pi = (copy, timeline) => ({
     type: 'CirclePathIdentification',
@@ -215,7 +238,7 @@ async function initializeExperiment() {
     },
     gn(configuration.graph.ordering.navigation_practice_len2),
     makePracticeOver(),
-    gn(configuration.graph.ordering.navigation),
+    gnAdaptive(configuration.graph.ordering.navigation),
 
     /* Solway 2014-style question */
     formWithValidation({
