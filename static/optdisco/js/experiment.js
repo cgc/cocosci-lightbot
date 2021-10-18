@@ -200,6 +200,30 @@ async function initializeExperiment() {
   `);
 
   var timeline = _.flatten([
+    /*
+    {
+      type: 'FollowPath',
+      graph,
+      graphics: gfx,
+      timeline: [{
+        start: 0,
+        goal: 1,
+      }],
+      graphRenderOptions,
+      planarOptions,
+    },
+    {
+      type: 'CGTransition',
+      graph,
+      graphics: gfx,
+      timeline: [{
+        start: 0,
+        cues: [0, 1],
+      }],
+      graphRenderOptions,
+      planarOptions,
+    },
+    */
     inst,
     makeSimpleInstruction(`
       First, you will perform a series of navigation tasks. We'll start with some practice.

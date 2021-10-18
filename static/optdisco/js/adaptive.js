@@ -40,10 +40,22 @@ export class AdaptiveTasks {
   sampleLowOccTrial() {
     let c = this.counter;
     const modal = new Set(argmaxes(c));
-    const validTasks = this.tasks.filter(t => !(modal.has(t.start) || modal.has(t.goal)))
-    const scores = validTasks.map(t => -(c[t.start] + c[t.goal]))
-    const minTaskIdxs = argmaxes(scores);
-    console.log('counter', this.counter, 'modal', modal, 'minTasks', minTaskIdxs.map(i => validTasks[i]));
-    return validTasks[random.choice(minTaskIdxs)];
+    let validTasks = this.tasks.filter(t => !(modal.has(t.start) || modal.has(t.goal)));
+    let allConnectedToModal = false;
+    if (!validTasks.length) {
+      allConnectedToModal = true;
+      console.log('warning all connected to modal', this.counter);
+      validTasks = this.tasks;
+    }
+    // In simulations, max of sum does better than min of sum or uniform over valid.
+    const scores = validTasks.map(t => c[t.start] + c[t.goal]);
+    const taskIdxs = argmaxes(scores);
+    return {
+      sampleLowOccTrialParams: {
+        allConnectedToModal,
+        counter: Array.from(c),
+      },
+      ...validTasks[random.choice(taskIdxs)],
+    };
   }
 }

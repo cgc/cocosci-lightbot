@@ -523,7 +523,7 @@ async function maybeShowMap(root, trial) {
     root.innerHTML = markdown(`
       Here is an unscrambled map of all the connections you will use to navigate. **This has the exact same locations and connections as when you navigate.**
 
-      You will see this map every two trials. **Hover to reveal** the picture for it.
+      You will see this map every few trials. **Hover to reveal** the picture for it.
 
       Take a moment to look at the map, then **press spacebar to continue**.
     `);
@@ -531,7 +531,7 @@ async function maybeShowMap(root, trial) {
     root.innerHTML = markdown(`
       Here is a map of all the connections you will use to navigate.
 
-      You will see this map every two trials. **Hover to reveal** the picture for it.
+      You will see this map every few trials. **Hover to reveal** the picture for it.
 
       Take a moment to look at the map, then **press spacebar to continue**.
     `);
@@ -557,7 +557,7 @@ async function simpleMapInstruction(root, trial) {
   });
 
   const inst = document.createElement('p');
-  inst.innerHTML = markdown(`Every other trial, we will show you a map with all the connections.<br /><br />You need to **hover to see the icons**. Hover over ${limit} different locations.`);
+  inst.innerHTML = markdown(`Every few trials, we will show you a map with all the connections.<br /><br />You need to **hover to see the icons**. Hover over ${limit} different locations.`);
   root.appendChild(inst);
   root.appendChild(cg.el);
 
@@ -635,7 +635,7 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
   root.appendChild(cg.el);
 
   // Intro
-  inst.innerHTML = 'Every other trial, we will show you an unscrambled map.<br />Press spacebar to unscramble this map.';
+  inst.innerHTML = 'Every few trials, we will show you an unscrambled map.<br />Press spacebar to unscramble this map.';
   await waitForSpace();
 
   // Animating...
@@ -689,8 +689,10 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
 addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial) {
   console.log(trial);
 
+  let dynamicProperties;
   if (trial.dynamicProperties) {
-    Object.assign(trial, trial.dynamicProperties());
+    dynamicProperties = trial.dynamicProperties();
+    Object.assign(trial, dynamicProperties);
   }
 
   const mapData = await maybeShowMap(root, trial);
@@ -708,6 +710,9 @@ addPlugin('CircleGraphNavigation', trialErrorHandling(async function(root, trial
   root.innerHTML = '';
   data.practice = trial.practice;
   data.mapData = mapData;
+  if (dynamicProperties) {
+    data.dynamicProperties = dynamicProperties;
+  }
   console.log(data);
   jsPsych.finishTrial(data);
 }));
