@@ -578,7 +578,7 @@ async function simpleMapInstruction(root, trial) {
   await promise;
 
   // End
-  inst.innerHTML = '<br /><br />Great job! Now press spacebar to continue the HIT.'
+  inst.innerHTML = '<br /><br />Great job! Now press spacebar to continue.'
   await waitForSpace();
   jsPsych.finishTrial();
 }
@@ -681,7 +681,7 @@ addPlugin('MapInstruction', trialErrorHandling(async function(root, trial) {
   await promise;
 
   // End
-  inst.textContent = 'Great job! Now press spacebar to continue the HIT.'
+  inst.textContent = 'Great job! Now press spacebar to continue.'
   await waitForSpace();
   jsPsych.finishTrial();
 }));

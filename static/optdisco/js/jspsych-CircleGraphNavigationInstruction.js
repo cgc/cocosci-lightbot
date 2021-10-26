@@ -50,7 +50,7 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
     {
       pre: () => {},
       html: markdown(`
-        Thanks for accepting our HIT! In this HIT, you will play a game
+        Thanks for accepting our experiment! In this experiment, you will play a game
         with these pictures.
 
         <button>Next</button>
@@ -118,10 +118,10 @@ addPlugin('CircleGraphNavigationInstruction', async function(root, trial) {
         });
       },
       html: markdown(`
-        This HIT will consist of navigation puzzles and questions using the connections below.
+        This experiment will consist of navigation puzzles and questions using the connections below.
         - During navigation puzzles, **${trial.onlyShowCurrentEdges ? 'the connections will only be displayed for your current location' : 'the connections will be displayed at all times'}**.
         - Afterwards, we’ll hide the connections and ask you some questions.
-        - Throughout the HIT, you’ll periodically see a map that shows all the connections, making it easier to see how the locations are laid out.
+        - Throughout the experiment, you’ll periodically see a map that shows all the connections, making it easier to see how the locations are laid out.
 
         Please take a moment to explore with the ${allKeys.map(renderKey).join(', ')} keys.
 

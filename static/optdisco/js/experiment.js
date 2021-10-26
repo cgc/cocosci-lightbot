@@ -31,25 +31,25 @@ function formWithValidation({stimulus, validate}) {
 const debrief = () => [{
   type: 'survey-multi-choice',
   preamble: markdown(`
-  # HIT complete
+  # Experiment complete
 
   Thanks for participating! Please answer the questions below before
-  submitting the HIT.
+  submitting the experiment.
   `),
   button_label: 'Submit',
   questions: [
     {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
     {prompt: "In general, do you consider yourself detail-oriented or a big picture thinker?", name: 'detail-big-picture', options: ['Detail-Oriented', 'Big Picture Thinker', 'Both', 'Neither'], required:true},
-    {prompt: "Did you take a picture of the map? If you did, how often did you have to look at it? Note: Your completed HIT will be accepted regardless of your answer to this question.", name: 'picture-map', options: ['Did not take picture', 'Rarely looked at picture', 'Sometimes looked at picture', 'Often looked at picture'], required:true},
-    {prompt: "Did you draw the map out? If you did, how often did you have to look at it? Note: Your completed HIT will be accepted regardless of your answer to this question.", name: 'draw-map', options: ['Did not draw map', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
+    {prompt: "Did you take a picture of the map? If you did, how often did you have to look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'picture-map', options: ['Did not take picture', 'Rarely looked at picture', 'Sometimes looked at picture', 'Often looked at picture'], required:true},
+    {prompt: "Did you draw the map out? If you did, how often did you have to look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'draw-map', options: ['Did not draw map', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
   ],
 }, {
   type: 'survey-text',
   preamble: markdown(`
-  # HIT complete
+  # Experiment complete
 
   Thanks for participating! Please answer the questions below before
-  submitting the HIT.
+  submitting the experiment.
   `),
   button_label: 'Submit',
   questions: [
