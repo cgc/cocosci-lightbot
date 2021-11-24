@@ -30,7 +30,7 @@ adserver_revproxy_host = cocosci-optdisco.herokuapp.com
 
 [Task Parameters]
 experiment_code_version = 1.13
-num_conds = 320
+num_conds = 960
 num_counters = 1
 
 [Shell Parameters]

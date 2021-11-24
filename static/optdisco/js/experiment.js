@@ -28,6 +28,20 @@ function formWithValidation({stimulus, validate}) {
   };
 }
 
+const simpleDebrief = () => [{
+  type: 'survey-multi-choice',
+  preamble: markdown(`
+  # Experiment complete
+
+  Thanks for participating! Please answer the questions below before
+  submitting the experiment.
+  `),
+  button_label: 'Submit',
+  questions: [
+    {prompt: "Did you draw or take a picture of the map? If so, how often did you look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'draw-picture-map', options: ['Did not draw/take picture', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
+  ],
+}];
+
 const debrief = () => [{
   type: 'survey-multi-choice',
   preamble: markdown(`
@@ -169,6 +183,7 @@ async function initializeExperiment() {
     for (const t of trials) {
       trialsAdaptive.push(t);
       trialsAdaptive.push({
+        showMap: false, // Accidentally left this out before (so it was falsey), but adding now to be explicit.
         dynamicProperties: () => at.sampleLowOccTrial(),
       });
     }
@@ -316,7 +331,7 @@ async function initializeExperiment() {
     makePracticeOver(),
     pi('subgoal', configuration.graph.ordering.probes_subgoal),
     pi('busStop', [{identifyOneState: true}]),
-    debrief(),
+    simpleDebrief(),
   ]);
 
   if (location.pathname == '/testexperiment') {
