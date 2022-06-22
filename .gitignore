@@ -219,3 +219,4 @@ node_modules/
 package-lock.json
 
 data
+.DS_Store

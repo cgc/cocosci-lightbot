@@ -1,0 +1,110 @@
+.InstructionList {
+  border: 1px solid black;
+  height: 40vh;
+  width: 12rem;
+  display: flex;
+  flex-flow: column;
+}
+
+.InstructionList.is-source .InstructionList-close {
+  display: none;
+}
+
+.InstructionList-close {
+  font-size: 1.4rem;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.InstructionList-close:hover {
+  text-decoration: none;
+}
+
+.InstructionList-header {
+  border-bottom: 1px solid black;
+  font-weight: 400;
+}
+
+.InstructionList-instructions {
+  flex-grow: 1;
+  display: flex;
+  flex-flow: column;
+  overflow-y: scroll;
+}
+
+.InstructionList-instruction {
+  border: 1px solid black;
+  border-radius: 5px;
+  background: white;
+  margin: 2px;
+  cursor: grab;
+}
+
+
+/* imported from old projects */
+
+.modal {
+    display: block;
+    position: fixed; /* Stay in place */
+    z-index: 10; /* Sit on top */
+    padding-top: 200px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.2); /* Black w/ opacity */
+}
+
+.modal-content {
+   background-color: #fefefe;
+   margin: auto;
+   padding: 20px;
+   text-align: center;
+   border: 1px solid #888;
+   width: 40%;
+}
+
+.jspsych-content {
+  max-width: 100%;
+ margin-top: 0;
+ position: relative;
+}
+
+.legal hr {
+ border-color: #ccc;
+}
+
+/* The timer */
+
+.Timer-progressContainer {
+  display: inline-block;
+  width: 50px;
+  height: 1rem;
+  background-color: #eee;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.Timer-progress {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(90, 160, 200);
+  background-color: #aaa;
+  transition: transform 1s linear;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.Timer-progress.progressing {
+  transform: scaleX(1);
+}
+
+@keyframes error {
+  000% { transform: translateX(0px); }
+  025% { transform: translateX(-5px); }
+  050% { transform: translateX(0px); }
+  075% { transform: translateX(+5px); }
+  100% { transform: translateX(0px); }
+}
+
+.animateError {
+  animation: error 150ms 2;
+}

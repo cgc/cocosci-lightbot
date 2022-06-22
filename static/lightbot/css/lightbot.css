@@ -1,0 +1,1142 @@
+/* GENERAL HTML TAGS
+   ================================================== */
+
+/*
+body {
+  font-size: 11px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: lighter;
+  color: #222222;
+  background-color: #5c5c5c;
+}
+*/
+
+h1, h2, h3 {
+  /*font-weight: 900;*/
+  font-weight: 700;
+  padding: 0 5px;
+  margin: 0;
+  text-transform: uppercase;
+  color: #fffff2;
+}
+
+h1 {
+  font-size: 31px;
+  margin: 40px;
+}
+
+h2 {
+  font-size: 12px;
+  padding: 5px;
+  border-bottom: 1px solid black;
+}
+
+h3 {
+  font-size: 20px;
+  margin: 5px 0 0 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  /*font-weight: 700;*/
+  font-weight: lighter;
+  color: inherit;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+
+/* JQUERY UI
+   ================================================== */
+
+.ui-widget-content {
+  border: 1px solid #7CA6BA;
+  background: none;
+  background-color: #4B4646;
+}
+
+/* ===[ JQuery UI dialogs ]=== */
+
+.ui-dialog-titlebar {
+  border: 0;
+  background: none;
+}
+
+.ui-dialog-title {
+  font-family: 'Open Sans', sans-serif;
+  /*font-weight: 900;*/
+  font-weight: lighter;
+  font-size: 20px;
+  color: #fffff2;
+}
+
+.ui-dialog-content {
+  font-family: 'Open Sans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #fffff2;
+}
+
+.ui-dialog-titlebar-close {
+    visibility: hidden;
+}
+
+/* ===[ JQuery UI buttons ]=== */
+
+.ui-button.ui-state-default {
+  background: none;
+  background-color: #5c5c5c;
+  border-color: #7ca6ba;
+}
+
+.ui-button.ui-state-hover {
+  background-color: #777777;
+  border-color: #a3cfc6;
+}
+
+.ui-button.ui-state-highlight {
+  border-color: #E59700;
+}
+
+.ui-button .ui-button-text {
+  font-family: 'Open Sans', sans-serif;
+  /*font-weight: 700;*/
+  font-weight: lighter;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* ===[ JQuery UI accordion ]=== */
+
+.ui-accordion .ui-accordion-header {
+  border: 1px solid #7ca6ba;
+  margin-top: 5px;
+  background-color: #5c5c5c;
+  background-image: none;
+  padding-left: 20px;
+}
+
+.ui-accordion .ui-accordion-header a {
+  font-family: 'Open Sans', sans-serif;
+  /*font-weight: 900;*/
+  font-weight: lighter;
+  color: #FFFFF2;
+  padding-left: 0;
+  font-size: 14px;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active {
+  border-color: #a3cfc6;
+  background-color: #fffff2;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active a{
+  color: #222;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-hover:not(.ui-state-active) {
+  border-color: #a3cfc6;
+  background-color: #777777;
+}
+
+.ui-accordion .ui-accordion-header:first-child {
+  margin-top: 0px;
+}
+
+.ui-accordion .ui-accordion-content {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: lighter;
+  font-size: 14px;
+  line-height: 18px;
+  border: 1px solid #a3cfc6;
+  border-top: 0px;
+  margin-top: -3px;
+  background-color: #fffff2;
+  background-image: none;
+  padding: 10px 20px;
+}
+
+/* ===[ Additional JQuery icons (achievements and medals) ]=== */
+
+/*
+.achievement {
+  background-image: url('../img/achievement.png');
+  width: 32px;
+  height: 32px;
+}
+
+.medal {
+  background-image: url('../img/medals.png');
+  width: 32px;
+  height: 32px;
+}
+
+.medal-gold {
+  background-position: -32px 0;
+}
+
+.medal-silver {
+  background-position: -64px 0;
+}
+
+.medal-bronze {
+  background-position: -96px 0;
+}
+*/
+
+.flip {
+  -moz-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: fliph; /*IE*/
+}
+
+.ui-icon-close {
+  cursor: pointer;
+}
+
+/* SCREENS
+   ================================================== */
+
+#lightbot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /*width: 980px;*/
+  width: 942px;
+  height: 740px;
+  margin-left: -471px;
+  /* margin-left: auto; */
+  /* margin-right: -300px; */
+/*  margin-left: -600px;*/
+  margin-top: -370px;
+}
+
+#credits {
+  font-size: 13px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 20px;
+  text-align: center;
+}
+
+#credits2 {
+  font-size: 13px;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  height: 16px;
+  text-align: center;
+}
+
+.ui-screen {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  height: 700px;
+  border: 1px solid #000;
+  background-color: #4b4646;
+}
+
+#gameScreen {
+  background: #000;
+}
+
+/* WELCOME SCREEN
+   ================================================== */
+
+/*#welcomeScreen .helpButton, #welcomeScreen .levelSelectButton {
+  position: absolute;
+  bottom: 20px;
+}*/
+
+#welcomeScreen .consentscreenSelectButton {
+  position: absolute;
+  bottom: 20px;
+}
+
+#welcomeScreen .consentscreenSelectButton {
+  /*bottom: 295px;*/
+  top: 50%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -125px;
+  /*right: 365px;*/
+  border-width: 2px;
+  width: 250px;
+  height: 100px;
+}
+
+/*#welcomeScreen .helpButton {
+  right: 75px;
+}
+*/
+
+/*#welcomeScreen .levelSelectButton {
+  right: 278px;
+  border-width: 2px;
+}*/
+
+/* ACHIEVEMENTS SCREEN
+   ================================================== */
+
+#achievementsScreen .mainMenuButton {
+  position: absolute;
+  left: 40px;
+  bottom: 40px;
+}
+
+#achievementsList {
+  height: 513px;
+  overflow: auto;
+  padding: 0px;
+  margin: 0px 40px;
+  color: #fffff2;
+  list-style-type: none;
+}
+
+#achievementsList li {
+  border: 1px solid #7ca6ba;
+  background-color: #5c5c5c;
+  height: 50px;
+  margin-bottom: 5px;
+}
+
+#achievementsList li:hover {
+  border-color: #a3cfc6;
+  background-color: #777777;
+}
+
+#achievementsList li img {
+  float: left;
+  margin:5px 15px 5px 5px;
+}
+
+/* LEVEL SELECT SCREEN
+   ================================================== */
+
+#levelSelectScreen .mainMenuButton {
+  position: absolute;
+  left: 40px;
+  bottom: 40px;
+}
+
+#levelSelectScreen ul {
+  width: 700px;
+  list-style-type: none;
+  margin: 50px auto;
+  padding: 0;
+}
+
+#levelSelectScreen li {
+  margin: 5px 5px;
+  padding: 1px;
+  float: left;
+  width: 120px;
+  height: 90px;
+  font-size: 4em;
+  line-height: 2em;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid #7ca6ba;
+  background-color: #5c5c5c;
+  color: #fffff2;
+}
+
+#levelSelectScreen li.ui-state-highlight {
+  color: #222;
+  background: none;
+  border-color: #a3cfc6;
+  background-color: #f8f4d2;
+}
+
+#levelSelectScreen li.ui-state-highlight.ui-state-hover {
+  background: none;
+  border-color: #a3cfc6;
+  background-color: #fbfaf6;
+}
+
+#levelSelectScreen li.ui-state-hover:not(.ui-state-highlight) {
+  background: none;
+  border-color: #a3cfc6;
+  background-color: #777777;
+}
+
+/* GAME SCREEN
+   ================================================== */
+
+.canvasContainer {
+  position: absolute;
+  bottom: 50px;
+  /*left: 323px;*/
+  left: 438px;
+  width: 500px;
+  /*width: 500px;*/
+  height: 333px;
+  background-color: white;
+}
+
+.videoContainer {
+  position: absolute;
+  top: 1px;
+  /*left: 323px;*/
+  left: 438px;
+  width: 500px;
+  /*width: 500px;*/
+  height: 333px;
+  background-color: white;
+}
+
+/*#clearbuttonContainer {
+  position: absolute;
+  left: 1px;
+  bottom: 50px;
+  width: 175px;
+  height: 30px;
+  background-color: #4B4646;
+  float: right;
+}*/
+
+#clearbuttonContainer {
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  width: 942px;
+  height: 46px;
+  background-color: #4B4646;
+}
+
+.clearMainButton{
+  position:absolute;
+  bottom: 1px;
+  left: 1px;
+  /* width: 156px; */
+  width: 103px;
+  height: 44px;
+  border: 3px solid #7ca6ba;
+}
+
+#clearP1Button{
+  position:absolute;
+  bottom: 1px;
+  left: 107px;
+  width: 55px;
+  height: 44px;
+  border: 3px solid #7ca6ba;
+}
+
+#clearP2Button{
+  position:absolute;
+  bottom: 1px;
+  left: 165px;
+  width: 55px;
+  height: 44px;
+  border: 3px solid #7ca6ba;
+}
+
+#clearP3Button{
+  position:absolute;
+  bottom: 1px;
+  left: 219px;
+  width: 55px;
+  height: 44px;
+  border: 3px solid #7ca6ba;
+}
+
+#clearP4Button{
+  position:absolute;
+  bottom: 1px;
+  left: 272px;
+  width: 55px;
+  /* width: 80px; */
+  height: 44px;
+  border: 3px solid #7ca6ba;
+}
+
+#runButton{
+  position:absolute;
+  bottom: 48px;
+  left: 1px;
+  /* width: 156px; */
+  width: 106px;
+  height: 44px;
+  border: 6px solid orange;
+}
+
+/* ===[ Instruction Container ]=== */
+
+#programLengthContainer {
+  position: absolute;
+  top: 1px;
+/*  right: 1px;*/
+  left: 804px;
+/*  width: 286px;*/
+  width: 125px;
+  height: 150px;
+  background-color: #4B4646;
+  border: 6px solid #306EFF;
+}
+
+#instructionsContainer {
+  position: absolute;
+  top: 1px;
+/*  right: 1px;*/
+  left: 321px;
+/*  width: 286px;*/
+  /* width: 150px; */
+  width: 100px;
+  height: 310px;
+  background-color: #4B4646;
+  border-top: 3px solid #7ca6ba;
+  border-left: 8px solid #7ca6ba;
+  border-bottom: 8px solid #7ca6ba;
+  border-right: 8px solid #7ca6ba;
+}
+
+#instructionsContainer > div.ui-widget-content {
+  overflow: auto;
+  border: 0px;
+}
+
+#instructionsContainer li {
+  cursor: move;
+  background-color: #5c5c5c;
+}
+
+#instructionsContainer .ui-icon-close, li.ui-draggable-dragging .ui-icon-close {
+  display: none;
+}
+
+#instructionsContainer li div, li.ui-draggable-dragging div, #instructionsContainer li span:first-child + span {
+  display: none;
+}
+
+/* ===[ Program Container ]=== */
+
+#programContainer {
+  position: absolute;
+/*  bottom: 1px;*/
+  top: 1px;
+/*  right: 1px;*/
+  left:1px;
+/*  width: 286px;*/
+  /* width: 150px; */
+  width: 100px;
+/*  height: 476px;*/
+  height: 598px;
+  background-color: #4B4646;
+  border: 3px solid orange;
+}
+
+#programContainer input[type="number"] {
+  margin: 0px;
+  padding: 0px;
+  width: 40px;
+}
+
+/* allows the droppable program container to show a scrollbar when the program fills up */
+#programContainer > div {
+  height: 565px;
+  /*height: 1000px;*/
+  overflow: scroll;
+}
+
+/* the droppable area should fill the entire programcontainer */
+#programContainer > div > ul {
+  min-height: 540px;
+}
+
+#programContainer li {
+  cursor: move;
+}
+
+/* sortable helper */
+#programContainer li.ui-state-highlight {
+  height: 18px;
+}
+
+#programContainer > div.ui-widget-content {
+  height: 587px;
+  border: 0px;
+  overflow: auto;
+}
+
+#instructionsContainer ul, #programContainer ul {
+  margin: 0em;
+  list-style: none;
+  padding: 5px;
+}
+
+#instructionsContainer ul.ui-droppable, #programContainer ul.ui-droppable {
+  padding-bottom: 20px;
+}
+
+#instructionsContainer li, #programContainer li, li.ui-draggable-dragging {
+  list-style: none;
+  border: 1px solid black;
+  margin: 0 0 2px 0;
+  padding: 5px 5px;
+  font-size: 11px;
+  background: none;
+  /*background-color: #5c5c5c;*/
+  background-color: orange;
+  /*border-color: #7ca6ba;*/
+  border-color: orange;
+}
+
+#instructionsContainer li p, #programContainer li p, li.ui-draggable-dragging p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.1em;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#instructionsContainer li.ui-state-hover, #programContainer li.ui-state-hover {
+  background-color: #777777;
+  /*border-color: #a3cfc6;*/
+  border-color: orange;
+}
+
+li.ui-draggable-dragging {
+  width: 130px;
+}
+
+/* highlight droppable areas with a color */
+#programContainer .ui-state-droppable {
+  background-color: #fffed0;
+}
+
+/* highlight the droppable area the mouse is currently hovering with another color */
+#programContainer .ui-state-droppable-hover {
+  background-color: #fbeea4;
+}
+
+/* ===[ Process 1 Container ]=== */
+
+#process1Container {
+  position: absolute;
+  top: 1px;
+  left: 107px;
+  /* width: 150px; */
+  width: 100px;
+  height: 319px;
+  background-color: #4B4646;
+  border-top: 3px solid #7ca6ba;
+  border-left: 8px solid #7ca6ba;
+  border-bottom: 8px solid #7ca6ba;
+  border-right: 8px solid #7ca6ba;
+}
+
+#process1Container input[type="number"] {
+  margin: 0px;
+  padding: 0px;
+  width: 40px;
+}
+
+/* allows the droppable program container to show a scrollbar when the program fills up */
+#process1Container > div {
+  height: 286px;
+  overflow: auto;
+}
+
+/* the droppable area should fill the entire programcontainer */
+#process1Container > div > ul {
+  min-height: 261px;
+}
+
+#process1Container li {
+  cursor: move;
+}
+
+/* sortable helper */
+#process1Container li.ui-state-highlight {
+  height: 18px;
+}
+
+#process1Container > div.ui-widget-content {
+  height: 308px;
+  border: 0px;
+  overflow: auto;
+}
+
+#instructionsContainer ul, #process1Container ul {
+  margin: 0em;
+  list-style: none;
+  padding: 5px;
+}
+
+#instructionsContainer ul.ui-droppable, #process1Container ul.ui-droppable {
+  padding-bottom: 20px;
+}
+
+#instructionsContainer li, #process1Container li, li.ui-draggable-dragging {
+  list-style: none;
+  border: 1px solid black;
+  margin: 0 0 2px 0;
+  padding: 5px 5px;
+  font-size: 11px;
+  background: none;
+  background-color: #5c5c5c;
+  /*background-color: #7ca6ba;*/
+  border-color: #7ca6ba;
+}
+
+#instructionsContainer li p, #process1Container li p, li.ui-draggable-dragging p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.1em;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#instructionsContainer li.ui-state-hover, #process1Container li.ui-state-hover {
+  background-color: #777777;
+  border-color: #a3cfc6;
+}
+
+/* highlight droppable areas with a color */
+#process1Container .ui-state-droppable {
+  background-color: #c3d7e0;
+}
+
+/* highlight the droppable area the mouse is currently hovering with another color */
+#process1Container .ui-state-droppable-hover {
+  background-color: #b1ccd8;
+}
+
+/* ===[ Process 2 Container ]=== */
+
+#process2Container {
+  position: absolute;
+  bottom: 47px;
+  left: 107px;
+  /* width: 150px; */
+  width: 100px;
+  height: 319px;
+  background-color: #4B4646;
+  border-left: 8px solid #7ca6ba;
+  border-bottom: 3px solid #7ca6ba;
+  border-right: 8px solid #7ca6ba;
+}
+
+#process2Container input[type="number"] {
+  margin: 0px;
+  padding: 0px;
+  width: 40px;
+}
+
+/* allows the droppable program container to show a scrollbar when the program fills up */
+#process2Container > div {
+  height: 286px;
+  overflow: auto;
+}
+
+/* the droppable area should fill the entire programcontainer */
+#process2Container > div > ul {
+  min-height: 261px;
+}
+
+#process2Container li {
+  cursor: move;
+}
+
+/* sortable helper */
+#process2Container li.ui-state-highlight {
+  height: 18px;
+}
+
+#process2Container > div.ui-widget-content {
+  height: 308px;
+  border: 0px;
+  overflow: auto;
+}
+
+#instructionsContainer ul, #process2Container ul {
+  margin: 0em;
+  list-style: none;
+  padding: 5px;
+}
+
+#instructionsContainer ul.ui-droppable, #process2Container ul.ui-droppable {
+  padding-bottom: 20px;
+}
+
+#instructionsContainer li, #process2Container li, li.ui-draggable-dragging {
+  list-style: none;
+  border: 1px solid black;
+  margin: 0 0 2px 0;
+  padding: 5px 5px;
+  font-size: 11px;
+  background: none;
+  background-color: #5c5c5c;
+  /*background-color: #7ca6ba;*/
+  border-color: #7ca6ba;
+}
+
+#instructionsContainer li p, #process2Container li p, li.ui-draggable-dragging p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.1em;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#instructionsContainer li.ui-state-hover, #process2Container li.ui-state-hover {
+  background-color: #777777;
+  border-color: #a3cfc6;
+}
+
+/* highlight droppable areas with a color */
+#process2Container .ui-state-droppable {
+  background-color: #c3d7e0;
+}
+
+/* highlight the droppable area the mouse is currently hovering with another color */
+#process2Container .ui-state-droppable-hover {
+  background-color: #b1ccd8;
+}
+
+/* ===[ Process 3 Container ]=== */
+
+#process3Container {
+  position: absolute;
+  top: 1px;
+  left: 214px;
+  /* width: 150px; */
+  width: 100px;
+  height: 319px;
+  background-color: #4B4646;
+  border-top: 3px solid #7ca6ba;
+  border-left: 8px solid #7ca6ba;
+  border-bottom: 8px solid #7ca6ba;
+  border-right: 8px solid #7ca6ba;
+}
+
+#process3Container input[type="number"] {
+  margin: 0px;
+  padding: 0px;
+  width: 40px;
+}
+
+/* allows the droppable program container to show a scrollbar when the program fills up */
+#process3Container > div {
+  height: 286px;
+  overflow: auto;
+}
+
+/* the droppable area should fill the entire programcontainer */
+#process3Container > div > ul {
+  min-height: 261px;
+}
+
+#process3Container li {
+  cursor: move;
+}
+
+/* sortable helper */
+#process3Container li.ui-state-highlight {
+  height: 18px;
+}
+
+#process3Container > div.ui-widget-content {
+  height: 308px;
+  border: 0px;
+  overflow: auto;
+}
+
+#instructionsContainer ul, #process3Container ul {
+  margin: 0em;
+  list-style: none;
+  padding: 5px;
+}
+
+#instructionsContainer ul.ui-droppable, #process3Container ul.ui-droppable {
+  padding-bottom: 20px;
+}
+
+#instructionsContainer li, #process3Container li, li.ui-draggable-dragging {
+  list-style: none;
+  border: 1px solid black;
+  margin: 0 0 2px 0;
+  padding: 5px 5px;
+  font-size: 11px;
+  background: none;
+  background-color: #5c5c5c;
+  /*background-color: #7ca6ba;*/
+  border-color: #7ca6ba;
+}
+
+#instructionsContainer li p, #process3Container li p, li.ui-draggable-dragging p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.1em;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#instructionsContainer li.ui-state-hover, #process3Container li.ui-state-hover {
+  background-color: #777777;
+  border-color: #a3cfc6;
+}
+
+/* highlight droppable areas with a color */
+#process3Container .ui-state-droppable {
+  background-color: #c3d7e0;
+}
+
+/* highlight the droppable area the mouse is currently hovering with another color */
+#process3Container .ui-state-droppable-hover {
+  background-color: #b1ccd8;
+}
+
+/* ===[ Process 4 Container ]=== */
+
+#process4Container {
+  position: absolute;
+  bottom: 47px;
+  left: 214px;
+  /* width: 150px; */
+  width: 100px;
+  height: 319px;
+  background-color: #4B4646;
+  border-left: 8px solid #7ca6ba;
+  border-bottom: 3px solid #7ca6ba;
+  border-right: 8px solid #7ca6ba;
+}
+
+#process4Container input[type="number"] {
+  margin: 0px;
+  padding: 0px;
+  width: 40px;
+}
+
+/* allows the droppable program container to show a scrollbar when the program fills up */
+#process4Container > div {
+  height: 286px;
+  overflow: auto;
+}
+
+/* the droppable area should fill the entire programcontainer */
+#process4Container > div > ul {
+  min-height: 261px;
+}
+
+#process4Container li {
+  cursor: move;
+}
+
+/* sortable helper */
+#process4Container li.ui-state-highlight {
+  height: 18px;
+}
+
+#process4Container > div.ui-widget-content {
+  height: 308px;
+  border: 0px;
+  overflow: auto;
+}
+
+#instructionsContainer ul, #process4Container ul {
+  margin: 0em;
+  list-style: none;
+  padding: 5px;
+}
+
+#instructionsContainer ul.ui-droppable, #process4Container ul.ui-droppable {
+  padding-bottom: 20px;
+}
+
+#instructionsContainer li, #process4Container li, li.ui-draggable-dragging {
+  list-style: none;
+  border: 1px solid black;
+  margin: 0 0 2px 0;
+  padding: 5px 5px;
+  font-size: 11px;
+  background: none;
+  background-color: #5c5c5c;
+  /*background-color: #7ca6ba;*/
+  border-color: #7ca6ba;
+}
+
+#instructionsContainer li p, #process4Container li p, li.ui-draggable-dragging p {
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.1em;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  color: #FFFFF2;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#instructionsContainer li.ui-state-hover, #process4Container li.ui-state-hover {
+  background-color: #777777;
+  border-color: #a3cfc6;
+}
+
+/* highlight droppable areas with a color */
+#process4Container .ui-state-droppable {
+  background-color: #c3d7e0;
+}
+
+/* highlight the droppable area the mouse is currently hovering with another color */
+#process4Container .ui-state-droppable-hover {
+  background-color: #b1ccd8;
+}
+
+/* CONSENT AND FOLLOWUP SCREENS
+  =================================================== */
+#headingContainer {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 500px;
+  margin-left: -250px;
+}
+
+#consentContainer {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  margin-left: -250px;
+  width: 500px;
+  background-color: #fffff2;
+  border: 2px solid black;
+}
+
+#consentbuttonContainer {
+  position: absolute;
+  bottom: 15px;
+  /*left: 175px;*/
+  /*left: 50%;*/
+  margin-left: 175px;
+  /*margin-left: auto;*/
+  width: 50%;
+}
+
+#followupContainer {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  margin-left: -250px;
+  width: 500px;
+  background-color: #fffff2;
+  border: 2px solid black;
+}
+
+
+
+/* INSTRUCTIONS SCREENS
+  =================================================== */
+
+
+#instructiontopboxContainer {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  /*left: 300px;*/
+  width: 400px;
+  margin-left: -200px;
+  /*margin-left: */
+}
+
+#instructionbottomboxContainer {
+  position: absolute;
+  bottom: 8px;
+  right: 35px;
+  /*left: 300px;*/
+  width: 400px;
+/*  margin-left: -200px;*/
+  /*margin-left: */
+}
+
+#nextbuttonContainer{
+  position:absolute;
+  bottom: 10px;
+  right: 20px;
+  width: 50px;
+}
+
+.skipButton {
+  display: none;
+}
+
+#backbuttonContainer{
+  position:absolute;
+  bottom: 10px;
+  left: 20px;
+  width: 50px;
+}
+
+#centertextContainer {
+  position: absolute;
+  top: 200px;
+  left: 50%;
+  width: 400px;
+  margin-left: -200px;
+}
+
+#toptextContainer {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 400px;
+  margin-left: -200px;
+}
+
+#tutorialimg {
+  position: absolute;
+  width: 462px;
+  height: 281px;
+  top: 125px;
+  left: 72%;
+  margin-left: -231px;
+}
+
+.pageCounterContainer{
+  position:absolute;
+  bottom: 10px;
+  right: 80px;
+  width: 75px;
+  height: 25px;
+  background-color: #fffff2;
+  border: 2px solid black;
+}
+
+#submitButton {
+  position:absolute;
+  /*bottom: 295px;*/
+  bottom: 15px;
+  left: 50%;
+  /*margin-top: -50px;*/
+  margin-left: -50px;
+  /*right: 365px;*/
+  border-width: 2px;
+  width: 100px;
+  height: 25px;
+}

@@ -5,6 +5,8 @@
  * experiments look polished without any additional styles.
  */
 
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700);
+
  /* Container holding jsPsych content */
 
  .jspsych-display-element {
@@ -47,8 +49,6 @@
 
 
 /* fonts and type */
-
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700);
 
 .jspsych-display-element {
   /*font-family: 'Open Sans', 'Arial', sans-serif;*/

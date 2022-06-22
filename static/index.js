@@ -5,7 +5,8 @@ import './lib/backbone-min.js';
 import './css/bootstrap.min.css';
 import './css/style.css';
 import './lib/jspsych-6.0.1/css/jspsych.css';
-import './optdisco/css/graphs.css';
+import './lightbot/css/base.css';
+import './lightbot/css/lightbot.css';
 
 import './lib/jspsych-exported.js';
 import './lib/jspsych-6.0.1/plugins/jspsych-survey-text.js';
@@ -13,7 +14,8 @@ import './lib/jspsych-6.0.1/plugins/jspsych-survey-multi-choice.js';
 
 import './js/psiturk.js';
 import './js/setup.js';
-import './optdisco/js/graphs.js';
-import './optdisco/js/jspsych-GraphTraining.js';
-import './optdisco/js/jspsych-PathIdentification.js';
-import './optdisco/js/experiment.js';
+
+//import './optdisco/js/graphs.js';
+//import './optdisco/js/jspsych-GraphTraining.js';
+//import './optdisco/js/jspsych-PathIdentification.js';
+import './lightbot/js/experiment.js';

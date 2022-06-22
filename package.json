@@ -4,17 +4,17 @@
   "description": "Navigation experiments over graphs to characterize hierarchical structure in behavior.",
   "source": "templates/exp.template.html",
   "dependencies": {
-    "eslint": "^7.26.0",
-    "parcel": "^2.0.0-rc.0"
+    "sortablejs": "^1.15.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "build": "parcel build --no-scope-hoist --public-url /dist",
+    "__build": "parcel build --no-scope-hoist --public-url /dist",
+    "build": "parcel build --public-url /dist",
     "watch": "parcel watch --public-url /dist"
   },
   "engines": {
     "node": "14.x"
   },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cgc/cocosci-optdisco.git"
@@ -24,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/cgc/cocosci-optdisco/issues"
   },
-  "homepage": "https://github.com/cgc/cocosci-optdisco#readme"
+  "homepage": "https://github.com/cgc/cocosci-optdisco#readme",
+  "devDependencies": {
+    "eslint": "^8.18.0",
+    "parcel": "^2.6.1",
+    "process": "^0.11.10"
+  }
 }

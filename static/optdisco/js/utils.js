@@ -132,7 +132,7 @@ export function graphicsUrl(emoji) {
   return 'data:image/svg+xml,'+encodeURIComponent(openmoji[code]);
 }
 
-function loadImage(src) {
+export function loadImage(src) {
   // https://stackoverflow.com/questions/52059596/loading-an-image-on-web-browser-using-promise
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -411,3 +411,12 @@ export const random = {
     return choices[index];
   }
 };
+
+export async function waitForSpace() {
+  return documentEventPromise('keypress', (e) => {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      return true;
+    }
+  });
+}
