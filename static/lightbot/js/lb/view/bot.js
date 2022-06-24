@@ -1,8 +1,8 @@
-import { loadImage } from "../../../optdisco/js/utils";
+import { loadImage } from "../../../../optdisco/js/utils";
 import instructions from "../instructions";
 import { Bot } from "../bot";
 
-const imagePromise = loadImage(new URL('../../images/sprites.png', import.meta.url));
+const imagePromise = loadImage(new URL('../../../images/sprites.png', import.meta.url));
 
 const botView = {
   initView() {
@@ -157,18 +157,6 @@ const botView = {
 };
 
 Object.assign(Bot.prototype, botView);
-
-/*
-lightBot.bot.animate = animate;
-lightBot.bot.step = step;
-lightBot.bot.draw = draw;
-lightBot.bot.getAnimation = getAnimation;
-lightBot.bot.this.setAnimation = this.setAnimation;
-lightBot.bot.getthis.currentStep = getthis.currentStep;
-lightBot.bot.getMovement = getMovement;
-lightBot.bot.this.setMovement = this.setMovement;
-lightBot.bot.isReadyForNextInstruction = isReadyForNextInstruction;
-*/
 
 
 

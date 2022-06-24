@@ -1,89 +1,12 @@
-//import {Graph, clockwiseKeys} from './graphs.js';
-//import {AdaptiveTasks} from './adaptive.js';
 import {invariant, markdown, graphics, graphicsLoading, random} from '../../optdisco/js/utils.js';
-//import {renderSmallEmoji} from './jspsych-CircleGraphNavigation.js';
-//import './jspsych-CircleGraphNavigationInstruction.js';
-//import allconfig from './configuration/configuration.js';
 import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
-
-import './LightbotTask';
-
-function formWithValidation({stimulus, validate}) {
-  return {
-    type: 'HTMLForm',
-    validate: formData => {
-      const correct = validate(formData);
-      if (!correct) {
-        $('fieldset').prop('disabled', true).find('label').css('opacity', 0.5);
-        $('fieldset').find(':input').prop('checked', false);
-        $('.validation').text('Incorrect answer. Locked for 3 seconds. Read instructions again.')
-        setTimeout(() => {
-          $('fieldset').prop('disabled', false).find('label').css('opacity', 1.0);
-        }, 3000);
-      }
-      return correct;
-    },
-    stimulus,
-  };
-}
-
-const simpleDebrief = () => [{
-  type: 'survey-multi-choice',
-  preamble: markdown(`
-  # Experiment complete
-
-  Thanks for participating! Please answer the questions below before
-  submitting the experiment.
-  `),
-  button_label: 'Submit',
-  questions: [
-    {prompt: "Did you draw or take a picture of the map? If so, how often did you look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'draw-picture-map', options: ['Did not draw/take picture', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
-  ],
-}];
-
-const debrief = () => [{
-  type: 'survey-multi-choice',
-  preamble: markdown(`
-  # Experiment complete
-
-  Thanks for participating! Please answer the questions below before
-  submitting the experiment.
-  `),
-  button_label: 'Submit',
-  questions: [
-    {prompt: "Which hand do you use to write?", name: 'hand', options: ['Left', 'Right', 'Either'], required:true},
-    {prompt: "In general, do you consider yourself detail-oriented or a big picture thinker?", name: 'detail-big-picture', options: ['Detail-Oriented', 'Big Picture Thinker', 'Both', 'Neither'], required:true},
-    {prompt: "Did you take a picture of the map? If you did, how often did you have to look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'picture-map', options: ['Did not take picture', 'Rarely looked at picture', 'Sometimes looked at picture', 'Often looked at picture'], required:true},
-    {prompt: "Did you draw the map out? If you did, how often did you have to look at it? Note: Your completed experiment will be accepted regardless of your answer to this question.", name: 'draw-map', options: ['Did not draw map', 'Rarely looked', 'Sometimes looked', 'Often looked'], required:true},
-  ],
-}, {
-  type: 'survey-text',
-  preamble: markdown(`
-  # Experiment complete
-
-  Thanks for participating! Please answer the questions below before
-  submitting the experiment.
-  `),
-  button_label: 'Submit',
-  questions: [
-    {'prompt': 'What strategy did you use to navigate?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Was anything confusing or hard to understand?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Do you have any suggestions on how we can improve the instructions or interface?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Any other comments?',
-     'rows': 2, columns: 60}
-  ]
-}];
-
-const makeSimpleInstruction = (text) => ({
-  type: "SimpleInstruction",
-  stimulus: markdown(text),
-});
+import mapData from '../json/maps.json';
+import originalMaps from '../json/original-maps.json';
+import cgcMaps from '../json/cgc-maps.json';
+import {filterTimelineForTesting, makeTimeline} from './timeline';
 
 const QUERY = new URLSearchParams(location.search);
 
@@ -121,96 +44,11 @@ async function initializeExperiment() {
   console.log('cond', CONDITION, 'configuration', configuration)
   */
 
+  let timeline = makeTimeline({});
 
-  const makePracticeOver = () => makeSimpleInstruction(`
-    Now, we'll move on to the real questions.
-  `);
-
-  var timeline = _.flatten([
-    {
-      type: 'X',
-    },
-    makePracticeOver(),
-    makeSimpleInstruction(`
-      First, you will perform a series of navigation tasks. We'll start with some practice.
-
-      Your goal is to navigate to the goal marked yellow in as few steps as possible.
-
-      ${'GraphNavigation-goal'}
-    `),
-    {
-      type: 'HTMLForm',
-      stimulus: `
-      ## ☝️ Helpful hint:
-
-      When navigating to a goal, one strategy is to set __subgoals__.
-
-      For example, imagine taking a road trip from Miami to Los Angeles 🚗.
-      You might plan to get to a subgoal in Texas from Miami and
-      then from there to Los Angeles.
-
-      <img src="static/optdisco/images/usa.png" style="width:700px">
-
-      In your own words, please explain what you think a subgoal is.
-
-      <textarea cols="50" rows="3" name="subgoal"></textarea>
-
-      __Also, please note that at the end of this experiment, we will ask you several questions about your subgoals.__
-      `,
-    },
-
-    /* Solway 2014-style question */
-    formWithValidation({
-      validate: formData => formData.comprehension == 'Any location you would visit',
-      stimulus: markdown(`
-      Great job!
-
-      Now, we will show you start and goal locations like before, but you do not have to navigate.
-
-      Instead, just click on a location you would visit along your route. It can be any location you would visit.
-
-      **The connections between locations will be hidden**, so make sure to study the map with all the connections.
-
-      After answering this comprehension question, you will perform a practice round.<br />
-      <br />
-      <h3>For the next rounds, what should you select?</h3>
-      <br />
-      <span class="validation" style="color: red; font-weight: bold;"></span><br />
-      <label><input type="radio" name="comprehension" value="The location just before the goal" />The location just before the goal</label><br />
-      <label><input type="radio" name="comprehension" value="Any location you would visit" />Any location you would visit</label><br />
-      <label><input type="radio" name="comprehension" value="The first location you would visit" />The first location you would visit</label><br />
-      <label><input type="radio" name="comprehension" value="Any location" />Any location</label><br />
-      `),
-    }),
-    simpleDebrief(),
-  ]);
-
-  if (location.pathname == '/testexperiment') {
-    const type = QUERY.get('type');
-    if (type) {
-      timeline = timeline.filter(t => t.type == type);
-    } else {
-      // If we aren't filtering by a type, we'll cut down the number of trials per type at least.
-      timeline = timeline.map(t => {
-        if (t.timeline) {
-          t.timeline = t.timeline.slice(0, 2);
-        }
-        return t;
-      });
-    }
-  }
+  timeline = filterTimelineForTesting(timeline);
 
   configureProgress(timeline);
-
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
-  console.error('FULL SCREEN')
 
   return startExperiment({
     timeline,
@@ -251,7 +89,7 @@ function configureProgress(timeline) {
 }
 
 $(window).on('load', function() {
-  return Promise.all([graphicsLoading, requestSaveData()]).then(function() {
+  return Promise.all([requestSaveData()]).then(function() {
     $('#welcome').hide();
     return initializeExperiment();
   }).catch(handleError);

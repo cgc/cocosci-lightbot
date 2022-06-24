@@ -1,4 +1,4 @@
-import { invariant } from "../../optdisco/js/utils";
+import { invariant } from "../../../optdisco/js/utils";
 import { LightBox } from "./box";
 import { directions } from "./constants";
 import instructions from './instructions';
@@ -16,7 +16,7 @@ export class Bot {
     this.initView();
   }
   reset() {
-    this.currentPos = this.startingPos;
+    this.currentPos = {...this.startingPos};
     this.direction = this.startingDirection;
     this.instructionQueue = [];
     this.executionQueue = [];
@@ -45,7 +45,6 @@ export class Bot {
 
   // executes and returns the next instruction
   executeNextInstruction() {
-    console.error('instruction limit if it goes too long ...')
     if (!this.executionQueue.length) {
       console.error('Bot executeNextInstruction: no instruction to execute');
       return null;

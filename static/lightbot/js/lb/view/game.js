@@ -1,10 +1,11 @@
-import { invariant, loadImage } from "../../../optdisco/js/utils";
+import { invariant, loadImage } from "../../../../optdisco/js/utils";
 import { directions } from "../constants";
 import { Projection } from "./projection";
 
 // They modify models in parent directory, so have to call them.
 import './box';
-import './bot';
+import { animations } from "./bot";
+import { Flourish } from "./flourish";
 
 // refresh rate
 const fps = 30;
@@ -13,13 +14,12 @@ const fpsDelay = 1000 / fps;
 // distance between lowest point in the map and the bottom edge
 const offsetY = 65;
 
-const bgTilePromise = loadImage(new URL('../../images/pattern.png', import.meta.url));
+const bgTilePromise = loadImage(new URL('../../../images/pattern.png', import.meta.url));
 
 export class Game {
   constructor(canvas, bot, onComplete) {
     this.canvas = canvas;
     this.onComplete = onComplete;
-    this.executing = false;
 
     this.bot = bot;
     invariant(this.bot);
@@ -37,13 +37,52 @@ export class Game {
       this.bg = this.ctx.createPattern(bgTile, 'repeat');
     });
 
+    this.flourish = new Flourish();
+
     window.setTimeout(this.update, fpsDelay) // HACK: for first loop b/c avoiding loading???? xxx
   }
 
+  state() {
+    if (this.bot.executionMode) {
+      return 'exec';
+    } else if (this.bot.instructionQueue.length) {
+      return 'post';
+    } else {
+      return 'init';
+    }
+  }
+
   execute(instructions) {
-    this.executing = true;
+    this.reset(); // always reset
     this.bot.queueInstructions(instructions);
     this.bot.execute();
+  }
+
+  check(instructions) {
+    this.reset(); // always reset
+    this.bot.queueInstructions(instructions);
+    this.bot.execute();
+    this.bot.executionMode = false; // HACK
+
+    while (this.bot.hasNextInstruction()) {
+      if (this.map.allLightsOn()) {
+        this.onComplete(true);
+        return
+      }
+      this.bot.executeNextInstruction();
+    }
+    // Need to run allLightsOn() here to make sure we catch the state change after last instruction.
+    this.onComplete(this.map.allLightsOn());
+  }
+
+  setComplete(success) {
+    // stop the bot
+    this.bot.clearExecutionQueue();
+    this.bot.executionMode = false;
+    this.onComplete(success);
+    if (success) {
+      this.flourish.activate();
+    }
   }
 
   update = () => {
@@ -51,44 +90,38 @@ export class Game {
     this.timeoutId = window.setTimeout(this.update, fpsDelay);
 
     // check if we can execute the next bot instruction here?
-    if (this.bot.isInExecutionMode() && this.bot.isReadyForNextInstruction() && this.bot.hasNextInstruction()) {
-      var oldPos = {...this.bot.currentPos}; // copy old position
-      var instruction = this.bot.executeNextInstruction(); // execute the next instruction
-      var newPos = this.bot.currentPos; // get the new position
-      this.bot.animate(instruction, oldPos, newPos);
+    if (this.bot.isInExecutionMode() && this.bot.isReadyForNextInstruction()) {
+      // check if map has been completed here
+      // intentionally doing this before we execute the instruction to let last light animation play out.
+      if (this.map.allLightsOn()) {
+        this.setComplete(true);
+        // We avoid clearing the update timeout so that light tiles can continue animating.
+      }
+
+      if (this.bot.hasNextInstruction()) {
+        var oldPos = { ...this.bot.currentPos }; // copy old position
+        var instruction = this.bot.executeNextInstruction(); // execute the next instruction
+        if (instruction) {
+          var newPos = this.bot.currentPos; // get the new position
+          this.bot.animate(instruction, oldPos, newPos);
+        } else {
+          // This is a weird case that can really only happen when you're calling an empty process
+          // TODO: consider changing things so we only queue flat programs without processes??
+          this.setComplete(false);
+        }
+      } else {
+        // No more instructions left! We call onComplete noting this isn't a success.
+        // No need to clear execution queue.
+        this.setComplete(false);
+      }
     }
-    // check if map has been completed here
-    if (this.executing && this.map.allLightsOn()) {
 
-      // stop the bot
-      this.bot.clearExecutionQueue();
-      //this.bot.executionMode = false; // HACK, this will halt last animation
-      this.executing = false;
-
-      /*
-      // // award medals
-      var medal = lightBot.medals.awardMedal();
-      lightBot.medals.display(medal); // show medal dialog
-      */
-
-      // award achievements
-      // var achievements = lightBot.achievements.awardAchievements();
-      // lightBot.achievements.display(achievements);
-
-      // stop the loop -> actually that halts animations (both tiles, but also final motion)
-      //window.clearTimeout(this.timeoutId);
-
-      // HACK HACK CHANGE
-      // HACK HACK CHANGE
-      // HACK HACK CHANGE
-      // HACK HACK CHANGE
-      // set the map as complete
-      this.onComplete();
-
-      // return to map selection screen
-    }
     this.step();
     this.draw();
+  }
+
+  destroy() {
+    window.clearTimeout(this.timeoutId);
   }
 
   reset() {
@@ -99,15 +132,16 @@ export class Game {
   step() {
     this.bot.step();
     this.map.step();
+    this.flourish.step();
   }
 
   draw() {
     //clear main this.canvas
-    this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // background
     this.ctx.fillStyle = this.bg;
-    this.ctx.fillRect(0,0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // draw the map and the bot in the correct order
     switch (this.bot.direction) {
@@ -126,10 +160,10 @@ export class Game {
           for (j = this.map.levelSize.y - 1; j >= 0; j--) {
             this.map.mapRef[i][j].draw(this.ctx, this.projection);
             switch (this.bot.getAnimation().name) {
-              case this.bot.animations.jumpUp.name:
-              case this.bot.animations.jumpDown.name:
+              case animations.jumpUp.name:
+              case animations.jumpDown.name:
                 if (this.bot.getMovement().dZ !== 0 && this.bot.getCurrentStep() / this.bot.getAnimation().duration <= 0.5) {
-                  if (this.bot.currentPos.x === i && this.bot.currentPos.y === j+1) {
+                  if (this.bot.currentPos.x === i && this.bot.currentPos.y === j + 1) {
                     this.bot.draw(this.ctx, this.projection);
                   }
                 } else {
@@ -138,8 +172,8 @@ export class Game {
                   }
                 }
                 break;
-              case this.bot.animations.walk.name:
-                if (this.bot.getMovement().dZ !== 0 && this.bot.currentPos.x === i && this.bot.currentPos.y === j+1) {
+              case animations.walk.name:
+                if (this.bot.getMovement().dZ !== 0 && this.bot.currentPos.x === i && this.bot.currentPos.y === j + 1) {
                   this.bot.draw(this.ctx, this.projection);
                 } else if (this.bot.currentPos.x === i && this.bot.currentPos.y === j) {
                   this.bot.draw(this.ctx, this.projection);
@@ -159,10 +193,10 @@ export class Game {
           for (j = this.map.levelSize.x - 1; j >= 0; j--) {
             this.map.mapRef[j][i].draw(this.ctx, this.projection);
             switch (this.bot.getAnimation().name) {
-              case this.bot.animations.jumpUp.name:
-              case this.bot.animations.jumpDown.name:
+              case animations.jumpUp.name:
+              case animations.jumpDown.name:
                 if (this.bot.getMovement().dX !== 0 && this.bot.getCurrentStep() / this.bot.getAnimation().duration <= 0.5) {
-                  if (this.bot.currentPos.x === j+1 && this.bot.currentPos.y === i) {
+                  if (this.bot.currentPos.x === j + 1 && this.bot.currentPos.y === i) {
                     this.bot.draw(this.ctx, this.projection);
                   }
                 } else {
@@ -171,8 +205,8 @@ export class Game {
                   }
                 }
                 break;
-              case this.bot.animations.walk.name:
-                if (this.bot.getMovement().dX !== 0 && this.bot.currentPos.x === j+1 && this.bot.currentPos.y === i) {
+              case animations.walk.name:
+                if (this.bot.getMovement().dX !== 0 && this.bot.currentPos.x === j + 1 && this.bot.currentPos.y === i) {
                   this.bot.draw(this.ctx, this.projection);
                 } else if (this.bot.currentPos.x === j && this.bot.currentPos.y === i) {
                   this.bot.draw(this.ctx, this.projection);
@@ -202,5 +236,6 @@ export class Game {
         break;
     }
 
+    this.flourish.draw(this.ctx, this.projection);
   }
 }

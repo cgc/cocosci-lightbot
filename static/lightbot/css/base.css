@@ -1,22 +1,37 @@
+:root {
+  --transition-speed: 250ms;
+  --instruction-list-height: 32rem;
+  --instruction-list-width: 12rem;
+  --instruction-list-padding: 3px;
+}
+
 .InstructionList {
   border: 1px solid black;
-  height: 40vh;
-  width: 12rem;
+  height: var(--instruction-list-height);
+  width: var(--instruction-list-width);
   display: flex;
   flex-flow: column;
+  box-sizing: border-box;
 }
 
 .InstructionList.is-source .InstructionList-close {
   display: none;
 }
 
+.InstructionList.is-disabled {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.15) 0 0);
+  cursor: not-allowed;
+}
+
 .InstructionList-close {
   font-size: 1.4rem;
   cursor: pointer;
   vertical-align: middle;
+  color: black;
 }
 .InstructionList-close:hover {
   text-decoration: none;
+  color: red;
 }
 
 .InstructionList-header {
@@ -29,14 +44,163 @@
   display: flex;
   flex-flow: column;
   overflow-y: scroll;
+  padding: var(--instruction-list-padding) var(--instruction-list-padding) var(--instruction-list-padding) var(--instruction-list-padding);
+  padding-bottom: 5rem; /* to help with drag/drop */
+}
+
+.InstructionList.is-source .InstructionList-instructions {
+  padding-bottom: var(--instruction-list-padding);
+
+  display: block;
 }
 
 .InstructionList-instruction {
-  border: 1px solid black;
-  border-radius: 5px;
+  /* #ccc and 4px come from bootstrap .btn */
+  border: 1px solid #ccc;
+  border-radius: 4px;
   background: white;
-  margin: 2px;
+  margin: 1px;
+  padding: 2px 4px;
   cursor: grab;
+  transition: background var(--transition-speed);
+  display: inline-block;
+
+  font-size: 18px;
+  line-height: 18px;
+}
+
+.InstructionList-instruction:hover,
+.InstructionList-instruction.sortable-ghost,
+.InstructionList-instruction.is-active {
+  /*box-shadow: 0 0 0 1px black;*/
+  /*background: #ccc;*/
+  /* https://stackoverflow.com/questions/65297617/how-to-make-an-elements-background-color-a-little-darker-using-css */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.15) 0 0);
+}
+
+/* https://colorhunt.co/palette/f2d7d9d3cedf9cb4cc748da6 actually not b/c it has a dark color */
+/* https://colorhunt.co/palette/ffe6e6f2d1d1daeaf1c6dce4 */
+.InstructionList-instruction[data-id="walk"] {
+  background-color: #DAEAF1;
+}
+.InstructionList-instruction[data-id="light"] {
+  background-color: #C6DCE4;
+}
+.InstructionList-instruction[data-id="turnLeft"] {
+  background-color: #F2D1D1;
+}
+.InstructionList-instruction[data-id="turnRight"] {
+  background-color: #FFE6E6;
+}
+
+/* https://colorhunt.co/palette/00ffab14c38eb8f1b0e3fcbf */
+.InstructionList[data-name="process1"] .InstructionList-header,
+.InstructionList-instruction[data-id="process1"] {
+  background-color: #14C38E;
+}
+.InstructionList[data-name="process2"] .InstructionList-header,
+.InstructionList-instruction[data-id="process2"] {
+  background-color: #00FFAB;
+}
+.InstructionList[data-name="process3"] .InstructionList-header,
+.InstructionList-instruction[data-id="process3"] {
+  background-color: #B8F1B0;
+}
+.InstructionList[data-name="process4"] .InstructionList-header,
+.InstructionList-instruction[data-id="process4"] {
+  background-color: #E3FCBF;
+}
+
+/*
+.InstructionList-instruction.sortable-ghost {
+  background: red;
+}
+.InstructionList-instruction.sortable-drag {
+  background: blue;
+}
+.InstructionList-instruction.sortable-chosen {
+  color: green;
+}
+*/
+
+
+.Editor {
+  display: flex;
+  user-select: none;
+}
+
+.Editor-instructions {
+  display: flex;
+  flex-flow: column;
+  flex-wrap: wrap;
+}
+
+.Editor-canvas {
+  position: relative;
+}
+.Editor-canvas .Editor-message {
+  position: absolute;
+
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 2rem;
+  margin: 1rem;
+  border-radius: 4px;
+  /*background-image: linear-gradient(rgba(1, 1, 1, 0.15) 0 0);*/
+
+  width: 90%;
+  backdrop-filter: blur(2px);
+  background-color: #00000011;
+}
+.Editor-canvas .Editor-message:empty {
+  display: none;
+}
+.Editor-canvas canvas {
+  width: 100%;
+}
+
+.Editor-sidebar {
+  /* annoyingly need width here and in Editor-instructions:
+    this one for tutorial with slimmed sidebar, below for normal UI */
+  width: calc(3 * var(--instruction-list-width));
+}
+
+.Editor-instructions {
+  height: calc(2 * var(--instruction-list-height));
+  width: calc(3 * var(--instruction-list-width));
+}
+
+.Editor-controls {
+  display: flex;
+  justify-content: space-around;
+}
+
+.Editor-clearButtons {
+  display: flex;
+  max-width: 300px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.Editor .InstructionList[data-name=instructions] {
+  width: 100%;
+  height: initial;
+}
+
+.Editor .InstructionList[data-name=main] {
+  height: calc(2 * var(--instruction-list-height));
+}
+
+
+.Editor.is-tutorial .InstructionList.is-source .InstructionList-instructions {
+  /* HACK: this is a reset that we employ just to make .glow work for tutorial */
+  overflow-y: initial;
+}
+.Editor.is-tutorial-theme-playOnce .InstructionList.is-disabled,
+.Editor.is-tutorial-theme-normalInstructions .InstructionList.is-disabled {
+  background-image: initial;
+  cursor: initial;
 }
 
 
@@ -65,6 +229,12 @@
    width: 40%;
 }
 
+#jspsych-target {
+  max-width: 1000px;
+  padding-top: 20px;
+  margin: 0 auto;
+}
+
 .jspsych-content {
   max-width: 100%;
  margin-top: 0;
@@ -74,6 +244,11 @@
 .legal hr {
  border-color: #ccc;
 }
+
+ul {
+  list-style-position: inside;
+}
+
 
 /* The timer */
 
@@ -108,3 +283,57 @@
 .animateError {
   animation: error 150ms 2;
 }
+
+.hide {
+  display: none;
+}
+.invisible {
+  visibility: hidden;
+}
+
+.glow {
+  /* from https://stackoverflow.com/questions/21240973/glow-animation-effect-in-css3-html5 */
+  animation: pulse 3s infinite linear;
+  position: relative;
+  z-index: 10;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow:0 0  16px 8px #0066cc; }
+  50% { box-shadow:0 0  20px 10px #0066cc; }
+}
+/*
+@keyframes pulse {
+  0%, 100% { box-shadow:0 0  20px 10px #0066cc; }
+  50% { box-shadow:0 0  30px 15px #0066cc; }
+}
+*/
+
+
+:root {
+  --flourish-dx: 0;
+  --flourish-dy: -100px;
+}
+.Flourish {
+  animation: Flourish 1.5s;
+  position: fixed;
+  z-index: 10;
+  /*opacity: 0; only need this if we don't immediately remove*/
+}
+@keyframes Flourish {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--flourish-dy)) translateX(var(--flourish-dx));
+  }
+}
+
+
+

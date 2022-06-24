@@ -3,7 +3,9 @@ export class Box {
     this.height = height;
     this.x = x;
     this.y = y;
-    this.reset = function () { };
+  }
+  reset() {
+    // pass
   }
 }
 
