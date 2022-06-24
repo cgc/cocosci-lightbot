@@ -174,13 +174,13 @@ class Editor {
                 <div class="Editor-controls">
                     <div class="Editor-playButtons">
                         <button class="Editor-play btn btn-primary"></button>
-                        <button class="Editor-check btn btn-info">Check</button>
+                        <button class="Editor-check btn btn-info">Quick Run⚡️</button>
                     </div>
                     <div class="Editor-clearButtons">
                     </div>
                 </div>
                 <div class="Editor-canvas">
-                    <div class="Editor-message"></div>
+                    <div class="Editor-message">${options.message||''}</div>
                     <canvas width="690" height="670"></canvas>
                 </div>
             </div>
@@ -443,6 +443,7 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
     };
     const editor = new Editor(root, {
         map: trial.map,
+        message: trial.message,
         onComplete(success) {
             data.complete.push({success, time: Date.now()});
             if (!success) {

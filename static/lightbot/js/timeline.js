@@ -290,12 +290,16 @@ export function makeTimeline(configuration) {
     {type: 'fullscreen', fullscreen_mode: true},
     makeTutorial(),
     makeSimpleInstruction(`
-
     Next up is one last practice problem.
     `),
     {
       type: 'LightbotTask',
       map: mapData[1],
+      message: markdown(`
+      From now on, you can use up to 4 processes.
+
+      If it is taking too long to watch the robot with <button class="btn btn-primary">Run</button>, then use <button class="btn btn-info">Quick Run⚡️</button>.
+      `),
     },
     makeSimpleInstruction(`
     Now we will begin the study. You will complete ${maps.length} levels.
