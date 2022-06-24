@@ -1,3 +1,4 @@
 PsiTurk>=2,<3"
 psycopg2==2.8.4
 Jinja2==3.0.3
+itsdangerous==2.0.1
