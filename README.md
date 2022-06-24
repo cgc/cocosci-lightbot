@@ -62,9 +62,3 @@ pip install --global-option=build_ext \
 ## Adding new OpenMoji
 
 To add new OpenMoji, you need to edit `static/optdisco/images/openmoji/copyscript.py` by adding in the new emoji to copy in. You'll first have to download the OpenMoji SVG Color pack from [their site](https://openmoji.org/) and change paths in the script to work for your installation. Then run `copyscript.py`.
-
-
-
-TODO TODO TODO
-
-verify when building that NODE_ENV=production and npm install includes dev packages
