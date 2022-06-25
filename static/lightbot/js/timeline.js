@@ -298,7 +298,7 @@ export function makeTimeline(configuration) {
       message: markdown(`
       From now on, you can use up to 4 processes.
 
-      If it is taking too long to watch the robot with <button class="btn btn-primary">Run</button>, then use <button class="btn btn-info">Quick Run⚡️</button>.
+      If <button class="btn btn-primary">Run</button> is taking too long, then try <button class="btn btn-info">Quick Run⚡️</button>.
       `),
     },
     makeSimpleInstruction(`

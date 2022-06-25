@@ -1,7 +1,7 @@
 [HIT Configuration]
-title = Navigating connected images
-description = This Psychology experiment consists of finding paths through a web of connected images.
-amt_keywords = Psychology
+title =
+description =
+amt_keywords =
 lifetime = 24
 us_only = true
 approve_requirement = 95
@@ -10,6 +10,9 @@ ad_group = Default psiTurk
 organization_name = SOME UNKNOWN UNIVERSITY
 browser_exclude_rule = MSIE, mobile, tablet
 allow_repeats = false
+
+[Prolific Configuration]
+completion_code=62475A11
 
 [Database Parameters]
 database_url = sqlite:///participants.db
@@ -26,7 +29,7 @@ login_username = user
 login_pw = pw
 threads = auto
 secret_key = 'this is my secret key which is hard to guess, i should change this'
-adserver_revproxy_host = cocosci-optdisco.herokuapp.com
+adserver_revproxy_host = cocosci-lightbot.herokuapp.com
 
 [Task Parameters]
 experiment_code_version = 1.14
@@ -42,4 +45,4 @@ bonus_message = "Thanks for participating!"
 #   https://<host>:<port>/ad
 
 use_psiturk_ad_server = false
-ad_location = https://cocosci-optdisco.herokuapp.com/pub
+ad_location = https://cocosci-lightbot.herokuapp.com/pub

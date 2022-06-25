@@ -51,7 +51,7 @@ def debug_complete_prolific():
     # Only when we're serving a sandbox/live (aka non-debug) request do we route people to
     # a completion code.
     if mode in ('sandbox', 'live') and user.hitid == 'prolific':
-        return render_template('complete_prolific.html')
+        return render_template('complete_prolific.html', completion_code=config.get('Prolific Configuration', 'completion_code'))
     # Outside of that case, we fall back to the default logic.
     else:
         return original_response

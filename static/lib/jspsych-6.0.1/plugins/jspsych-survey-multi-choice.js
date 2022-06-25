@@ -59,7 +59,15 @@ jsPsych.plugins['survey-multi-choice'] = (function() {
     var plugin_id_selector = '#' + plugin_id_name;
     var _join = function( /*args*/ ) {
       var arr = Array.prototype.slice.call(arguments, _join.length);
+      /*
+      note from cgc:
+      Previously used to look like this:
       return arr.join(separator = '-');
+      But this throws errors when we require variables to be declared before assignment.
+      I'm not sure why this isn't interpreted as a named argument, but it's unambiguous
+      as a positional parameter.
+      */
+      return arr.join('-');
     }
 
     // inject CSS for trial
