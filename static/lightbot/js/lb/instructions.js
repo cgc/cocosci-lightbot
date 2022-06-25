@@ -105,13 +105,22 @@ export const processInstructions = [
 ];
 export const allInstructions = normalInstructions.concat(processInstructions);
 
-export const instructionsByClassName = {};
+export const instructionsByClassName = {
+    LightInstruction,
+    WalkInstruction,
+    JumpInstruction,
+    TurnLeftInstruction,
+    TurnRightInstruction,
+    Process1Instruction,
+    Process2Instruction,
+    Process3Instruction,
+    Process4Instruction,
+};
 export default instructionsByClassName;
 
 export const instructionsByName = {};
 export const instructionsByActionCode = {};
 for (const inst of allInstructions) {
-    instructionsByClassName[inst.name] = inst
     instructionsByName[inst.instructionName] = inst;
     instructionsByActionCode[inst.actionCode] = inst;
 }
