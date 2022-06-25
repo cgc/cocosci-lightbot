@@ -13,7 +13,4 @@ import './lib/jspsych-exported.js';
 import './js/psiturk.js';
 import './js/setup.js';
 
-//import './optdisco/js/graphs.js';
-//import './optdisco/js/jspsych-GraphTraining.js';
-//import './optdisco/js/jspsych-PathIdentification.js';
 import './lightbot/js/experiment.js';
