@@ -1,10 +1,11 @@
-# cocosci-optdisco
+# cocosci-lightbot
 
-Navigation experiments over graphs to characterize hierarchical structure in behavior.
+Experiment to examine how people algorithmically structure their solutions. Based on Lightbot, a game used to teach programming. Code draws heavily from https://github.com/haan/Lightbot.
 
-Test out the entire experiment [here](https://cocosci-optdisco.herokuapp.com) or try out specific tasks:
-- [GraphTraining](https://cocosci-optdisco.herokuapp.com/testexperiment?type=GraphTraining)
-- [PathIdentification](https://cocosci-optdisco.herokuapp.com/testexperiment?type=PathIdentification)
+Test out the entire experiment [here](https://cocosci-lightbot.herokuapp.com) or try out specific tasks:
+- [LightbotTutorial](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTutorial)
+- [LightbotTask](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask)
+- [specific maps](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask&mapSource=maps&mapIdx=8)
 
 Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
 
@@ -30,9 +31,9 @@ In place of the Procfile runner, you can run the two processes you need to run t
 
 ### Try it out!
 
-Now, try out the [entire experiment](http://localhost:22362/) or demo specific plugins:
-- [GraphTraining](http://localhost:22362/testexperiment?type=GraphTraining)
-- [PathIdentification](http://localhost:22362/testexperiment?type=PathIdentification)
+Now, try out the [entire experiment](http://localhost:5000/) or demo specific plugins:
+- [LightbotTutorial](http://localhost:5000/testexperiment?type=LightbotTutorial)
+- [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask)
 
 Push to heroku once you've set it as a git remote:
 ```
@@ -51,9 +52,9 @@ pip install --global-option=build_ext \
 ## Experiment workflow
 1. Prep code! Make sure cost on consent screen (`templates/consent.html`) is up to date.
 2. Update `experiment_code_version` and make a git tag marking commit the code was run with.
-3. Scale up Heroku: `heroku ps:scale --app cocosci-optdisco web=1:Hobby`.
+3. Scale up Heroku: `heroku ps:scale --app cocosci-lightbot web=1:Hobby`.
 4. Using `./bin/psiturk-herokudb`, ensure `mode live`, submit with `hit create <# HIT> <payment> <expiry>`. Example is `hit create 9 4.00 1`.
-5. Use sanity script to keep track of HITs & automatically scale down Heroku: `python bin/sanity.py cocosci-optdisco`.
+5. Use sanity script to keep track of HITs & automatically scale down Heroku: `python bin/sanity.py cocosci-lightbot`.
 6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list --active`.
 7. Verify all workers have been paid with `worker list --submitted`.
 8. Download data with `PORT= ON_HEROKU=1 DATABASE_URL=$(heroku config:get DATABASE_URL) bin/fetch_data.py $CODE_VERSION`.
@@ -61,4 +62,4 @@ pip install --global-option=build_ext \
 
 ## Adding new OpenMoji
 
-To add new OpenMoji, you need to edit `static/optdisco/images/openmoji/copyscript.py` by adding in the new emoji to copy in. You'll first have to download the OpenMoji SVG Color pack from [their site](https://openmoji.org/) and change paths in the script to work for your installation. Then run `copyscript.py`.
+To add new OpenMoji, you need to edit `static/lightbot/images/openmoji/copyscript.py` by adding in the new emoji to copy in. You'll first have to download the OpenMoji SVG Color pack from [their site](https://openmoji.org/) and change paths in the script to work for your installation. Then run `copyscript.py`.

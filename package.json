@@ -1,7 +1,7 @@
 {
-  "name": "cocosci-optdisco",
+  "name": "cocosci-lightbot",
   "version": "1.0.0",
-  "description": "Navigation experiments over graphs to characterize hierarchical structure in behavior.",
+  "description": "Experiment to examine how people algorithmically structure their solutions.",
   "source": "templates/exp.template.html",
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -17,14 +17,14 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cgc/cocosci-optdisco.git"
+    "url": "git+https://github.com/cgc/cocosci-lightbot.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/cgc/cocosci-optdisco/issues"
+    "url": "https://github.com/cgc/cocosci-lightbot/issues"
   },
-  "homepage": "https://github.com/cgc/cocosci-optdisco#readme",
+  "homepage": "https://github.com/cgc/cocosci-lightbot#readme",
   "devDependencies": {
     "eslint": "^8.18.0",
     "parcel": "^2.6.1",
