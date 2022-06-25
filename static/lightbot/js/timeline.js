@@ -101,7 +101,7 @@ function makeTutorial() {
       map: originalMaps[0],
       ui: 'playOnce',
       program: ['walk', 'walk', 'light'],
-      msgIntro: 'This is **lightbot**, a robot. Your goal is to get lightbot to turn on all the blue light tiles.',
+      msgIntro: 'This is **lightbot**, a robot. Your goal is to help lightbot turn on all the blue light tiles.',
       msgWhileExecuting: 'When all the light tiles are activated 💡...',
       msgOutro: 'When all the light tiles are activated 💡...\n\nThe level is complete! 🎉',
     },

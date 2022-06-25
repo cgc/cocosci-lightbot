@@ -8,13 +8,9 @@ import multiprocessing
 def verify_config_conditions_match_json():
     config = configparser.ConfigParser()
     config.read('config.txt')
-    with open('static/optdisco/js/configuration/configuration.js') as f:
-        dd = f.read()
-        # trim what we use to support es6 module loading
-        assert dd.startswith('export default ') and dd.endswith(';')
-        dd = dd[len('export default '):-len(';')]
-        # now parse as JSON
-        dd = json.loads(dd)
+    with open('static/lightbot/json/configuration.json') as f:
+        # parse as JSON
+        dd = json.load(f)
     nc_config = int(config['Task Parameters']['num_conds'])
     nc_json = len(list(dd['conditionToFactors'].values())[0])
     assert nc_config == nc_json, f'Must match number conditions in Psiturk ({nc_config} conditions) and experiment JSON ({nc_json} conditions).'
