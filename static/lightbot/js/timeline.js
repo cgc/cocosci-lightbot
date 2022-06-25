@@ -285,6 +285,8 @@ export function makeTimeline(configuration) {
       ...random.shuffle([mapData[6], mapData[7], mapData[8]]),
       ...random.shuffle([cgcMaps[6], cgcMaps[9]]),
   ];
+  // HACK: need to move toward proper config
+  psiturk.recordUnstructuredData('maps', maps);
 
   return _.flatten([
     {type: 'fullscreen', fullscreen_mode: true},
