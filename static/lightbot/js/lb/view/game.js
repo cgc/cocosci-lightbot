@@ -4,8 +4,9 @@ import { Projection } from "./projection";
 
 // They modify models in parent directory, so have to call them.
 import './box';
-import { animations } from "./bot";
+import { animations, spritePromise } from "./bot";
 import { Flourish } from "./flourish";
+import { RAF } from "./raf";
 
 // refresh rate
 const fps = 30;
@@ -15,6 +16,12 @@ const fpsDelay = 1000 / fps;
 const offsetY = 65;
 
 const bgTilePromise = loadImage(new URL('../../../images/pattern.png', import.meta.url));
+let bgTile;
+bgTilePromise.then(b => {
+  bgTile = b;
+});
+
+export const assetsLoaded = Promise.all([bgTilePromise, spritePromise]);
 
 export class Game {
   constructor(canvas, bot, onComplete) {
@@ -33,13 +40,11 @@ export class Game {
     this.projection = new Projection(this.canvas.height, this.canvas.width / 2, offsetY);
 
     // create this.canvas background pattern
-    bgTilePromise.then(bgTile => {
-      this.bg = this.ctx.createPattern(bgTile, 'repeat');
-    });
+    this.bg = this.ctx.createPattern(bgTile, 'repeat');
 
     this.flourish = new Flourish();
 
-    window.setTimeout(this.update, fpsDelay) // HACK: for first loop b/c avoiding loading???? xxx
+    this.raf = new RAF(fpsDelay, this.update);
   }
 
   state() {
@@ -86,9 +91,6 @@ export class Game {
   }
 
   update = () => {
-    // rendering loop
-    this.timeoutId = window.setTimeout(this.update, fpsDelay);
-
     // check if we can execute the next bot instruction here?
     if (this.bot.isInExecutionMode() && this.bot.isReadyForNextInstruction()) {
       // check if map has been completed here
@@ -121,7 +123,7 @@ export class Game {
   }
 
   destroy() {
-    window.clearTimeout(this.timeoutId);
+    this.raf.stop();
   }
 
   reset() {

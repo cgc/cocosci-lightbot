@@ -2,7 +2,12 @@ import { loadImage } from "../../../../optdisco/js/utils";
 import instructions from "../instructions";
 import { Bot } from "../bot";
 
-const imagePromise = loadImage(new URL('../../../images/sprites.png', import.meta.url));
+export const spritePromise = loadImage(new URL('../../../images/sprites.png', import.meta.url));
+
+let sprites;
+spritePromise.then(s => {
+  sprites = s;
+})
 
 const botView = {
   initView() {
@@ -14,9 +19,6 @@ const botView = {
     this.currentFrame = 0; // current animation frame
     this.animation = animations.stand; // current animation
     this.movement = { dX: 0, dY: 0, dZ: 0 }; // controls bot movement during animations
-    imagePromise.then(s => {
-      this.sprites = s;
-    })
   },
 
   animate(instruction, oldPos, newPos) {
@@ -124,7 +126,7 @@ const botView = {
     var dY = p.y - this.animation.height;
 
     // round dX and dY down to avoid anti-aliasing when drawing the sprite
-    ctx.drawImage(this.sprites, srcX, srcY, this.animation.width, this.animation.height, Math.floor(dX), Math.floor(dY), this.animation.width, this.animation.height);
+    ctx.drawImage(sprites, srcX, srcY, this.animation.width, this.animation.height, Math.floor(dX), Math.floor(dY), this.animation.width, this.animation.height);
   },
 
   setAnimation(a) {

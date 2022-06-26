@@ -312,9 +312,10 @@ ul {
 :root {
   --flourish-dx: 0;
   --flourish-dy: -100px;
+  --flourish-duration: 1.5s;
 }
 .Flourish {
-  animation: Flourish 1.5s;
+  animation: Flourish var(--flourish-duration);
   position: fixed;
   z-index: 10;
   /*opacity: 0; only need this if we don't immediately remove*/

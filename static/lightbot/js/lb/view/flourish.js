@@ -7,10 +7,9 @@ export class Flourish {
     }
 
     activate() {
-        // HACK
-        const rect = document.querySelector('canvas').getBoundingClientRect();
+        const rect = (document.querySelector('canvas') || document.body).getBoundingClientRect();
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 25; i++) {
             const left = rect.left + rect.width / 2 + rect.width * .1 * (Math.random() - 0.5);
             const top = rect.top + rect.height / 2 + rect.height * .1 * (Math.random() - 0.5);
             const el = parseHTML(`
@@ -22,10 +21,11 @@ export class Flourish {
             const len = 200 + 50 * Math.random() 
             el.style.setProperty('--flourish-dx', Math.cos(theta) * len + "px");
             el.style.setProperty('--flourish-dy', -Math.sin(theta) * len + "px");
+            el.style.setProperty('--flourish-duration', (Math.random() * 0.5 + 1) + 's');
             setTimeout(() => {
                 i; // ... we need this for weird scoping reasons, otherwise the `const el` seems to become a `var el`
                 document.body.append(el);
-            }, Math.random() * 100)
+            }, Math.random() * 200)
         }
     }
 

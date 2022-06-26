@@ -1,12 +1,10 @@
-import {invariant, markdown, graphics, graphicsLoading, random} from '../../optdisco/js/utils.js';
+import {invariant} from '../../optdisco/js/utils.js';
 import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
-import mapData from '../json/maps.json';
-import originalMaps from '../json/original-maps.json';
-import cgcMaps from '../json/cgc-maps.json';
 import {filterTimelineForTesting, makeTimeline} from './timeline';
+import { assetsLoaded } from './lb/view/game.js';
 
 const QUERY = new URLSearchParams(location.search);
 
@@ -89,7 +87,7 @@ function configureProgress(timeline) {
 }
 
 $(window).on('load', function() {
-  return Promise.all([requestSaveData()]).then(function() {
+  return Promise.all([requestSaveData(), assetsLoaded]).then(function() {
     $('#welcome').hide();
     return initializeExperiment();
   }).catch(handleError);
