@@ -21,6 +21,7 @@ export class Bot {
     this.instructionQueue = [];
     this.executionQueue = [];
     this.executionMode = false;
+    this.actionCounter = 0;
   }
 
   clearExecutionQueue() {
@@ -55,18 +56,23 @@ export class Bot {
     switch (instruction.name) {
       case instructions.WalkInstruction.instructionName:
         this.walk();
+        this.actionCounter++;
         break;
       case instructions.JumpInstruction.instructionName:
         this.jump();
+        this.actionCounter++;
         break;
       case instructions.LightInstruction.instructionName:
         this.light();
+        this.actionCounter++;
         break;
       case instructions.TurnLeftInstruction.instructionName:
         this.turnLeft();
+        this.actionCounter++;
         break;
       case instructions.TurnRightInstruction.instructionName:
         this.turnRight();
+        this.actionCounter++;
         break;
       /*
     case instructions.RepeatInstruction.instructionName:

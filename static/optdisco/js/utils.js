@@ -74,29 +74,50 @@ export function makePromise() {
   return {promise, resolve, reject};
 }
 
-export function completeModal(md, options) {
-  options = options || {};
+export function completeModal(md, {
+  continueLabel='Continue',
   // By default, Enter (code=13) and Space (code=32) submits.
-  const keyCodeSubmit = new Set(options.keyCodeSubmit || [13, 32]);
-
+  keyCodeSubmit=[13, 32],
+  cancelLabel,
+}={}) {
   const {promise, resolve} = makePromise();
+  function cleanup(result) {
+    $('.modal').remove();
+    document.removeEventListener('keypress', handleEnter);
+    resolve(result);
+  }
+
+  const keyCodeSubmitSet = new Set(keyCodeSubmit);
+
   const button = $('<button>', {
     class: 'btn btn-success',
-    text: 'Continue',
-    click: function() {
-      $('.modal').remove();
-      document.removeEventListener('keypress', handleEnter);
-      resolve();
+    text: continueLabel,
+    click() {
+      cleanup(true);
     }
   });
-  showModal($('<div>')
-    .add($('<div>', {html: markdown(md)}))
-    .add(button)
-  );
+
+  const el = $('<div>').add($('<div>', {html: markdown(md)}));
+
+  if (cancelLabel) {
+    el = el.add(
+      $('<button>', {
+        class: 'btn btn-default',
+        text: cancelLabel,
+        click() {
+          cleanup(false);
+        }
+      })
+    );
+  }
+
+  el = el.add(button);
+
+  showModal(el);
 
   // We 'click' button when enter is pressed.
   function handleEnter(e) {
-    if (keyCodeSubmit.has(e.keyCode)) {
+    if (keyCodeSubmitSet.has(e.keyCode)) {
       e.preventDefault();
       button[0].click();
     }

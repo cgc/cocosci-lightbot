@@ -6,7 +6,7 @@
 }
 
 .InstructionList {
-  border: 1px solid black;
+  border: 1px solid #ccc;
   height: var(--instruction-list-height);
   width: var(--instruction-list-width);
   display: flex;
@@ -14,6 +14,15 @@
   box-sizing: border-box;
 }
 
+.InstructionList .InstructionList-close {
+  /*
+  We handle 3 cases:
+  Instructions in a standard instructionlist, which should be removable (this rule).
+  Instructions in the source instructionlist, which should _not_ be removable (next rule).
+  Instructions shown outside an instructionlist (usually for instructions). Should _not_ be removable (in .InstructionList-close).
+  */
+  display: initial;
+}
 .InstructionList.is-source .InstructionList-close {
   display: none;
 }
@@ -28,6 +37,7 @@
   cursor: pointer;
   vertical-align: middle;
   color: black;
+  display: none;
 }
 .InstructionList-close:hover {
   text-decoration: none;
@@ -35,7 +45,7 @@
 }
 
 .InstructionList-header {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid #ccc;
   font-weight: 400;
 }
 
@@ -55,6 +65,7 @@
 }
 
 .InstructionList-instruction {
+  position: relative;
   /* #ccc and 4px come from bootstrap .btn */
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -67,6 +78,13 @@
 
   font-size: 18px;
   line-height: 18px;
+}
+
+.InstructionList-instructionIcon {
+  position: relative;
+  font-size: 2.5rem;
+  vertical-align: top; /* makes the icon take no space in parent */
+  top: -2px;
 }
 
 .InstructionList-instruction:hover,
@@ -176,11 +194,22 @@
   justify-content: space-around;
 }
 
+.Editor-playButtons {
+  margin: auto 0;
+}
+
 .Editor-clearButtons {
   display: flex;
   max-width: 300px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.Editor-counters {
+  display: flex;
+}
+.Editor-counters .Counter {
+  margin: auto 3px;
 }
 
 .Editor .InstructionList[data-name=instructions] {
@@ -201,6 +230,43 @@
 .Editor.is-tutorial-theme-normalInstructions .InstructionList.is-disabled {
   background-image: initial;
   cursor: initial;
+}
+
+.Counter {
+  border: 3px solid var(--Counter-dark);
+  border-radius: 4px;
+  background: var(--Counter-light);
+}
+
+.Counter.is-step {
+  --Counter-light: #FFE6E6;
+  /* used https://codepen.io/njmcode/pen/NWdYBy, one step towards #FF0000, RGB blending */
+  --Counter-dark: #ffd1d1;
+  --Counter-placeholder: '?';
+}
+
+.Counter.is-length {
+  --Counter-light: #DAEAF1;
+  /* used https://codepen.io/njmcode/pen/NWdYBy, one step towards #0000FF, RGB blending */
+  --Counter-dark: #c6d5f2;
+  --Counter-placeholder: '0';
+}
+
+.Counter-header {
+  font-size: 1rem;
+  line-height: 1rem;
+  border-bottom: 3px solid var(--Counter-dark);
+  padding: 0.5rem;
+  font-weight: 400;
+}
+.Counter-value {
+  height: 4rem;
+  line-height: 4rem;
+  box-sizing: content-box;
+  font-weight: 500;
+}
+.Counter-value:empty:before {
+  content: var(--Counter-placeholder);
 }
 
 
@@ -289,6 +355,11 @@ ul {
 }
 .invisible {
   visibility: hidden;
+}
+
+.break {
+  flex-basis: 100%;
+  height: 0;
 }
 
 .glow {

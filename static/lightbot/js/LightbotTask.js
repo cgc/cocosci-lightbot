@@ -24,6 +24,10 @@ WWWSR (action after termination, to make sure it's not animated)
 
 // HACK: can we get instructions to append?
 
+export function renderInstructionToHTML(i) {
+    return `<span data-id="${i.instructionName}" class="InstructionList-instruction">${i.label} <a class="InstructionList-close">&#10005;</a></span>`;
+}
+
 class InstructionList {
     constructor(options) {
         const { source, header, name, onChange } = options;
@@ -36,9 +40,7 @@ class InstructionList {
         invariant(!this.el);
         invariant(!this.sortable);
 
-        const instHTML = this.source ? allInstructions.map(i =>
-            `<div data-id="${i.instructionName}" class="InstructionList-instruction">${i.label} <a class="InstructionList-close">&#10005;</a></div>`
-        ).join('') : '';
+        const instHTML = this.source ? allInstructions.map(i => renderInstructionToHTML(i)).join('') : '';
 
         const cls = this.source ? 'is-source' : '';
         const el = this.el = parseHTML(`
@@ -178,6 +180,16 @@ class Editor {
                     </div>
                     <div class="Editor-clearButtons">
                     </div>
+                    <div class="Editor-counters">
+                        <div class="Counter is-step hide">
+                            <div class="Counter-header">Step<br />Count</div>
+                            <div class="Counter-value"></div>
+                        </div>
+                        <div class="Counter is-length hide">
+                            <div class="Counter-header">Instruction<br />Count</div>
+                            <div class="Counter-value"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="Editor-canvas">
                     <div class="Editor-message">${options.message||''}</div>
@@ -194,21 +206,38 @@ class Editor {
         const { map: m, onProgramUpdate, onComplete, onClick } = options;
         const map = new Map(m);
         const bot = new Bot(map, m.position, m.direction)
-        const game = this.game = new Game(root.querySelector('canvas'), bot, (success) => {
-            this.update();
-            onComplete(success);
+        const game = this.game = new Game(root.querySelector('canvas'), bot, {
+            onComplete: (success) => {
+                this.update();
+                onComplete(success);
+            },
+            onStep: () => {
+                stepCounter.innerText = bot.actionCounter;
+            }
         });
 
         const playButton = this.playButton = root.querySelector('.Editor-play');
         const checkButton = this.checkButton = root.querySelector('.Editor-check');
+        const lengthCounter = root.querySelector('.Counter.is-length .Counter-value');
+        const stepCounter = root.querySelector('.Counter.is-step .Counter-value');
 
         function onChange(e) {
+            const program = programFromILs(ilsByName);
+            lengthCounter.innerText = (
+                program.main.length +
+                program.process1.length +
+                program.process2.length +
+                program.process3.length +
+                program.process4.length
+            );
+            stepCounter.innerText = '';
             onProgramUpdate({
                 ...e,
-                program: programFromILs(ilsByName),
+                program,
                 time: Date.now(),
             });
         }
+        this.onChange = onChange;
 
         const ils = this.ils = [
             new InstructionList({ source: true, header: 'Instructions', name: 'instructions', onChange }),
@@ -228,6 +257,8 @@ class Editor {
                 parent = root.querySelector('.Editor-instructionSource');
             } else {
                 parent = root.querySelector('.Editor-instructions');
+
+                // we also add a clear button
                 const clear = parseHTML(`
                     <button class="Editor-clear btn btn-default btn-sm" data-name="${il.name}">Clear ${il.header}</button>
                 `)
@@ -236,6 +267,11 @@ class Editor {
                     ilsByName[e.target.getAttribute('data-name')].clear();
                 });
                 root.querySelector('.Editor-clearButtons').appendChild(clear);
+
+                if (il.name == 'main') {
+                    // we also add a break
+                    root.querySelector('.Editor-clearButtons').appendChild(parseHTML('<div class="break"></div>'));
+                }
             }
             parent.appendChild(il.render());
         }
@@ -253,10 +289,14 @@ class Editor {
         checkButton.addEventListener('click', (e) => {
             onClick({label: e.target.innerText, time: Date.now()});
             e.preventDefault();
-            game.check(instructionsFromILs(ilsByHeader));
+            this.execute({check: true});
         });
 
         this.update(); // to set buttons
+
+        if (options.showLengthCounter) {
+            root.querySelector('.Counter.is-length').classList.remove('hide');
+        }
     }
 
     destroy() {
@@ -300,8 +340,9 @@ class Editor {
         }
     }
 
-    execute() {
-        this.game.execute(instructionsFromILs(this.ilsByHeader));
+    execute(options) {
+        const fn = options && options.check ? 'check' : 'execute';
+        this.game[fn](instructionsFromILs(this.ilsByHeader));
     }
 
     setProgram(insts) {
@@ -311,30 +352,51 @@ class Editor {
             nodesById[node.getAttribute('data-id')] = node;
         }
 
-        function _addSeqToList(il, insts) {
+        function _setIL(il, insts) {
+            il.sortableEl.innerHTML = '';
             for (const inst of insts) {
                 il.sortableEl.appendChild(nodesById[inst].cloneNode(true));
             }
         }
 
         if (Array.isArray(insts)) {
-            _addSeqToList(this.ilsByName['main'], insts);
+            _setIL(this.ilsByName['main'], insts);
         } else {
             for (const [name, insts_] of Object.entries(insts)) {
-                _addSeqToList(this.ilsByName[name], insts_);
+                _setIL(this.ilsByName[name], insts_);
             }
         }
+        this.onChange({type: 'setProgram'});
+    }
+
+    static newEditorWithAnalytics(root, options) {
+        const data = {
+            start: Date.now(),
+            programUpdates: [],
+            clicks: [],
+            complete: [],
+        };
+
+        const editor = new Editor(root, {
+            ...options,
+            onComplete(success) {
+                data.complete.push({success, time: Date.now()});
+                options.onComplete && options.onComplete(success);
+            },
+            onProgramUpdate(e) {
+                console.log(e);
+                data.programUpdates.push(e);
+            },
+            onClick(e) {
+                data.clicks.push(e);
+            },
+        });
+
+        return {editor, data};
     }
 }
 
 async function tutorial(root, config) {
-    const data = {
-        start: Date.now(),
-        programUpdates: [],
-        clicks: [],
-        complete: [],
-    };
-
     function _iter(arg) {
         // makes sure you can iter over the arg whether it's falsey, an element, or array
         return Array.isArray(arg) ? arg : arg ? [arg] : [];
@@ -342,10 +404,9 @@ async function tutorial(root, config) {
 
     let resolve;
     const complete = new Promise(r => resolve = r);
-    const editor = new Editor(root, {
+    const {editor, data} = Editor.newEditorWithAnalytics(root, {
         map: config.map,
         onComplete(success) {
-            data.complete.push({success, time: Date.now()});
             if (config.requiresSuccess) {
                 if (success) {
                     resolve();
@@ -353,12 +414,6 @@ async function tutorial(root, config) {
             } else {
                 resolve();
             }
-        },
-        onProgramUpdate(e) {
-            data.programUpdates.push(e);
-        },
-        onClick(e) {
-            data.clicks.push(e);
         },
     });
 
@@ -370,25 +425,33 @@ async function tutorial(root, config) {
         normalInstructions: [
             '.Editor-check',
             '.Editor-clearButtons',
+            '.Editor-counters',
             '.Editor-instructions',
             ...processInstructions.map(p => `[data-id=${p.instructionName}]`),
         ],
         normalInstructionsEditor: [
             '.Editor-check',
+            '.Editor-counters',
             ...processInstructions.map(p => `[data-id=${p.instructionName}]`),
             ...processInstructions.map(p => `.InstructionList[data-name=${p.instructionName}]`),
             ...processInstructions.map(p => `.Editor-clear[data-name=${p.instructionName}]`),
         ],
         normalInstructionsEditorWithProcess1: [
             '.Editor-check',
+            '.Editor-counters',
             ...processInstructions.slice(1).map(p => `[data-id=${p.instructionName}]`),
             ...processInstructions.slice(1).map(p => `.InstructionList[data-name=${p.instructionName}]`),
             ...processInstructions.slice(1).map(p => `.Editor-clear[data-name=${p.instructionName}]`),
         ],
     }[config.ui];
 
+    // Setting up styling
+
     for (const sel of sels) {
         root.querySelector(sel).classList.add('hide');
+    }
+    for (const [sel, cls] of Object.entries(config.classList?.remove || {})) {
+        root.querySelector(sel).classList.remove(cls);
     }
     if (config.playAfterRun) {
         root.querySelector('.Editor-play').classList.add('invisible');
@@ -400,6 +463,8 @@ async function tutorial(root, config) {
     for (const g of _iter(config.glow)) {
         root.querySelector(`[data-id=${g}]`).classList.add('glow')
     }
+
+    // Add message
 
     const msg = root.querySelector('.Editor-message');
     const spacebar = '\n\nPress spacebar to continue.';
@@ -415,6 +480,7 @@ async function tutorial(root, config) {
         editor.update();
     }
 
+    // If no program is supplied, then we're waiting for it to be written here.
     await complete;
 
     msg.innerHTML = markdown(config.msgOutroNoSpacebar || config.msgOutro + spacebar)
@@ -429,39 +495,63 @@ async function tutorial(root, config) {
     return data;
 }
 
+addPlugin('LightbotTutorialSequence', trialErrorHandling(async function (root, trial) {
+    const {editor, data} = Editor.newEditorWithAnalytics(root, {
+        map: trial.map,
+    });
+    data.times = [];
+
+    const msg = root.querySelector('.Editor-message');
+    const spacebar = '\n\nPress spacebar to continue.';
+
+    for (const t of trial.sequence) {
+        for (const fn of ['remove', 'add']) {
+            if (t.classList && t.classList[fn]) {
+                for (const [sel, cls] of Object.entries(t.classList[fn])) {
+                    root.querySelector(sel).classList[fn](cls);
+                }
+            }
+        }
+        editor.setProgram(t.program);
+        msg.innerHTML = markdown(t.message + spacebar);
+
+        await waitForSpace();
+        data.times.push(Date.now());
+    }
+
+    editor.destroy();
+    data.end = Date.now();
+    jsPsych.finishTrial(data);
+}));
+
 addPlugin('LightbotTutorial', trialErrorHandling(async function (root, trial) {
     const data = await tutorial(root, trial);
     jsPsych.finishTrial(data);
 }));
 
 addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
-    const data = {
-        start: Date.now(),
-        programUpdates: [],
-        clicks: [],
-        complete: [],
-    };
-    const editor = new Editor(root, {
+    const {editor, data} = Editor.newEditorWithAnalytics(root, {
         map: trial.map,
-        message: trial.message,
         onComplete(success) {
-            data.complete.push({success, time: Date.now()});
             if (!success) {
                 return;
             }
-            completeModal(`# Great Job!`).then(() => {
+            completeModal(`
+            # Great Job!
+
+            You solved the problem! You can **Go back** if you want to update your solution.
+
+            When you're ready, **Submit** your solution to continue.
+            `, {cancelLabel: 'Go back', continueLabel: 'Submit'}).then((continueToNext) => {
+                if (!continueToNext) {
+                    return;
+                }
                 editor.destroy();
 
                 data.end = Date.now();
                 jsPsych.finishTrial(data);
             });
         },
-        onProgramUpdate(e) {
-            console.log(e);
-            data.programUpdates.push(e);
-        },
-        onClick(e) {
-            data.clicks.push(e);
-        },
+        ...trial.editorOptions,
     });
 }));

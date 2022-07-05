@@ -33,7 +33,7 @@ export class LightInstruction extends Instruction {
 
 export class TurnLeftInstruction extends Instruction {
     static instructionName = 'turnLeft'
-    static label = 'Left ⬅️'
+    static label = 'Left <span class="InstructionList-instructionIcon">&circlearrowleft;</span>'
     static actionCode = 'E'
     constructor() {
         super('turnLeft');
@@ -42,7 +42,7 @@ export class TurnLeftInstruction extends Instruction {
 
 export class TurnRightInstruction extends Instruction {
     static instructionName = 'turnRight'
-    static label = 'Right ➡️'
+    static label = 'Right <span class="InstructionList-instructionIcon">&circlearrowright;</span>'
     static actionCode = 'D'
     constructor() {
         super('turnRight');

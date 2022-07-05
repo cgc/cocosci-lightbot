@@ -1,11 +1,12 @@
-import {invariant, markdown, graphics, graphicsLoading, random} from '../../optdisco/js/utils.js';
-import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from '../../js/setup.js';
+import { invariant, markdown, graphics, graphicsLoading, random } from '../../optdisco/js/utils.js';
+import { handleError, psiturk, requestSaveData, startExperiment, CONDITION } from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 
 import mapData from '../json/maps.json';
 import originalMaps from '../json/original-maps.json';
 import cgcMaps from '../json/cgc-maps.json';
+import mapTimeline from '../json/map-timeline.json';
 
 import jsPsych from '../../lib/jspsych-exported.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-text.js';
@@ -13,8 +14,24 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-multi-choice.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-fullscreen.js';
 
 import './LightbotTask';
+import { normalInstructions, instructionsByName } from './lb/instructions.js';
+import { renderInstructionToHTML } from './LightbotTask';
 
-function formWithValidation({stimulus, validate}) {
+const mapSources = {
+  maps: mapData,
+  originalMaps,
+  cgcMaps,
+};
+
+function updatedMap(m, fn) {
+  return m.map((row, x) => row.map((cell, y) => fn(cell, x, y)));
+}
+
+function money(dollars) {
+  return `\$${dollars.toFixed(2)}`;
+}
+
+function formWithValidation({ stimulus, validate }) {
   return {
     type: 'HTMLForm',
     validate: formData => {
@@ -43,8 +60,8 @@ const debrief = () => [{
   `),
   button_label: 'Submit',
   questions: [
-    {prompt: "How much experience do you have with computer programming?", name: 'exp-prog', options: ['None', 'Between 1 and 3 college courses (or equivalent)', 'More than 3 college courses (or equivalent)'], required:true},
-    {prompt: "Have you played Lightbot or another similar programming game before?", name: 'exp-prog-game', options: ['Yes', 'No'], required:true},
+    { prompt: "How much experience do you have with computer programming?", name: 'exp-prog', options: ['None', 'Between 1 and 3 college courses (or equivalent)', 'More than 3 college courses (or equivalent)'], required: true },
+    { prompt: "Have you played Lightbot or another similar programming game before?", name: 'exp-prog-game', options: ['Yes', 'No'], required: true },
   ],
 }, {
   type: 'survey-text',
@@ -56,16 +73,26 @@ const debrief = () => [{
   `),
   button_label: 'Submit',
   questions: [
-    {'prompt': 'What strategy did you use?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Was anything confusing or hard to understand?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Do you have any suggestions on how we can improve the instructions or interface?',
-     'rows': 2, columns: 60},
-    {'prompt': 'Describe any technical difficulties you might have encountered.',
-     'rows': 2, columns: 60},
-    {'prompt': 'Any other comments?',
-     'rows': 2, columns: 60}
+    {
+      'prompt': 'What strategy did you use?',
+      'rows': 2, columns: 60
+    },
+    {
+      'prompt': 'Was anything confusing or hard to understand?',
+      'rows': 2, columns: 60
+    },
+    {
+      'prompt': 'Do you have any suggestions on how we can improve the instructions or interface?',
+      'rows': 2, columns: 60
+    },
+    {
+      'prompt': 'Describe any technical difficulties you might have encountered.',
+      'rows': 2, columns: 60
+    },
+    {
+      'prompt': 'Any other comments?',
+      'rows': 2, columns: 60
+    }
   ]
 }];
 
@@ -74,19 +101,149 @@ const makeSimpleInstruction = (text) => ({
   stimulus: markdown(text),
 });
 
-function makeTutorial() {
+function _instDemo(config) {
   const outro = 'See it again by clicking <button class="btn btn-warning">Reset</button> and <button class="btn btn-primary">Run</button>.\n\nPress spacebar when you are ready to continue.';
   const spacebarDemo = 'Press spacebar to see lightbot demonstrate.';
-  function _instDemo(config) {
-    return {
-      ui: 'normalInstructions',
-      playAfterRun: true,
-      ...config,
-      msgIntroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + spacebarDemo,
-      msgOutroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + outro,
-      msgWhileExecuting: config.msgIntroNoSpacebar,
-    };
+  return {
+    ui: 'normalInstructions',
+    playAfterRun: true,
+    ...config,
+    msgIntroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + spacebarDemo,
+    msgOutroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + outro,
+    msgWhileExecuting: config.msgIntroNoSpacebar,
+  };
+}
+
+function lengthTutorial() {
+  const processMap = {
+    ...originalMaps[8],
+    map: updatedMap(originalMaps[8].map, (cell, x, y) =>
+      x > 4 && y == 4 ? { h: 1, t: 'b' } :
+        cell
+    ),
+  };
+
+  function _messageIncr(trial) {
+    let prev = '';
+    for (const t of trial.sequence) {
+      const tmp = prev + t.message;
+      prev += t.message
+      t.message = tmp;
+    }
+    return trial;
   }
+
+  const t = [
+    _messageIncr({
+      map: processMap,
+      sequence: [
+        {
+          classList: {
+            add: {
+              ['.Counter.is-length']: 'glow',
+            },
+            remove: {
+              ['.Counter.is-length']: 'hide',
+            }
+          },
+          message: `
+          The **Instruction Count** is the total number of instructions listed under **Main** and all
+          **Process** frames. Every instruction counts!
+
+          Solving this problem without processes takes **8** instructions.
+          `,
+          program: ['walk', 'light', 'walk', 'light', 'walk', 'light', 'walk', 'light'],
+        },
+        {
+          message: `
+          Clever use of processes can help you reduce down to **6** instructions.
+          `,
+          program: {
+            main: ['process1', 'process1', 'process1', 'process1'],
+            process1: ['walk', 'light']
+          },
+        },
+        {
+          message: `
+          An even shorter solution is possible if you make a loop! This only uses **4** instructions.
+          `,
+          program: {
+            main: ['process1'],
+            process1: ['walk', 'light', 'process1']
+          },
+        },
+        {
+          message: `
+          Remember that we count **all** instructions, so a program like this uses an extra instruction, for a total of **9** instructions.
+          `,
+          program: {
+            main: ['process1'],
+            process1: ['walk', 'light', 'walk', 'light', 'walk', 'light', 'walk', 'light'],
+          },
+        },
+      ],
+    }),
+  ];
+  return { type: 'LightbotTutorialSequence', timeline: t };
+}
+
+function stepCountTutorial() {
+  const map = {
+    ...originalMaps[0],
+    map: updatedMap(originalMaps[0].map, (cell, x, y) =>
+      x == 3 && y < 6 ? { h: 2, t: 'b' } :
+        cell
+    ),
+    direction: 1,
+  };
+
+  const t = [
+    _instDemo({
+      map,
+      program: {
+        main: ['process1', 'turnRight', 'process1', 'turnRight', 'process1', 'light'],
+        process1: ['walk', 'walk']
+      },
+      classList: {
+        remove: {
+          ['.Counter.is-step']: 'hide',
+          ['.Editor-counters']: 'hide',
+        },
+      },
+      ui: 'normalInstructionsEditorWithProcess1',
+      msgIntroNoSpacebar: `
+      **Step Count** is the number of basic instructions it takes for lightbot to reach the goal.
+      Every basic instruction lightbot executes is counted. The basic instructions are:
+      ${normalInstructions.map(i => renderInstructionToHTML(i)).join('')}
+
+      Even when there are process instructions, each time they are run the basic instructions are counted again.
+
+      However, **Step Count** excludes process instructions after the basic instructions have been counted.
+      `,
+    }),
+
+    _instDemo({
+      map,
+      program: {
+        main: ['turnRight', 'jump', 'jump', 'light'],
+      },
+      classList: {
+        remove: {
+          ['.Counter.is-step']: 'hide',
+          ['.Editor-counters']: 'hide',
+        },
+      },
+      ui: 'normalInstructionsEditorWithProcess1',
+      msgIntroNoSpacebar: `
+      This problem can be solved with a smaller **Step Count**.
+      `,
+    }),
+
+  ];
+  return { type: 'LightbotTutorial', timeline: t };
+}
+
+function makeTutorial() {
 
   const editingIntro = `
   Drag instructions under **Main** for lightbot.
@@ -95,6 +252,14 @@ function makeTutorial() {
   
   When all lights are lit 💡 you can move on.
   `;
+
+  const processMap = {
+    ...originalMaps[8],
+    map: updatedMap(originalMaps[8].map, (cell, x, y) =>
+      x > 4 && y == 4 ? { h: 1, t: 'b' } :
+        cell
+    ),
+  };
 
   const t = [
     {
@@ -114,14 +279,14 @@ function makeTutorial() {
       msgIntroNoSpacebar: `
       You control lightbot's actions by giving him instructions to execute. Let's go over the 5 basic instructions you can give to lightbot.
       
-      First, let's go over **Walk**. When walking forward, the robot will advance one square in the direction it is facing.
+      First, let's go over ${renderInstructionToHTML(instructionsByName.walk)}. When walking forward, the robot will advance one square in the direction it is facing.
       `,
     }),
 
     _instDemo({
       map: {
         ...originalMaps[3],
-        position: {x: 4, y: 6},
+        position: { x: 4, y: 6 },
       },
       program: ['walk'],
       glow: 'walk',
@@ -133,17 +298,17 @@ function makeTutorial() {
     _instDemo({
       map: {
         ...originalMaps[0],
-        map: originalMaps[0].map.map((row, x) => row.map((cell, y) =>
+        map: updatedMap(originalMaps[0].map, (cell, x, y) =>
           //x == 4 && y == 4 ? {h: 1, t: 'l'} :
-          x == 2 && y == 4 ? {h: 1, t: 'l'} :
-          cell
-        )),
+          x == 2 && y == 4 ? { h: 1, t: 'l' } :
+            cell
+        ),
         //position: {x: 4, y: 3},
       },
       program: ['light', 'walk', 'light', 'turnLeft', 'turnLeft', 'walk', 'light'],
       glow: 'light',
       msgIntroNoSpacebar: `
-      The **Light** instruction is used to turn light tiles on or off.
+      The ${renderInstructionToHTML(instructionsByName.light)} instruction is used to turn light tiles on or off.
 
       If the robot is located over an unlit (blue) light tile, the light instruction will turn the tile on.
 
@@ -178,19 +343,19 @@ function makeTutorial() {
     _instDemo({
       map: {
         ...originalMaps[3],
-        position: {x: 4, y: 6},
+        position: { x: 4, y: 6 },
       },
       program: ['jump', 'jump'],
       glow: 'jump',
       msgIntroNoSpacebar: `
-      **Jump** is a combination of moving forward and changing height. The robot will move in the direction it is facing.
+      ${renderInstructionToHTML(instructionsByName.jump)} is a combination of moving forward and changing height. The robot will move in the direction it is facing.
       `,
     }),
 
     _instDemo({
       map: {
         ...originalMaps[2],
-        position: {x: 3, y: 3},
+        position: { x: 3, y: 3 },
         direction: 1,
       },
       program: ['jump'],
@@ -203,7 +368,7 @@ function makeTutorial() {
     _instDemo({
       map: {
         ...originalMaps[2],
-        position: {x: 4, y: 3},
+        position: { x: 4, y: 3 },
       },
       program: ['jump'],
       glow: 'jump',
@@ -231,7 +396,9 @@ function makeTutorial() {
       program: ['turnLeft', 'turnLeft', 'turnLeft', 'turnLeft', 'turnRight', 'turnRight', 'turnRight', 'turnRight'],
       glow: ['turnLeft', 'turnRight'],
       msgIntroNoSpacebar: `
-      When turning **Left** or **Right**, the robot will stay in place and rotate its body 90 degrees (quarter turn).
+      When turning, the robot will stay in place and rotate its body 90 degrees (quarter turn). The robot can either turn
+      - ${renderInstructionToHTML(instructionsByName.turnLeft)} (counter-clockwise) or
+      - ${renderInstructionToHTML(instructionsByName.turnRight)} (clockwise)
       `,
     }),
 
@@ -249,9 +416,9 @@ function makeTutorial() {
     },
 
     _instDemo({
-      map: originalMaps[8],
+      map: processMap,
       program: {
-        main: ['process1', 'process1', 'process1', 'process1', 'process1', 'process1', 'process1'],
+        main: ['process1', 'process1', 'process1', 'process1'],
         process1: ['walk', 'light'],
       },
       ui: 'normalInstructionsEditorWithProcess1',
@@ -263,7 +430,7 @@ function makeTutorial() {
     }),
 
     _instDemo({
-      map: originalMaps[8],
+      map: processMap,
       program: {
         main: ['process1'],
         process1: ['walk', 'light', 'process1'],
@@ -277,19 +444,21 @@ function makeTutorial() {
     }),
 
   ];
-  return {type: 'LightbotTutorial', timeline: t};
+  return { type: 'LightbotTutorial', timeline: t };
 }
 
+const BONUS = 0.25;
+
 export function makeTimeline(configuration) {
-  const maps = [
-      ...random.shuffle([mapData[6], mapData[7], mapData[8]]),
-      ...random.shuffle([cgcMaps[6], cgcMaps[9]]),
-  ];
+  //const shuffled = random.shuffle(mapTimeline);
+  // xxxx
+  const shuffled = mapTimeline;
+  const maps = shuffled.map(([source, idx]) => mapSources[source][idx]);
   // HACK: need to move toward proper config
-  psiturk.recordUnstructuredData('maps', maps);
+  psiturk.recordUnstructuredData('maps', shuffled);
 
   return _.flatten([
-    {type: 'fullscreen', fullscreen_mode: true},
+    { type: 'fullscreen', fullscreen_mode: true },
     makeTutorial(),
     makeSimpleInstruction(`
     Next up is one last practice problem.
@@ -297,20 +466,44 @@ export function makeTimeline(configuration) {
     {
       type: 'LightbotTask',
       map: mapData[1],
-      message: markdown(`
-      From now on, you can use up to 4 processes.
+      editorOptions: {
+        message: markdown(`
+        From now on, you can use up to 4 processes.
 
-      If <button class="btn btn-primary">Run</button> is taking too long, then try <button class="btn btn-info">Quick Run⚡️</button>.
-      `),
+        If <button class="btn btn-primary">Run</button> is taking too long, then try <button class="btn btn-info">Quick Run⚡️</button>.
+        `),
+      },
     },
+
+    makeSimpleInstruction(`
+    Now we will begin the study.
+
+    You will complete ${maps.length} levels. Your goal is to write the **shortest solutions** you can.
+
+    The shorter your solutions, the **bigger your bonus**!
+
+    On the next pages, we'll explain how the length of a solution is calculated. Then, we'll explain how the bonus is calculated.
+    `),
+    lengthTutorial(),
+    makeSimpleInstruction(`
+    For each problem, the participants who find one of the shortest possible solutions based on **Instruction Count** will receive a full bonus of ${money(BONUS)}.
+
+    Since there are ${maps.length} total levels, there is an opportunity for a total bonus of ${maps.length} &times; ${money(BONUS)} = ${money(maps.length * BONUS)}.
+
+    Longer solutions will receive proportionally smaller bonuses. The average bonus will be ${money(maps.length * BONUS / 2)}.
+    `),
+
     makeSimpleInstruction(`
     Now we will begin the study. You will complete ${maps.length} levels.
     `),
     {
       type: 'LightbotTask',
-      timeline: maps.map(map => ({map})),
+      timeline: maps.map(map => ({ map })),
+      editorOptions: {
+        showLengthCounter: true,
+      },
     },
-    {type: 'fullscreen', fullscreen_mode: false},
+    { type: 'fullscreen', fullscreen_mode: false },
     debrief(),
   ]);
 
@@ -347,11 +540,7 @@ export function filterTimelineForTesting(timeline) {
   if (location.pathname == '/testexperiment') {
     const type = QUERY.get('type');
     if (type == 'LightbotTask' && QUERY.get('mapSource')) {
-      const map = {
-          maps: mapData,
-          originalMaps: originalMaps,
-          cgcMaps: cgcMaps,
-      }[QUERY.get('mapSource')][parseInt(QUERY.get('mapIdx'), 10)];
+      const map = mapSources[QUERY.get('mapSource')][parseInt(QUERY.get('mapIdx'), 10)];
       timeline = [{ type, map }];
     } else if (type) {
       timeline = timeline.filter(t => t.type == type);
@@ -366,7 +555,18 @@ export function filterTimelineForTesting(timeline) {
     }
 
     if (QUERY.get('timelineIdx')) {
-      timeline = [timeline[parseInt(QUERY.get('timelineIdx'), 10)]];
+      function indexed(tl, idxs) {
+        if (!tl || idxs.length == 0) {
+          return tl;
+        }
+        const node = tl[idxs[0]];
+        return [{
+          ...node,
+          timeline: indexed(node.timeline, idxs.slice(1)),
+        }];
+      }
+      const idxs = QUERY.get('timelineIdx').split('.').map(i => parseInt(i));
+      timeline = indexed(timeline, idxs)
     }
   }
   return timeline;

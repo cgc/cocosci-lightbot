@@ -24,9 +24,10 @@ bgTilePromise.then(b => {
 export const assetsLoaded = Promise.all([bgTilePromise, spritePromise]);
 
 export class Game {
-  constructor(canvas, bot, onComplete) {
+  constructor(canvas, bot, {onComplete, onStep}) {
     this.canvas = canvas;
     this.onComplete = onComplete;
+    this.onStep = onStep;
 
     this.bot = bot;
     invariant(this.bot);
@@ -90,7 +91,7 @@ export class Game {
     }
   }
 
-  update = () => {
+  stepBot() {
     // check if we can execute the next bot instruction here?
     if (this.bot.isInExecutionMode() && this.bot.isReadyForNextInstruction()) {
       // check if map has been completed here
@@ -98,14 +99,13 @@ export class Game {
       if (this.map.allLightsOn()) {
         this.setComplete(true);
         // We avoid clearing the update timeout so that light tiles can continue animating.
-      }
-
-      if (this.bot.hasNextInstruction()) {
+      } else if (this.bot.hasNextInstruction()) {
         var oldPos = { ...this.bot.currentPos }; // copy old position
         var instruction = this.bot.executeNextInstruction(); // execute the next instruction
         if (instruction) {
           var newPos = this.bot.currentPos; // get the new position
           this.bot.animate(instruction, oldPos, newPos);
+          this.onStep && this.onStep();
         } else {
           // This is a weird case that can really only happen when you're calling an empty process
           // TODO: consider changing things so we only queue flat programs without processes??
@@ -117,7 +117,10 @@ export class Game {
         this.setComplete(false);
       }
     }
+  }
 
+  update = () => {
+    this.stepBot();
     this.step();
     this.draw();
   }

@@ -215,3 +215,8 @@ export const animations = {
     sX: 400
   }
 };
+
+// Code for making animations shorter
+for (const entry of Object.values(animations)) {
+  entry.duration = Math.round(entry.duration * .75);
+};
