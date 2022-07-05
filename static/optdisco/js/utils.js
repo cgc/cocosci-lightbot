@@ -97,7 +97,7 @@ export function completeModal(md, {
     }
   });
 
-  const el = $('<div>').add($('<div>', {html: markdown(md)}));
+  let el = $('<div>').add($('<div>', {html: markdown(md)}));
 
   if (cancelLabel) {
     el = el.add(
