@@ -1,4 +1,4 @@
-import { invariant, loadImage } from "../../../../optdisco/js/utils";
+import { invariant, loadImage, QUERY } from "../../../../optdisco/js/utils";
 import { directions } from "../constants";
 import { Projection } from "./projection";
 
@@ -10,7 +10,7 @@ import { RAF } from "./raf";
 import { MapCoordinateContext } from "./MapCoordinateContext";
 
 // refresh rate
-const fps = 30;
+const fps = parseInt(QUERY.get('fps') || 30, 10);
 const fpsDelay = 1000 / fps;
 
 // distance between lowest point in the map and the bottom edge

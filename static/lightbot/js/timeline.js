@@ -1,4 +1,4 @@
-import { invariant, markdown, graphics, graphicsLoading, random } from '../../optdisco/js/utils.js';
+import { invariant, markdown, graphics, graphicsLoading, random, QUERY } from '../../optdisco/js/utils.js';
 import { handleError, psiturk, requestSaveData, startExperiment, CONDITION } from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
@@ -28,7 +28,7 @@ function updatedMap(m, fn) {
 }
 
 function money(dollars) {
-  return `\$${dollars.toFixed(2)}`;
+  return `$${dollars.toFixed(2)}`;
 }
 
 function formWithValidation({ stimulus, validate }) {
@@ -102,15 +102,17 @@ const makeSimpleInstruction = (text) => ({
 });
 
 function _instDemo(config) {
-  const outro = 'See it again by clicking <button class="btn btn-warning">Reset</button> and <button class="btn btn-primary">Run</button>.\n\nPress spacebar when you are ready to continue.';
-  const spacebarDemo = 'Press spacebar to see lightbot demonstrate.';
+  const outro = 'To see it again, click **Reset** then **Run**.';
   return {
-    ui: 'normalInstructions',
+    ui: 'normalInstructionsEditor',
     playAfterRun: true,
+    editorOptions: {
+      editable: false,
+    },
     ...config,
-    msgIntroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + spacebarDemo,
-    msgOutroNoSpacebar: config.msgIntroNoSpacebar + '\n\n' + outro,
-    msgWhileExecuting: config.msgIntroNoSpacebar,
+    msgIntro: config.msgIntro,
+    msgOutro: config.msgIntro + '\n\n' + outro,
+    msgWhileExecuting: config.msgIntro,
   };
 }
 
@@ -123,18 +125,13 @@ function lengthTutorial() {
     ),
   };
 
-  function _messageIncr(trial) {
-    let prev = '';
-    for (const t of trial.sequence) {
-      const tmp = prev + t.message;
-      prev += t.message
-      t.message = tmp;
-    }
-    return trial;
-  }
+  const header = `
+  The **Instruction Count** is the total number of instructions listed under **Main** and all
+  **Process** frames. Every instruction counts!
+  `;
 
   const t = [
-    _messageIncr({
+    {
       map: processMap,
       sequence: [
         {
@@ -147,8 +144,7 @@ function lengthTutorial() {
             }
           },
           message: `
-          The **Instruction Count** is the total number of instructions listed under **Main** and all
-          **Process** frames. Every instruction counts!
+          ${header}
 
           Solving this problem without processes takes **8** instructions.
           `,
@@ -156,6 +152,8 @@ function lengthTutorial() {
         },
         {
           message: `
+          ${header}
+
           Clever use of processes can help you reduce down to **6** instructions.
           `,
           program: {
@@ -165,6 +163,8 @@ function lengthTutorial() {
         },
         {
           message: `
+          ${header}
+
           An even shorter solution is possible if you make a loop! This only uses **4** instructions.
           `,
           program: {
@@ -174,6 +174,8 @@ function lengthTutorial() {
         },
         {
           message: `
+          ${header}
+
           Remember that we count **all** instructions, so a program like this uses an extra instruction, for a total of **9** instructions.
           `,
           program: {
@@ -182,7 +184,7 @@ function lengthTutorial() {
           },
         },
       ],
-    }),
+    },
   ];
   return { type: 'LightbotTutorialSequence', timeline: t };
 }
@@ -211,7 +213,7 @@ function stepCountTutorial() {
         },
       },
       ui: 'normalInstructionsEditorWithProcess1',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       **Step Count** is the number of basic instructions it takes for lightbot to reach the goal.
       Every basic instruction lightbot executes is counted. The basic instructions are:
       ${normalInstructions.map(i => renderInstructionToHTML(i)).join('')}
@@ -234,7 +236,7 @@ function stepCountTutorial() {
         },
       },
       ui: 'normalInstructionsEditorWithProcess1',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       This problem can be solved with a smaller **Step Count**.
       `,
     }),
@@ -247,8 +249,8 @@ function makeTutorial() {
 
   const editingIntro = `
   Drag instructions under **Main** for lightbot.
-  Execute them by pressing <button class="btn btn-primary">Run</button>.
-  Bring lightbot back to the beginning by pressing <button class="btn btn-warning">Reset</button>.
+  Execute them by clicking **Run**.
+  Bring lightbot back to the beginning by clicking **Reset**.
   
   When all lights are lit 💡 you can move on.
   `;
@@ -273,13 +275,20 @@ function makeTutorial() {
 
     _instDemo({
       map: originalMaps[0],
-      // TODO make sure that button appearance isn't too jarring??
+      program: ['walk', 'walk', 'light'],
+      msgIntro: `
+      Lightbot is controlled by the list of instructions under **Main**, like you can see here.
+      `,
+    }),
+
+    _instDemo({
+      map: originalMaps[0],
       program: ['walk'],
       glow: 'walk',
-      msgIntroNoSpacebar: `
-      You control lightbot's actions by giving him instructions to execute. Let's go over the 5 basic instructions you can give to lightbot.
+      msgIntro: `
+      In this experiment, you will control lightbot's actions by giving him instructions to execute. Let's go over the 5 basic instructions you can give to lightbot.
       
-      First, let's go over ${renderInstructionToHTML(instructionsByName.walk)}. When walking forward, the robot will advance one square in the direction it is facing.
+      First, we'll start with ${renderInstructionToHTML(instructionsByName.walk)}. When walking forward, the robot will advance one square in the direction it is facing.
       `,
     }),
 
@@ -290,7 +299,7 @@ function makeTutorial() {
       },
       program: ['walk'],
       glow: 'walk',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       Lightbot will only walk if the tile it is facing is the **same height** as the tile it is currently on. In this example, the tile is higher than the current tile, so lightbot can't walk ❌.
       `,
     }),
@@ -299,15 +308,13 @@ function makeTutorial() {
       map: {
         ...originalMaps[0],
         map: updatedMap(originalMaps[0].map, (cell, x, y) =>
-          //x == 4 && y == 4 ? {h: 1, t: 'l'} :
           x == 2 && y == 4 ? { h: 1, t: 'l' } :
             cell
         ),
-        //position: {x: 4, y: 3},
       },
-      program: ['light', 'walk', 'light', 'turnLeft', 'turnLeft', 'walk', 'light'],
+      program: ['light', 'light', 'walk', 'light'],
       glow: 'light',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       The ${renderInstructionToHTML(instructionsByName.light)} instruction is used to turn light tiles on or off.
 
       If the robot is located over an unlit (blue) light tile, the light instruction will turn the tile on.
@@ -318,20 +325,11 @@ function makeTutorial() {
       `,
     }),
 
-    _instDemo({
-      map: originalMaps[0],
-      program: ['walk', 'walk', 'light'],
-      ui: 'normalInstructionsEditor',
-      msgIntroNoSpacebar: `
-      Lightbot is controlled by the list of instructions under **Main**, like you can see here.
-      `,
-    }),
-
     {
       map: originalMaps[0],
       ui: 'normalInstructionsEditor',
       requiresSuccess: true,
-      msgIntroNoSpacebar: `
+      msgIntro: `
       Now, it's your turn to control lightbot.
       ${editingIntro}
       `,
@@ -347,7 +345,7 @@ function makeTutorial() {
       },
       program: ['jump', 'jump'],
       glow: 'jump',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       ${renderInstructionToHTML(instructionsByName.jump)} is a combination of moving forward and changing height. The robot will move in the direction it is facing.
       `,
     }),
@@ -360,7 +358,7 @@ function makeTutorial() {
       },
       program: ['jump'],
       glow: 'jump',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       An **upward jump** only works if the destination tile is exactly one step higher than the current tile. In this example, the destination tile is three steps higher than the current tile, so lightbot can't jump up ❌.
       `,
     }),
@@ -372,7 +370,7 @@ function makeTutorial() {
       },
       program: ['jump'],
       glow: 'jump',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       For a **downward jump**, there is no limit to the height the robot can jump down from.
       `,
     }),
@@ -381,7 +379,7 @@ function makeTutorial() {
       map: originalMaps[3],
       ui: 'normalInstructionsEditor',
       requiresSuccess: true,
-      msgIntroNoSpacebar: `
+      msgIntro: `
       Now, let's practice jumping.
       ${editingIntro}
       `,
@@ -392,10 +390,9 @@ function makeTutorial() {
 
     _instDemo({
       map: originalMaps[0],
-      //program: ['walk', 'turnLeft', 'walk', 'turnRight', 'walk'],
       program: ['turnLeft', 'turnLeft', 'turnLeft', 'turnLeft', 'turnRight', 'turnRight', 'turnRight', 'turnRight'],
       glow: ['turnLeft', 'turnRight'],
-      msgIntroNoSpacebar: `
+      msgIntro: `
       When turning, the robot will stay in place and rotate its body 90 degrees (quarter turn). The robot can either turn
       - ${renderInstructionToHTML(instructionsByName.turnLeft)} (counter-clockwise) or
       - ${renderInstructionToHTML(instructionsByName.turnRight)} (clockwise)
@@ -406,7 +403,7 @@ function makeTutorial() {
       map: originalMaps[2],
       ui: 'normalInstructionsEditor',
       requiresSuccess: true,
-      msgIntroNoSpacebar: `
+      msgIntro: `
       Now, let's practice turning.
       ${editingIntro}
       `,
@@ -422,7 +419,7 @@ function makeTutorial() {
         process1: ['walk', 'light'],
       },
       ui: 'normalInstructionsEditorWithProcess1',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       In addition to the basic instructions, you can also define sequences of actions that can be called with a single instruction. They are called processes.
 
       To define a process, drag a series of instructions into a **Process** frame. Then, you'll use the corresponding **Process** instruction. When it is executed, it will execute all the listed instructions under the frame.
@@ -436,10 +433,10 @@ function makeTutorial() {
         process1: ['walk', 'light', 'process1'],
       },
       ui: 'normalInstructionsEditorWithProcess1',
-      msgIntroNoSpacebar: `
+      msgIntro: `
       You can also call a process within itself to define a **looped process**. It will loop until one of two things happen:
       - All the lights are lit 💡.
-      - You click <button class="btn btn-danger">Stop</button> to interrupt the loop.
+      - You click **Stop** to interrupt the loop.
       `,
     }),
 
@@ -450,9 +447,7 @@ function makeTutorial() {
 const BONUS = 0.25;
 
 export function makeTimeline(configuration) {
-  //const shuffled = random.shuffle(mapTimeline);
-  // xxxx
-  const shuffled = mapTimeline;
+  const shuffled = random.shuffle(mapTimeline);
   const maps = shuffled.map(([source, idx]) => mapSources[source][idx]);
   // HACK: need to move toward proper config
   psiturk.recordUnstructuredData('maps', shuffled);
@@ -470,7 +465,7 @@ export function makeTimeline(configuration) {
         message: markdown(`
         From now on, you can use up to 4 processes.
 
-        If <button class="btn btn-primary">Run</button> is taking too long, then try <button class="btn btn-info">Quick Run⚡️</button>.
+        If **Run** is taking too long, then try **Quick Run⚡️**.
         `),
       },
     },
@@ -534,7 +529,9 @@ export function makeTimeline(configuration) {
     */
 }
 
-const QUERY = new URLSearchParams(location.search);
+/*
+Various features to support faster testing.
+*/
 
 export function filterTimelineForTesting(timeline) {
   if (location.pathname == '/testexperiment') {
@@ -555,7 +552,7 @@ export function filterTimelineForTesting(timeline) {
     }
 
     if (QUERY.get('timelineIdx')) {
-      function indexed(tl, idxs) {
+      const indexed = function(tl, idxs) {
         if (!tl || idxs.length == 0) {
           return tl;
         }
@@ -570,4 +567,39 @@ export function filterTimelineForTesting(timeline) {
     }
   }
   return timeline;
+}
+
+// Keyboard interface, but only when testing
+if (location.pathname == '/testexperiment') {
+  document.addEventListener('keydown', (e) => {
+    const keyToInstruction = {
+      w: instructionsByName.walk,
+      j: instructionsByName.jump,
+      s: instructionsByName.light,
+      l: instructionsByName.turnLeft,
+      r: instructionsByName.turnRight,
+      "1": instructionsByName.process1,
+      "2": instructionsByName.process2,
+      "3": instructionsByName.process3,
+      "4": instructionsByName.process4,
+    };
+
+    const main = document.querySelector('.InstructionList[data-name=main] .InstructionList-instructions');
+    if (!main) {
+      return;
+    }
+
+    if (e.key == 'Backspace') {
+      main.children[main.children.length - 1].remove();
+      return;
+    }
+
+    const inst = keyToInstruction[e.key];
+    if (!inst) {
+      return;
+    }
+
+    const instEl = document.querySelector(`.InstructionList.is-source .InstructionList-instruction[data-id=${inst.instructionName}]`);
+    main.appendChild(instEl.cloneNode(true));
+  });
 }

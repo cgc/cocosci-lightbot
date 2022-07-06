@@ -2,7 +2,7 @@ import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
 
-import { markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant, waitForSpace, completeModal } from '../../optdisco/js/utils.js';
+import { markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant, waitForSpace, completeModal, elementEventPromise } from '../../optdisco/js/utils.js';
 import { Game } from "./lb/view/game";
 import { Map } from './lb/map';
 import { Bot } from './lb/bot';
@@ -31,19 +31,25 @@ export function renderInstructionToHTML(i) {
 
 class InstructionList {
     constructor(options) {
-        const { source, header, name, onChange } = options;
+        const { source, header, name, onChange, editable=true } = options;
         this.source = source;
         this.header = header;
         this.name = name;
         this.onChange = onChange;
+        this.editable = editable;
+        this.disabled = false;
+        this._render();
+        if (!this.editable) {
+          this.disable();
+        }
     }
-    render() {
+    _render() {
         invariant(!this.el);
         invariant(!this.sortable);
 
         const instHTML = this.source ? allInstructions.map(i => renderInstructionToHTML(i)).join('') : '';
 
-        const cls = this.source ? 'is-source' : '';
+        const cls = [(this.source ? 'is-source' : ''), (this.editable ? 'is-editable' : 'is-not-editable')].join(' ');
         const el = this.el = parseHTML(`
             <div class="InstructionList ${cls}" data-header="${this.header}" data-name="${this.name}">
                 <div class="InstructionList-header">
@@ -57,6 +63,9 @@ class InstructionList {
 
         $(el).on('click', '.InstructionList-close', (e) => {
             e.preventDefault();
+            if (this.disabled) {
+              return;
+            }
             $(e.target).closest('[data-id]').remove();
             this.onChange({type: 'remove'});
         });
@@ -105,11 +114,16 @@ class InstructionList {
     }
 
     disable() {
+        this.disabled = true;
         this.sortable.option("disabled", true);
         this.el.classList.add('is-disabled');
     }
 
     enable() {
+        if (!this.editable) {
+          return;
+        }
+        this.disabled = false;
         this.sortable.option("disabled", false);
         this.el.classList.remove('is-disabled');
     }
@@ -119,6 +133,9 @@ class InstructionList {
     }
 
     clear() {
+        if (this.disabled) {
+          return;
+        }
         this.sortableEl.innerText = '';
         this.onChange({type: 'clear'});
     }
@@ -176,8 +193,9 @@ class Editor {
             <div class="Editor-main">
                 <div class="Editor-controls">
                     <div class="Editor-playButtons">
-                        <button class="Editor-play btn btn-primary"></button>
-                        <button class="Editor-check btn btn-info">Quick Run⚡️</button>
+                        <button class="Editor-play btn btn-primary btn-lg"></button>
+                        <button class="Editor-check btn btn-info btn-lg">Quick Run⚡️</button>
+                        <!--<button class="Editor-continue btn btn-success btn-lg hide">Continue</button>-->
                     </div>
                     <div class="Editor-clearButtons">
                     </div>
@@ -205,7 +223,7 @@ class Editor {
                 </div>
             </div>
         </div>`;
-        const { map: m, onProgramUpdate, onComplete, onClick } = options;
+        const { map: m, onProgramUpdate, onComplete, onClick, editable=true } = options;
         const map = new Map(m);
         const bot = new Bot(map, m.position, m.direction)
         const game = this.game = new Game(root.querySelector('canvas'), bot, {
@@ -244,12 +262,12 @@ class Editor {
         this.onChange = onChange;
 
         const ils = this.ils = [
-            new InstructionList({ source: true, header: 'Instructions', name: 'instructions', onChange }),
-            new InstructionList({ source: false, header: 'Main', name: 'main', onChange }),
-            new InstructionList({ source: false, header: 'Process 1', name: 'process1', onChange }),
-            new InstructionList({ source: false, header: 'Process 2', name: 'process2', onChange }),
-            new InstructionList({ source: false, header: 'Process 3', name: 'process3', onChange }),
-            new InstructionList({ source: false, header: 'Process 4', name: 'process4', onChange }),
+            new InstructionList({ source: true, header: 'Instructions', name: 'instructions', onChange, editable }),
+            new InstructionList({ source: false, header: 'Main', name: 'main', onChange, editable }),
+            new InstructionList({ source: false, header: 'Process 1', name: 'process1', onChange, editable }),
+            new InstructionList({ source: false, header: 'Process 2', name: 'process2', onChange, editable }),
+            new InstructionList({ source: false, header: 'Process 3', name: 'process3', onChange, editable }),
+            new InstructionList({ source: false, header: 'Process 4', name: 'process4', onChange, editable }),
         ];
         const ilsByHeader = this.ilsByHeader = {};
         const ilsByName = this.ilsByName = {};
@@ -262,9 +280,10 @@ class Editor {
             } else {
                 parent = root.querySelector('.Editor-instructions');
 
+                const cls = editable ? '' : 'hide';
                 // we also add a clear button
                 const clear = parseHTML(`
-                    <button class="Editor-clear btn btn-default btn-sm" data-name="${il.name}">Clear ${il.header}</button>
+                    <button class="Editor-clear btn btn-default btn-sm ${cls}" data-name="${il.name}">Clear ${il.header}</button>
                 `)
                 clear.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -277,7 +296,7 @@ class Editor {
                     root.querySelector('.Editor-clearButtons').appendChild(parseHTML('<div class="break"></div>'));
                 }
             }
-            parent.appendChild(il.render());
+            parent.appendChild(il.el);
         }
 
         playButton.addEventListener('click', (e) => {
@@ -400,6 +419,11 @@ class Editor {
     }
 }
 
+async function waitForClick(btn) {
+    btn.focus();
+    await elementEventPromise(btn, 'click');
+}
+
 async function tutorial(root, config) {
     function _iter(arg) {
         // makes sure you can iter over the arg whether it's falsey, an element, or array
@@ -409,6 +433,7 @@ async function tutorial(root, config) {
     let resolve;
     const complete = new Promise(r => resolve = r);
     const {editor, data} = Editor.newEditorWithAnalytics(root, {
+        ...config.editorOptions,
         map: config.map,
         onComplete(success) {
             if (config.requiresSuccess) {
@@ -423,6 +448,7 @@ async function tutorial(root, config) {
 
     const sels = {
         playOnce: [
+            '.Editor-cameraControls',
             '.Editor-controls',
             '.Editor-sidebar',
         ],
@@ -458,25 +484,30 @@ async function tutorial(root, config) {
         root.querySelector(sel).classList.remove(cls);
     }
     if (config.playAfterRun) {
+        // using this class because it hides the element, but still has it take space in DOM.
+        // nice b/c we will show it later after the program has been run.
         root.querySelector('.Editor-play').classList.add('invisible');
     }
 
     root.querySelector('.Editor').classList.add('is-tutorial');
     root.querySelector('.Editor').classList.add(`is-tutorial-theme-${config.ui}`);
 
+    // HACK: Do this before we add glow to avoid having it copy to program.
+    if (config.program) {
+        editor.setProgram(config.program);
+    }
+
     for (const g of _iter(config.glow)) {
-        root.querySelector(`[data-id=${g}]`).classList.add('glow')
+        root.querySelector(`.InstructionList.is-source [data-id=${g}]`).classList.add('glow')
     }
 
     // Add message
-
     const msg = root.querySelector('.Editor-message');
-    const spacebar = '\n\nPress spacebar to continue.';
-    msg.innerHTML = markdown(config.msgIntroNoSpacebar || config.msgIntro + spacebar)
+    const button = '\n\n<button class="btn btn-success">Continue</button>';
+    msg.innerHTML = markdown(config.msgIntro) + (config.program ? button : '');
 
     if (config.program) {
-        editor.setProgram(config.program);
-        await waitForSpace();
+        await waitForClick(msg.querySelector('.btn-success'));
         data.postIntro = Date.now();
 
         msg.innerHTML = markdown(config.msgWhileExecuting || '');
@@ -487,12 +518,12 @@ async function tutorial(root, config) {
     // If no program is supplied, then we're waiting for it to be written here.
     await complete;
 
-    msg.innerHTML = markdown(config.msgOutroNoSpacebar || config.msgOutro + spacebar)
+    msg.innerHTML = markdown(config.msgOutro) + button;
 
     if (config.playAfterRun) {
         root.querySelector('.Editor-play').classList.remove('invisible');
     }
-    await waitForSpace();
+    await waitForClick(msg.querySelector('.btn-success'));
 
     editor.destroy();
     data.end = Date.now();
@@ -502,11 +533,13 @@ async function tutorial(root, config) {
 addPlugin('LightbotTutorialSequence', trialErrorHandling(async function (root, trial) {
     const {editor, data} = Editor.newEditorWithAnalytics(root, {
         map: trial.map,
+        editable: false,
     });
     data.times = [];
 
     const msg = root.querySelector('.Editor-message');
-    const spacebar = '\n\nPress spacebar to continue.';
+
+    const button = '\n\n<button class="btn btn-success">Continue</button>';
 
     for (const t of trial.sequence) {
         for (const fn of ['remove', 'add']) {
@@ -517,9 +550,9 @@ addPlugin('LightbotTutorialSequence', trialErrorHandling(async function (root, t
             }
         }
         editor.setProgram(t.program);
-        msg.innerHTML = markdown(t.message + spacebar);
+        msg.innerHTML = markdown(t.message + button);
 
-        await waitForSpace();
+        await waitForClick(msg.querySelector('.btn-success'));
         data.times.push(Date.now());
     }
 

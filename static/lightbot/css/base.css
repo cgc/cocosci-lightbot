@@ -23,7 +23,8 @@
   */
   display: initial;
 }
-.InstructionList.is-source .InstructionList-close {
+.InstructionList.is-source .InstructionList-close,
+.InstructionList.is-not-editable .InstructionList-close {
   display: none;
 }
 
@@ -72,12 +73,14 @@
   background: white;
   margin: 1px;
   padding: 2px 4px;
-  cursor: grab;
   transition: background var(--transition-speed);
   display: inline-block;
 
   font-size: 18px;
   line-height: 18px;
+}
+.InstructionList.is-editable .InstructionList-instruction {
+  cursor: grab;
 }
 
 .InstructionList-instructionIcon {
@@ -87,7 +90,7 @@
   top: -2px;
 }
 
-.InstructionList-instruction:hover,
+.InstructionList.is-editable .InstructionList-instruction:hover,
 .InstructionList-instruction.sortable-ghost,
 .InstructionList-instruction.is-active {
   /*box-shadow: 0 0 0 1px black;*/
@@ -204,6 +207,13 @@
 
 .Editor-playButtons {
   margin: auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.Editor-playButtons .btn {
+  margin: 2px;
 }
 
 .Editor-clearButtons {
@@ -235,7 +245,8 @@
   overflow-y: initial;
 }
 .Editor.is-tutorial-theme-playOnce .InstructionList.is-disabled,
-.Editor.is-tutorial-theme-normalInstructions .InstructionList.is-disabled {
+.Editor.is-tutorial-theme-normalInstructions .InstructionList.is-disabled,
+.InstructionList.is-not-editable {
   background-image: initial;
   cursor: initial;
 }

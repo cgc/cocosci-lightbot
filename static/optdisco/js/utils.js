@@ -4,6 +4,8 @@ import openmoji from '../images/openmoji/openmoji.js';
 import {handleError} from '../../js/setup.js';
 import showdown from '../../lib/showdown-min.js';
 
+export const QUERY = new URLSearchParams(location.search);
+
 function deepCopy(obj) {
   /*
   This is a modest update to jsPsych.utils.deepCopy that uses ES6
@@ -260,9 +262,8 @@ class PromiseCancellation extends Error {
   }
 }
 
-export function documentEventPromise(eventName, fn) {
+export function elementEventPromise(el, eventName, fn=(e) => e) {
   // Adds event handler to document that runs until the function `fn` returns a truthy value.
-  const el = document;
   let cancel;
   const p = new Promise((resolve, reject) => {
 
@@ -284,6 +285,10 @@ export function documentEventPromise(eventName, fn) {
   });
   p.cancel = () => cancel();
   return p;
+}
+
+export function documentEventPromise(eventName, fn) {
+  return elementEventPromise(document, eventName, fn);
 }
 
 addPlugin('HTMLForm', async function(root, trial) {
