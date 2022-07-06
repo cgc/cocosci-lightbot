@@ -9,6 +9,7 @@ import { Bot } from './lb/bot';
 import instructions, { allInstructions, instructionsByName, processInstructions } from './lb/instructions';
 
 import Sortable from 'sortablejs';
+import { CameraControls } from './lb/view/CameraControls.js';
 
 /*
 
@@ -193,6 +194,7 @@ class Editor {
                 </div>
                 <div class="Editor-canvas">
                     <div class="Editor-message">${options.message||''}</div>
+                    <div class="Editor-cameraControls"></div>
                     <canvas width="690" height="670"></canvas>
                 </div>
             </div>
@@ -215,6 +217,8 @@ class Editor {
                 stepCounter.innerText = bot.actionCounter;
             }
         });
+        const cc = new CameraControls(root.querySelector('.Editor-cameraControls'), {game});
+        game.cameraControls = cc;
 
         const playButton = this.playButton = root.querySelector('.Editor-play');
         const checkButton = this.checkButton = root.querySelector('.Editor-check');

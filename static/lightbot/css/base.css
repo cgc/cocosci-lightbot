@@ -176,6 +176,14 @@
 }
 .Editor-canvas canvas {
   width: 100%;
+  /* Doing this to remove "ghost margin" due to canvas being inline-block */
+  display: block;
+}
+
+.Editor-cameraControls {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
 }
 
 .Editor-sidebar {
@@ -267,6 +275,59 @@
 }
 .Counter-value:empty:before {
   content: var(--Counter-placeholder);
+}
+
+
+.CameraControls {
+  position: relative;
+  background: white;
+  border-radius: 50%;
+  width: 8rem;
+  height: 8rem;
+  border: 1px solid #ccc;
+}
+
+.CameraControls div {
+  position: absolute;
+  cursor: pointer;
+}
+
+:root {
+  --CameraControls-margin: 2px;
+}
+
+.CameraControls-left {
+  left: var(--CameraControls-margin);
+  top: 50%;
+  /* HACK: we flip the right arrow since left is larger */
+  transform: translateY(-50%) scaleX(-1);
+}
+
+.CameraControls-right {
+  right: var(--CameraControls-margin);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.CameraControls-up {
+  top: var(--CameraControls-margin);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.CameraControls-down {
+  bottom: var(--CameraControls-margin);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.CameraControls-reset {
+  font-size: 10px;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 

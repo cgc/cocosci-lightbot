@@ -7,13 +7,14 @@ import './box';
 import { animations, spritePromise } from "./bot";
 import { Flourish } from "./flourish";
 import { RAF } from "./raf";
+import { MapCoordinateContext } from "./MapCoordinateContext";
 
 // refresh rate
 const fps = 30;
 const fpsDelay = 1000 / fps;
 
 // distance between lowest point in the map and the bottom edge
-const offsetY = 65;
+const offsetY = 150;
 
 const bgTilePromise = loadImage(new URL('../../../images/pattern.png', import.meta.url));
 let bgTile;
@@ -24,7 +25,7 @@ bgTilePromise.then(b => {
 export const assetsLoaded = Promise.all([bgTilePromise, spritePromise]);
 
 export class Game {
-  constructor(canvas, bot, {onComplete, onStep}) {
+  constructor(canvas, bot, { onComplete, onStep }) {
     this.canvas = canvas;
     this.onComplete = onComplete;
     this.onStep = onStep;
@@ -38,7 +39,12 @@ export class Game {
     this.ctx = this.canvas.getContext('2d');
 
     // create projection
-    this.projection = new Projection(this.canvas.height, this.canvas.width / 2, offsetY);
+    this.projection = new Projection(
+      this.canvas.height,
+      this.canvas.width / 2,
+      offsetY,
+      this.map.levelSize.x, this.map.levelSize.y,
+    );
 
     // create this.canvas background pattern
     this.bg = this.ctx.createPattern(bgTile, 'repeat');
@@ -46,6 +52,25 @@ export class Game {
     this.flourish = new Flourish();
 
     this.raf = new RAF(fpsDelay, this.update);
+
+    canvas.addEventListener('click', this.xx)
+  }
+
+  xx = (e) => {
+    // TODO REMOVE REMOVE
+    // TODO REMOVE REMOVE
+    // TODO REMOVE REMOVE
+    // TODO REMOVE REMOVE
+    const rect = this.canvas.getBoundingClientRect();
+    const normx = (e.clientX - rect.left) / rect.width;
+    const normy = (e.clientY - rect.top) / rect.height;
+    console.log(normx, normy, MapCoordinateContext.mapLocationFromRelativeCoordinate(this, normx, normy));
+  }
+
+  setMapLocation(i, j) {
+    if (this.ctx instanceof MapCoordinateContext) {
+      this.ctx.currentMapLocation = [i, j];
+    }
   }
 
   state() {
@@ -135,12 +160,32 @@ export class Game {
   }
 
   step() {
+    this.cameraControls && this.cameraControls.step();
     this.bot.step();
     this.map.step();
     this.flourish.step();
   }
 
   draw() {
+    /*
+    We render boxes using a simple variant of the Painter's Algorithm, drawing boxes in coordinate order from the furthest
+    corner from the camera -- this order is hardcoded based on the quadrant the camera is in.
+
+    While general isometric rendering can get complicated (https://shaunlebron.github.io/IsometricBlocks/),
+    we have a simple case because tiles and lightbot have a 1x1 footprint. While rendering in coordinate order
+    isn't exactly a painter's algorithm, when tiles are 1x1 it has the right effect, rendering from back to front
+    at any particular pixel.
+
+    What takes a little care is rendering animations for movements.
+    - When walking, lightbot should always be rendered on top of the previous or next location.
+    - When jumping, we should be careful when lightbot will be occluded. The two main cases are
+      jumping up toward the camera, and jumping down away from the camera. Instead of explicitly
+      handling the two cases, I borrow the heuristic previously used, which is to render lightbot
+      directly after the previous state during first half of animation and current state during
+      second half. This works for most cases, but like previous implementation, lightbot clips
+      when jumping down and away.
+    */
+
     //clear main this.canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -148,97 +193,57 @@ export class Game {
     this.ctx.fillStyle = this.bg;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // draw the map and the bot in the correct order
-    switch (this.bot.direction) {
-      case directions.se:
-        for (var i = this.map.levelSize.x - 1; i >= 0; i--) {
-          for (var j = this.map.levelSize.y - 1; j >= 0; j--) {
-            this.map.mapRef[i][j].draw(this.ctx, this.projection);
-            if (this.bot.currentPos.x === i && this.bot.currentPos.y === j) {
+    const quad = this.projection.viewQuadrant;
+    for (var i = 0; i < this.map.levelSize.x; i++) {
+      for (var j = 0; j < this.map.levelSize.y; j++) {
+        let x = i, y = j;
+
+        // First, we adjust indices based on current quadrant to ensure we're rendering from back to front.
+        if (quad == 0) {
+          x = this.map.levelSize.x - 1 - x;
+          y = this.map.levelSize.y - 1 - y;
+        } else if (quad == 1) {
+          x = this.map.levelSize.x - 1 - x;
+        } else if (quad == 3) {
+          y = this.map.levelSize.y - 1 - y;
+        }
+
+        // We render the box at this location.
+        this.setMapLocation(x, y);
+        this.map.mapRef[x][y].draw(this.ctx, this.projection);
+
+        // We either render the bot at the current or previous position, depending on conditions.
+        const isCurr = this.bot.currentPos.x === x && this.bot.currentPos.y === y;
+        const isPrev = this.bot.prevPos && this.bot.prevPos.x === x && this.bot.prevPos.y === y;
+        if (isCurr || isPrev) {
+          const anim = this.bot.getAnimation().name;
+          if (anim == animations.jumpUp.name || anim == animations.jumpDown.name) {
+            // For jump up/down, we borrow old logic to animate at prev during first half of animation
+            // and next state during second half.
+            const firstHalf = this.bot.getCurrentStep() / this.bot.getAnimation().duration <= 0.5;
+            if ((firstHalf && isPrev) || (!firstHalf && isCurr)) {
               this.bot.draw(this.ctx, this.projection);
             }
+          } else {
+            // This case handles other commands.
+            // It's important that we draw at both curr & prev for walking.
+            this.bot.draw(this.ctx, this.projection);
           }
         }
-        break;
-      case directions.nw:
-        for (i = this.map.levelSize.x - 1; i >= 0; i--) {
-          for (j = this.map.levelSize.y - 1; j >= 0; j--) {
-            this.map.mapRef[i][j].draw(this.ctx, this.projection);
-            switch (this.bot.getAnimation().name) {
-              case animations.jumpUp.name:
-              case animations.jumpDown.name:
-                if (this.bot.getMovement().dZ !== 0 && this.bot.getCurrentStep() / this.bot.getAnimation().duration <= 0.5) {
-                  if (this.bot.currentPos.x === i && this.bot.currentPos.y === j + 1) {
-                    this.bot.draw(this.ctx, this.projection);
-                  }
-                } else {
-                  if (this.bot.currentPos.x === i && this.bot.currentPos.y === j) {
-                    this.bot.draw(this.ctx, this.projection);
-                  }
-                }
-                break;
-              case animations.walk.name:
-                if (this.bot.getMovement().dZ !== 0 && this.bot.currentPos.x === i && this.bot.currentPos.y === j + 1) {
-                  this.bot.draw(this.ctx, this.projection);
-                } else if (this.bot.currentPos.x === i && this.bot.currentPos.y === j) {
-                  this.bot.draw(this.ctx, this.projection);
-                }
-                break;
-              default:
-                if (this.bot.currentPos.x === i && this.bot.currentPos.y === j) {
-                  this.bot.draw(this.ctx, this.projection);
-                }
-                break;
-            }
+        /*
+        if (isCurr || isPrev) {
+          const d = this.bot.projectedDirection(this.projection);
+          const isTowardCamera = d == 0 || d == 3;
+          const blocksView = (
+            (isTowardCamera && anim == animations.jumpUp.name && isCurr) ||
+            (!isTowardCamera && anim == animations.jumpDown.name && isPrev)
+          );
+          if (!blocksView) {
+            this.bot.draw(this.ctx, this.projection);
           }
         }
-        break;
-      case directions.ne:
-        for (i = this.map.levelSize.y - 1; i >= 0; i--) {
-          for (j = this.map.levelSize.x - 1; j >= 0; j--) {
-            this.map.mapRef[j][i].draw(this.ctx, this.projection);
-            switch (this.bot.getAnimation().name) {
-              case animations.jumpUp.name:
-              case animations.jumpDown.name:
-                if (this.bot.getMovement().dX !== 0 && this.bot.getCurrentStep() / this.bot.getAnimation().duration <= 0.5) {
-                  if (this.bot.currentPos.x === j + 1 && this.bot.currentPos.y === i) {
-                    this.bot.draw(this.ctx, this.projection);
-                  }
-                } else {
-                  if (this.bot.currentPos.x === j && this.bot.currentPos.y === i) {
-                    this.bot.draw(this.ctx, this.projection);
-                  }
-                }
-                break;
-              case animations.walk.name:
-                if (this.bot.getMovement().dX !== 0 && this.bot.currentPos.x === j + 1 && this.bot.currentPos.y === i) {
-                  this.bot.draw(this.ctx, this.projection);
-                } else if (this.bot.currentPos.x === j && this.bot.currentPos.y === i) {
-                  this.bot.draw(this.ctx, this.projection);
-                }
-                break;
-              default:
-                if (this.bot.currentPos.x === j && this.bot.currentPos.y === i) {
-                  this.bot.draw(this.ctx, this.projection);
-                }
-                break;
-            }
-          }
-        }
-        break;
-      case directions.sw:
-        for (i = this.map.levelSize.y - 1; i >= 0; i--) {
-          for (j = this.map.levelSize.x - 1; j >= 0; j--) {
-            this.map.mapRef[j][i].draw(this.ctx, this.projection);
-            if (this.bot.currentPos.x === j && this.bot.currentPos.y === i) {
-              this.bot.draw(this.ctx, this.projection);
-            }
-          }
-        }
-        break;
-      default:
-        console.error('unknown direction "' + this.bot.direction + '"');
-        break;
+        */
+      }
     }
 
     this.flourish.draw(this.ctx, this.projection);

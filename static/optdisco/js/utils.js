@@ -441,3 +441,17 @@ export async function waitForSpace() {
     }
   });
 }
+
+export function clip(i, min, max) {
+  return Math.max(min, Math.min(max, i));
+}
+
+export function easeInOutCubic(x){
+  // https://easings.net/#easeInOutCubic
+  /*
+  Below you see the code of this easing function written in TypeScript. The variable x
+  represents the absolute progress of the animation in the bounds of 0 (beginning of the
+  animation) and 1 (end of animation).
+  */
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}

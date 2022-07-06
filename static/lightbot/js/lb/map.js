@@ -1,3 +1,4 @@
+import { invariant } from '../../../optdisco/js/utils.js';
 import { Box, LightBox } from './box.js';
 
 export class Map {
@@ -28,9 +29,7 @@ export class Map {
             nbrLights++;
             break;
           default:
-            // output error and fall back to box element
-            console.error('Map contains unsupported element: ' + m.map[i][j].t);
-            mapRef[j][m.map.length - i - 1] = new Box(h, j, m.map.length - i - 1);
+            invariant(false, 'Map contains unsupported element: ' + m.map[i][j].t)
             break;
         }
       }

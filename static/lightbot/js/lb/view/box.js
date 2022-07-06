@@ -1,15 +1,18 @@
+import { clip } from "../../../../optdisco/js/utils";
 import { Box, LightBox } from "../box";
+import { colorToHex, parseHexColor, rgbBlend } from "./color";
 
 // dimension
 const edgeLength = 35;
 const heightScale = 0.5;
 
 // visual values
-const colorTop = "#c9d3d9"; //#ffa605"; // color of top face
-const colorFront = "#adb8bd"; // "#e28b00"; // color of front face
-const colorSide = "#e5f0f5"; // "#ffc133"; // color of side face
+const colorTop = parseHexColor("#c9d3d9"); //#ffa605"; // color of top face
+const colorFront = parseHexColor("#adb8bd"); // "#e28b00"; // color of front face
+const colorSide = parseHexColor("#e5f0f5"); // "#ffc133"; // color of side face
 const strokeColor = "#485256"; // color of the stroke
 const strokeWidth = 0.5; // width of the stroke
+const black = [0, 0, 0];
 
 // visual values (lightBox)
 const colorTopLightOn = "#FFE545"; // "#e3e500";
@@ -25,8 +28,8 @@ LightBox.prototype.pulseGrowing = true; // controls the growth/shrink of the pul
 LightBox.prototype.currentAnimationFrame = 0; // current animation frame, used internally to control the animation
 
 function drawTopFaceBox(ctx, projection) {
+  ctx.fillStyle = colorToHex(rgbBlend(colorTop, black, this.clippedDepth));
   // top face: p1 is front left and rest is counter-clockwise
-  ctx.fillStyle = colorTop;
   var p1 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
   var p2 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
   var p3 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, (this.y + 1) * edgeLength);
@@ -74,12 +77,16 @@ function drawTopFaceLightBox(ctx, projection) {
 }
 
 function drawFrontFaceBox(ctx, projection) {
+  // To allow multiple viewpoints, we change the side of this face based on the current view quadrant.
+  const yoffset = projection.viewQuadrant == 1 || projection.viewQuadrant == 2 ? +1 : 0;
+  const y = (this.y + yoffset) * edgeLength;
+
   // front face: p1 is bottom left and rest is counter-clockwise;
-  ctx.fillStyle = colorFront;
-  var p1 = projection.project(this.x * edgeLength, 0, this.y * edgeLength);
-  var p2 = projection.project((this.x + 1) * edgeLength, 0, this.y * edgeLength);
-  var p3 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
-  var p4 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
+  ctx.fillStyle = colorToHex(rgbBlend(colorFront, black, this.clippedDepth));
+  var p1 = projection.project(this.x * edgeLength, 0, y);
+  var p2 = projection.project((this.x + 1) * edgeLength, 0, y);
+  var p3 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, y);
+  var p4 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, y);
   ctx.beginPath();
   ctx.moveTo(p1.x, p1.y);
   ctx.lineTo(p2.x, p2.y);
@@ -91,12 +98,16 @@ function drawFrontFaceBox(ctx, projection) {
 }
 
 function drawSideFaceBox(ctx, projection) {
+  // To allow multiple viewpoints, we change the side of this face based on the current view quadrant.
+  const xoffset = projection.viewQuadrant >= 2 ? +1 : 0;
+  const x = (this.x + xoffset) * edgeLength;
+
   // left side face: p1 is bottom front and rest is counter-clockwise;
-  ctx.fillStyle = colorSide;
-  var p1 = projection.project(this.x * edgeLength, 0, this.y * edgeLength);
-  var p2 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
-  var p3 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, (this.y + 1) * edgeLength);
-  var p4 = projection.project(this.x * edgeLength, 0, (this.y + 1) * edgeLength);
+  ctx.fillStyle = colorToHex(rgbBlend(colorSide, black, this.clippedDepth));
+  var p1 = projection.project(x, 0, this.y * edgeLength);
+  var p2 = projection.project(x, this.getHeight() * edgeLength, this.y * edgeLength);
+  var p3 = projection.project(x, this.getHeight() * edgeLength, (this.y + 1) * edgeLength);
+  var p4 = projection.project(x, 0, (this.y + 1) * edgeLength);
   ctx.beginPath();
   ctx.moveTo(p1.x, p1.y);
   ctx.lineTo(p2.x, p2.y);
@@ -128,6 +139,11 @@ function stepLightBox() {
 function draw(ctx, projection) {
   ctx.strokeStyle = strokeColor;
   ctx.lineWidth = strokeWidth;
+
+  // Measure from middle of block to be independent of viewpoint.
+  var p = projection.project((this.x + 0.5) * edgeLength, this.getHeight() * edgeLength, (this.y + 0.5) * edgeLength, true);
+  this.clippedDepth = clip(1.1 - 0.3 * p.z, 0, 1);
+
   this.drawTopFace(ctx, projection);
   this.drawFrontFace(ctx, projection);
   this.drawSideFace(ctx, projection);

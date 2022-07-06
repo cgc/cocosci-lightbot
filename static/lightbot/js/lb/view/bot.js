@@ -25,6 +25,9 @@ const botView = {
     // set the bot to busy
     this.readyForNextInstruction = false;
 
+    // Hold onto ref to old position
+    this.prevPos = oldPos;
+
     // decide what to animate
     switch (instruction.name) {
       // walk
@@ -74,6 +77,9 @@ const botView = {
       this.setAnimation(animations.stand);
       this.setMovement(0, 0, 0);
 
+      // clear prev
+      this.prevPos = null;
+
     } else {
       var nbrFrame = Math.floor(this.currentStep / this.animation.step);
       if (this.animation.loop) {
@@ -113,17 +119,25 @@ const botView = {
     return offset;
   },
 
+  projectedDirection(projection) {
+    return (this.direction + projection.viewQuadrant) % 4;
+  },
+
   draw(ctx, projection) {
     var offset = this.getMovementOffset();
 
+    // This would previously render sprites at the box corner, and the image margin would make things look alright.
+    // I've adapted it to render to the box center, and remove the bottom image's margin.
+    const curr = this.map.mapRef[this.currentPos.x][this.currentPos.y];
     var p = projection.project(
-      (this.currentPos.x) * this.map.mapRef[this.currentPos.x][this.currentPos.y].getEdgeLength() + (this.movement.dX - offset.x),
-      this.map.mapRef[this.currentPos.x][this.currentPos.y].getHeight() * this.map.mapRef[this.currentPos.x][this.currentPos.y].getEdgeLength() + (-this.movement.dY + offset.y),
-      (this.currentPos.y) * this.map.mapRef[this.currentPos.x][this.currentPos.y].getEdgeLength() + (this.movement.dZ - offset.z));
+      (this.currentPos.x + 0.5) * curr.getEdgeLength() + (this.movement.dX - offset.x),
+      curr.getHeight() * curr.getEdgeLength() + (-this.movement.dY + offset.y),
+      (this.currentPos.y + 0.5) * curr.getEdgeLength() + (this.movement.dZ - offset.z));
     var srcX = this.animation.sX + this.currentFrame * this.animation.width;
-    var srcY = this.direction * this.animation.height;
+    var srcY = this.projectedDirection(projection) * this.animation.height;
     var dX = p.x - this.animation.width / 2; // center image horizontally
-    var dY = p.y - this.animation.height;
+    // .86 just looked right -- seems to remove the margin for most of the sprites.
+    var dY = p.y - this.animation.height * .86;
 
     // round dX and dY down to avoid anti-aliasing when drawing the sprite
     ctx.drawImage(sprites, srcX, srcY, this.animation.width, this.animation.height, Math.floor(dX), Math.floor(dY), this.animation.width, this.animation.height);
