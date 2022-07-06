@@ -453,6 +453,7 @@ async function tutorial(root, config) {
             '.Editor-sidebar',
         ],
         normalInstructions: [
+            '.Editor-cameraControls',
             '.Editor-check',
             '.Editor-clearButtons',
             '.Editor-counters',
@@ -460,6 +461,7 @@ async function tutorial(root, config) {
             ...processInstructions.map(p => `[data-id=${p.instructionName}]`),
         ],
         normalInstructionsEditor: [
+            '.Editor-cameraControls',
             '.Editor-check',
             '.Editor-counters',
             ...processInstructions.map(p => `[data-id=${p.instructionName}]`),
@@ -467,6 +469,7 @@ async function tutorial(root, config) {
             ...processInstructions.map(p => `.Editor-clear[data-name=${p.instructionName}]`),
         ],
         normalInstructionsEditorWithProcess1: [
+            '.Editor-cameraControls',
             '.Editor-check',
             '.Editor-counters',
             ...processInstructions.slice(1).map(p => `[data-id=${p.instructionName}]`),
@@ -591,4 +594,5 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
         },
         ...trial.editorOptions,
     });
+    data.practice = trial.practice;
 }));

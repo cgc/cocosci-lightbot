@@ -341,6 +341,11 @@
   font-weight: 600;
 }
 
+.CameraControls-reset:empty:before {
+  content: "🎦";
+  font-size: 2rem;
+}
+
 
 /* imported from old projects */
 

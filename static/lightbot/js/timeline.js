@@ -460,12 +460,18 @@ export function makeTimeline(configuration) {
     `),
     {
       type: 'LightbotTask',
+      practice: true,
       map: mapData[1],
       editorOptions: {
         message: markdown(`
-        From now on, you can use up to 4 processes.
+        New features have been unlocked for you! You can use these for the rest of the experiment.
 
-        If **Run** is taking too long, then try **Quick Run⚡️**.
+        - You can use up to **4 processes**.
+        - If Run is taking too long, then try **Quick Run⚡️**.
+        - If the puzzle is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
+
+
+        Good luck with the practice problem!
         `),
       },
     },
@@ -493,6 +499,7 @@ export function makeTimeline(configuration) {
     `),
     {
       type: 'LightbotTask',
+      practice: false,
       timeline: maps.map(map => ({ map })),
       editorOptions: {
         showLengthCounter: true,
