@@ -241,7 +241,7 @@
 
 
 .Editor.is-tutorial .InstructionList.is-source .InstructionList-instructions {
-  /* HACK: this is a reset that we employ just to make .glow work for tutorial */
+  /* NOTE: this is a reset that we employ just to make .glow work for tutorial */
   overflow-y: initial;
 }
 .Editor.is-tutorial-theme-playOnce .InstructionList.is-disabled,
@@ -310,7 +310,7 @@
 .CameraControls-left {
   left: var(--CameraControls-margin);
   top: 50%;
-  /* HACK: we flip the right arrow since left is larger */
+  /* NOTE: we flip the right arrow since left is larger */
   transform: translateY(-50%) scaleX(-1);
 }
 

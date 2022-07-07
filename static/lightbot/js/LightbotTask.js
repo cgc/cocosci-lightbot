@@ -10,6 +10,8 @@ import instructions, { allInstructions, instructionsByName, processInstructions 
 
 import Sortable from 'sortablejs';
 import { CameraControls } from './lb/view/CameraControls.js';
+import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
+import { LightBox } from './lb/box.js';
 
 /*
 
@@ -403,7 +405,7 @@ class Editor {
         const editor = new Editor(root, {
             ...options,
             onComplete(success) {
-                data.complete.push({success, time: Date.now()});
+                data.complete.push({success, time: Date.now(), program: programFromILs(editor.ilsByName)});
                 options.onComplete && options.onComplete(success);
             },
             onProgramUpdate(e) {
@@ -594,5 +596,103 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
         },
         ...trial.editorOptions,
     });
-    data.practice = trial.practice;
+    data.trialConfig = trial.addToData;
+}));
+
+addPlugin('LightbotLightOrderTask', trialErrorHandling(async function (root, trial) {
+    const {editor, data} = Editor.newEditorWithAnalytics(root, {
+        map: trial.map,
+        editable: false,
+    });
+    root.querySelector('.Editor-playButtons').classList.add('hide');
+    data.trialConfig = trial.addToData;
+    data.events = [];
+    data.boxes = [];
+    const {game} = editor;
+    const map = game.map;
+    const c = game.canvas;
+
+    function done() {
+      data.boxes = data.boxes.map(box => [box.x, box.y]);
+      editor.destroy();
+      data.end = Date.now();
+      jsPsych.finishTrial(data);
+    }
+
+    // We shim out the game's draw() function, calling it with a version that also draws
+    // numbers. Unfortuantely, this doesn't properly work when numbers are occluded.
+    // An alternative could overwrite each box's draw function instead.
+    const originalDraw = game.draw.bind(game);
+    game.draw = () => {
+      originalDraw();
+      const ctx = game.ctx;
+      if (!ctx.fillText) {
+        // We skip whenever it's a draw() happening b/c of MapCoordinateContext
+        return;
+      }
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '14px serif';
+      for (let i = 0; i < data.boxes.length; i++) {
+        const box = data.boxes[i];
+        const p = game.projection.project(
+          (box.x + 0.5) * box.getEdgeLength(),
+          box.getHeight() * box.getEdgeLength(),
+          (box.y + 0.5) * box.getEdgeLength());
+        ctx.fillText(""+(i+1), p.x, p.y);
+      }
+    };
+
+    editor.setProgram(trial.program);
+    const message = root.querySelector('.Editor-message');
+
+    function render() {
+      const allLightsOn = map.allLightsOn();
+      const button = allLightsOn ? '<button class="btn btn-success">Continue</button>' : '';
+      const reset = data.boxes.length ?  '<button class="btn btn-default">Reset</button>' : '';
+      const msg = allLightsOn ? `
+      Submit your response with **Continue**. Or, **Reset** if you want to change your answer.
+      ` : `
+      This program solves the task. But in what order will lightbot activate the lights?
+
+      Click on the lights in the order lightbot will activate them when running this program.
+      `;
+      message.innerHTML = markdown(`
+      ${msg}
+
+      ${reset}
+      ${button}
+      `);
+      reset && message.querySelector('.btn-default').addEventListener('click', (e) => {
+        data.events.push({type: 'reset', time: Date.now()});
+        map.reset();
+        data.boxes = [];
+        render();
+      });
+      button && message.querySelector('.btn-success').addEventListener('click', (e) => {
+        done();
+      });
+    }
+
+    c.addEventListener('click', (e) => {
+      const rect = c.getBoundingClientRect();
+      const normx = (e.clientX - rect.left) / rect.width;
+      const normy = (e.clientY - rect.top) / rect.height;
+      const loc = MapCoordinateContext.mapLocationFromRelativeCoordinate(game, normx, normy);
+      if (!loc) {
+        return;
+      }
+      const box = map.mapRef[loc[0]][loc[1]];
+      const isLight = box instanceof LightBox;
+      // NOTE: We want to copy `lightOn` before the `toggleLight()`.
+      data.events.push({type: 'lightClick', loc, isLight, lightOn: box.lightOn, time: Date.now()});
+      if (isLight && !box.lightOn) {
+        box.toggleLight();
+        data.boxes.push(box);
+        render();
+      }
+    });
+
+    render();
 }));

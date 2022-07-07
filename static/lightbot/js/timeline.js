@@ -14,8 +14,17 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-multi-choice.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-fullscreen.js';
 
 import './LightbotTask';
-import { normalInstructions, instructionsByName } from './lb/instructions.js';
+import { normalInstructions, instructionsByName, instructionsByActionCode } from './lb/instructions.js';
 import { renderInstructionToHTML } from './LightbotTask';
+
+function parseSerializedProgram(p) {
+  const [main, process1, process2, process3, process4] = p.split('|');
+  const rv = {main, process1, process2, process3, process4};
+  for (const k of Object.keys(rv)) {
+    rv[k] = Array.from(rv[k]).map(code => instructionsByActionCode[code].instructionName);
+  }
+  return rv;
+}
 
 const mapSources = {
   maps: mapData,
@@ -444,11 +453,55 @@ function makeTutorial() {
   return { type: 'LightbotTutorial', timeline: t };
 }
 
+const orderTaskTimeline = [
+  {
+    program: parseSerializedProgram('1BDCE1BCD1|BCDCA|||'),
+    addToData: {source: ["maps", 7], typical: true},
+  },
+  {
+    program: {
+      main: ['process1', 'walk', 'turnLeft', 'process1', 'turnLeft', 'jump', 'process1'],
+      process1: ['jump', 'light', 'turnLeft', 'walk', 'walk', 'light'],
+    },
+    addToData: {source: ["cgcMaps", 15], typical: false},
+  },
+  {
+    program: parseSerializedProgram('EBABDCCCADBBA||||'),
+    addToData: {source: ["maps", 8], typical: true},
+  },
+  {
+    program: parseSerializedProgram('1E1A|BCDCABDCB|||'),
+    addToData: {source: ["maps", 7], typical: false},
+  },
+  {
+    program: {
+      main: ['turnLeft', 'process1', 'turnRight', 'jump', 'turnRight', 'process1', 'turnLeft', 'jump', 'turnLeft', 'process1'],
+      process1: ['walk', 'light', 'walk', 'walk', 'light'],
+    },
+    addToData: {source: ["cgcMaps", 15], typical: true},
+  },
+  {
+    program: parseSerializedProgram('1CC1DBBA|EBADC|||'),
+    addToData: {source: ["maps", 8], typical: false},
+  },
+].map(t => ({
+  map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
+  ...t,
+}));
+
+// HACK: need to move toward proper config
+if (Math.random() < 0.5) {
+  orderTaskTimeline.reverse();
+}
+
 const BONUS = 0.25;
 
 export function makeTimeline(configuration) {
   const shuffled = random.shuffle(mapTimeline);
-  const maps = shuffled.map(([source, idx]) => mapSources[source][idx]);
+  const maps = shuffled.map(([source, idx]) => ({
+    map: mapSources[source][idx],
+    addToData: {source: [source, idx], practice: false},
+  }));
   // HACK: need to move toward proper config
   psiturk.recordUnstructuredData('maps', shuffled);
 
@@ -460,8 +513,8 @@ export function makeTimeline(configuration) {
     `),
     {
       type: 'LightbotTask',
-      practice: true,
       map: mapData[1],
+      addToData: {practice: true},
       editorOptions: {
         message: markdown(`
         New features have been unlocked for you! You can use these for the rest of the experiment.
@@ -470,7 +523,7 @@ export function makeTimeline(configuration) {
         - If Run is taking too long, then try **Quick Run⚡️**.
         - If the puzzle is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
 
-
+        <br />
         Good luck with the practice problem!
         `),
       },
@@ -479,8 +532,9 @@ export function makeTimeline(configuration) {
     makeSimpleInstruction(`
     Now we will begin the study.
 
-    You will complete ${maps.length} levels. Your goal is to write the **shortest solutions** you can.
+    You will complete ${maps.length} levels. After you complete the levels, we'll ask you a few short questions about solutions that others have written.
 
+    Your goal is to write the **shortest solutions** you can.
     The shorter your solutions, the **bigger your bonus**!
 
     On the next pages, we'll explain how the length of a solution is calculated. Then, we'll explain how the bonus is calculated.
@@ -499,11 +553,20 @@ export function makeTimeline(configuration) {
     `),
     {
       type: 'LightbotTask',
-      practice: false,
-      timeline: maps.map(map => ({ map })),
+      timeline: maps,
       editorOptions: {
         showLengthCounter: true,
       },
+    },
+    makeSimpleInstruction(`
+    Congratulations! You made it through the main part of the study.
+
+    Now, we have ${orderTaskTimeline.length} short questions for you. In these short questions, we'll show you a program
+    and then ask you what order lightbot activates the lights.
+    `),
+    {
+      type: 'LightbotLightOrderTask',
+      timeline: orderTaskTimeline,
     },
     { type: 'fullscreen', fullscreen_mode: false },
     debrief(),

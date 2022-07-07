@@ -54,19 +54,6 @@ export class Game {
     this.flourish = new Flourish();
 
     this.raf = new RAF(fpsDelay, this.update);
-
-    canvas.addEventListener('click', this.xx)
-  }
-
-  xx = (e) => {
-    // TODO REMOVE REMOVE
-    // TODO REMOVE REMOVE
-    // TODO REMOVE REMOVE
-    // TODO REMOVE REMOVE
-    const rect = this.canvas.getBoundingClientRect();
-    const normx = (e.clientX - rect.left) / rect.width;
-    const normy = (e.clientY - rect.top) / rect.height;
-    console.log(normx, normy, MapCoordinateContext.mapLocationFromRelativeCoordinate(this, normx, normy));
   }
 
   setMapLocation(i, j) {
