@@ -28,7 +28,7 @@ LightBox.prototype.pulseGrowing = true; // controls the growth/shrink of the pul
 LightBox.prototype.currentAnimationFrame = 0; // current animation frame, used internally to control the animation
 
 function drawTopFaceBox(ctx, projection) {
-  ctx.fillStyle = colorToHex(rgbBlend(colorTop, black, this.clippedDepth));
+  ctx.fillStyle = colorToHex(rgbBlend(colorTop, black, this.shadingAlphaFromDepth));
   // top face: p1 is front left and rest is counter-clockwise
   var p1 = projection.project(this.x * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
   var p2 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, this.y * edgeLength);
@@ -82,7 +82,7 @@ function drawFrontFaceBox(ctx, projection) {
   const y = (this.y + yoffset) * edgeLength;
 
   // front face: p1 is bottom left and rest is counter-clockwise;
-  ctx.fillStyle = colorToHex(rgbBlend(colorFront, black, this.clippedDepth));
+  ctx.fillStyle = colorToHex(rgbBlend(colorFront, black, this.shadingAlphaFromDepth));
   var p1 = projection.project(this.x * edgeLength, 0, y);
   var p2 = projection.project((this.x + 1) * edgeLength, 0, y);
   var p3 = projection.project((this.x + 1) * edgeLength, this.getHeight() * edgeLength, y);
@@ -103,7 +103,7 @@ function drawSideFaceBox(ctx, projection) {
   const x = (this.x + xoffset) * edgeLength;
 
   // left side face: p1 is bottom front and rest is counter-clockwise;
-  ctx.fillStyle = colorToHex(rgbBlend(colorSide, black, this.clippedDepth));
+  ctx.fillStyle = colorToHex(rgbBlend(colorSide, black, this.shadingAlphaFromDepth));
   var p1 = projection.project(x, 0, this.y * edgeLength);
   var p2 = projection.project(x, this.getHeight() * edgeLength, this.y * edgeLength);
   var p3 = projection.project(x, this.getHeight() * edgeLength, (this.y + 1) * edgeLength);
@@ -140,9 +140,8 @@ function draw(ctx, projection) {
   ctx.strokeStyle = strokeColor;
   ctx.lineWidth = strokeWidth;
 
-  // Measure from middle of block to be independent of viewpoint.
-  var p = projection.project((this.x + 0.5) * edgeLength, this.getHeight() * edgeLength, (this.y + 0.5) * edgeLength, true);
-  this.clippedDepth = clip(1.1 - 0.3 * p.z, 0, 1);
+  const z = projection.projectNormalizedZ(this.x, this.getHeight(), this.y);
+  this.shadingAlphaFromDepth = clip(1.05 - 0.3 * z, 0, 1);
 
   this.drawTopFace(ctx, projection);
   this.drawFrontFace(ctx, projection);

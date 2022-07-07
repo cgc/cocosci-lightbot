@@ -43,7 +43,9 @@ export class Game {
       this.canvas.height,
       this.canvas.width / 2,
       offsetY,
-      this.map.levelSize.x, this.map.levelSize.y,
+      this.map.levelSize.x,
+      this.map.levelSize.y,
+      this.map.maxBoxHeight(),
     );
 
     // create this.canvas background pattern
@@ -230,19 +232,6 @@ export class Game {
             this.bot.draw(this.ctx, this.projection);
           }
         }
-        /*
-        if (isCurr || isPrev) {
-          const d = this.bot.projectedDirection(this.projection);
-          const isTowardCamera = d == 0 || d == 3;
-          const blocksView = (
-            (isTowardCamera && anim == animations.jumpUp.name && isCurr) ||
-            (!isTowardCamera && anim == animations.jumpDown.name && isPrev)
-          );
-          if (!blocksView) {
-            this.bot.draw(this.ctx, this.projection);
-          }
-        }
-        */
       }
     }
 

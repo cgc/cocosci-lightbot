@@ -40,6 +40,14 @@ export class Map {
     }
   }
 
+  forEachBox(fn) {
+    for (var i = 0; i < this.levelSize.x; i++) {
+      for (var j = 0; j < this.levelSize.y; j++) {
+        fn(this.mapRef[i][j], i, j);
+      }
+    }
+  }
+
   allLightsOn() {
     for (var i = 0; i < this.levelSize.x; i++) {
       for (var j = 0; j < this.levelSize.y; j++) {
@@ -52,19 +60,20 @@ export class Map {
   }
 
   reset() {
-    for (var i = 0; i < this.levelSize.x; i++) {
-      for (var j = 0; j < this.levelSize.y; j++) {
-        this.mapRef[i][j].reset();
-      }
-    }
+    this.forEachBox(box => box.reset());
   }
 
   step() {
-    for (var i = 0; i < this.levelSize.x; i++) {
-      for (var j = 0; j < this.levelSize.y; j++) {
-        // update the tile
-        this.mapRef[i][j].step();
+    this.forEachBox(box => box.step());
+  }
+
+  maxBoxHeight() {
+    let h = -Infinity;
+    this.forEachBox(box => {
+      if (box.height > h) {
+        h = box.height;
       }
-    }
+    });
+    return h;
   }
 }

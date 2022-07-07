@@ -54,21 +54,20 @@ export class CameraControls {
     );
   }
 
-  up() {
+  _animateHorizontal(delta) {
     const {verticalAxisRotation, horizontalAxisRotation} = this.game.projection;
     this.animate(
       {verticalAxisRotation, horizontalAxisRotation},
-      {verticalAxisRotation, horizontalAxisRotation: clip(horizontalAxisRotation + 15 * deg2rad, 12 * deg2rad, 57 * deg2rad)},
+      {verticalAxisRotation, horizontalAxisRotation: clip(horizontalAxisRotation + delta, 20 * deg2rad, 50 * deg2rad)},
     );
   }
 
+  up() {
+    this._animateHorizontal(15 * deg2rad);
+  }
+
   down() {
-    const {verticalAxisRotation, horizontalAxisRotation} = this.game.projection;
-    this.animate(
-      {verticalAxisRotation, horizontalAxisRotation},
-      //{verticalAxisRotation, horizontalAxisRotation: clip(horizontalAxisRotation - 18 * deg2rad, 27 * deg2rad, 63 * deg2rad)},
-      {verticalAxisRotation, horizontalAxisRotation: clip(horizontalAxisRotation - 15 * deg2rad, 12 * deg2rad, 57 * deg2rad)},
-    );
+    this._animateHorizontal(-15 * deg2rad);
   }
 
   reset() {
