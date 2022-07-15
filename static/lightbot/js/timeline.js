@@ -7,6 +7,7 @@ import mapData from '../json/maps.json';
 import originalMaps from '../json/original-maps.json';
 import cgcMaps from '../json/cgc-maps.json';
 import mapTimeline from '../json/map-timeline.json';
+import lightOrderTimeline from '../json/light-order-timeline.json';
 
 import jsPsych from '../../lib/jspsych-exported.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-text.js';
@@ -453,40 +454,10 @@ function makeTutorial() {
   return { type: 'LightbotTutorial', timeline: t };
 }
 
-const orderTaskTimeline = [
-  {
-    program: parseSerializedProgram('1BDCE1BCD1|BCDCA|||'),
-    addToData: {source: ["maps", 7], typical: true},
-  },
-  {
-    program: {
-      main: ['process1', 'walk', 'turnLeft', 'process1', 'turnLeft', 'jump', 'process1'],
-      process1: ['jump', 'light', 'turnLeft', 'walk', 'walk', 'light'],
-    },
-    addToData: {source: ["cgcMaps", 15], typical: false},
-  },
-  {
-    program: parseSerializedProgram('EBABDCCCADBBA||||'),
-    addToData: {source: ["maps", 8], typical: true},
-  },
-  {
-    program: parseSerializedProgram('1E1A|BCDCABDCB|||'),
-    addToData: {source: ["maps", 7], typical: false},
-  },
-  {
-    program: {
-      main: ['turnLeft', 'process1', 'turnRight', 'jump', 'turnRight', 'process1', 'turnLeft', 'jump', 'turnLeft', 'process1'],
-      process1: ['walk', 'light', 'walk', 'walk', 'light'],
-    },
-    addToData: {source: ["cgcMaps", 15], typical: true},
-  },
-  {
-    program: parseSerializedProgram('1CC1DBBA|EBADC|||'),
-    addToData: {source: ["maps", 8], typical: false},
-  },
-].map(t => ({
+const orderTaskTimeline = lightOrderTimeline.map(t => ({
   map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
   ...t,
+  program: parseSerializedProgram(t.program),
 }));
 
 // HACK: need to move toward proper config
