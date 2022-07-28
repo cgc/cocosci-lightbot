@@ -1,4 +1,4 @@
 {
     "order": [123],
-    "conditionToFactors": {"order": [0]}
+    "conditionToFactors": {"order": [0, 1, 2, 3]}
 }
