@@ -1,6 +1,10 @@
-import './lib/jquery-min.js';
+import jQuery from './lib/jquery-min.js';
 import './lib/underscore-min.js';
 import './lib/backbone-min.js';
+
+// HACK: to make bootstrap work, we both have to set jQuery on window and dynamically import
+window.jQuery = jQuery;
+import('./lib/bootstrap.min.js')
 
 import './css/bootstrap.min.css';
 import './css/style.css';

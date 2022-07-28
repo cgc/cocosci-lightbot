@@ -7,7 +7,11 @@ import mapData from '../json/maps.json';
 import originalMaps from '../json/original-maps.json';
 import cgcMaps from '../json/cgc-maps.json';
 import mapTimeline from '../json/map-timeline.json';
-import lightOrderTimeline from '../json/light-order-timeline.json';
+
+import lot0 from '../json/light-order-timeline.random0.json';
+import lot1 from '../json/light-order-timeline.random1.json';
+import lot2 from '../json/light-order-timeline.random2.json';
+import lot3 from '../json/light-order-timeline.random3.json';
 
 import jsPsych from '../../lib/jspsych-exported.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-text.js';
@@ -37,7 +41,7 @@ function updatedMap(m, fn) {
   return m.map((row, x) => row.map((cell, y) => fn(cell, x, y)));
 }
 
-function money(dollars) {
+export function money(dollars) {
   return `$${dollars.toFixed(2)}`;
 }
 
@@ -261,7 +265,7 @@ function makeTutorial() {
   Drag instructions under **Main** for lightbot.
   Execute them by clicking **Run**.
   Bring lightbot back to the beginning by clicking **Reset**.
-  
+
   When all lights are lit 💡 you can move on.
   `;
 
@@ -297,7 +301,7 @@ function makeTutorial() {
       glow: 'walk',
       msgIntro: `
       In this experiment, you will control lightbot's actions by giving him instructions to execute. Let's go over the 5 basic instructions you can give to lightbot.
-      
+
       First, we'll start with ${renderInstructionToHTML(instructionsByName.walk)}. When walking forward, the robot will advance one square in the direction it is facing.
       `,
     }),
@@ -454,17 +458,6 @@ function makeTutorial() {
   return { type: 'LightbotTutorial', timeline: t };
 }
 
-const orderTaskTimeline = lightOrderTimeline.map(t => ({
-  map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
-  ...t,
-  program: parseSerializedProgram(t.program),
-}));
-
-// HACK: need to move toward proper config
-if (Math.random() < 0.5) {
-  orderTaskTimeline.reverse();
-}
-
 const BONUS = 0.25;
 
 export function makeTimeline(configuration) {
@@ -568,6 +561,83 @@ export function makeTimeline(configuration) {
       `),
     }),
     */
+}
+
+export const ORDER_BONUS = 0.10;
+export function makeLightOrderTimeline(configuration) {
+  const lot = [lot0, lot1, lot2, lot3][QUERY.get('condition') || window.CONDITION || 0];
+  const orderTaskTimeline = lot.map((t, idx) => ({
+    map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
+    ...t,
+    program: parseSerializedProgram(t.program),
+    leftToGo: lot.length - idx - 1,
+  }));
+
+  const maps = [
+    ["maps", 1],
+    ["maps", 6],
+  ].map(([source, idx]) => ({
+    map: mapSources[source][idx],
+    addToData: {source: [source, idx], practice: false},
+  }));
+
+  return _.flatten([
+    { type: 'fullscreen', fullscreen_mode: true },
+    makeTutorial(),
+    makeSimpleInstruction(`
+    Now we will begin the study.
+
+    You will complete ${maps.length} levels. After you complete the levels, we'll ask you ${orderTaskTimeline.length} quick questions about solutions that others have written.
+
+    For these ${maps.length} levels, your goal is to write the **shortest solutions** you can.
+    The shorter your solutions, the **bigger your bonus**!
+
+    On the next pages, we'll explain how the length of a solution is calculated. Then, we'll explain how the bonus is calculated.
+    `),
+    lengthTutorial(),
+    makeSimpleInstruction(`
+    For each problem, the participants who find one of the shortest possible solutions based on **Instruction Count** will receive a full bonus of ${money(BONUS)}.
+
+    Since there are ${maps.length} total levels, there is an opportunity for a total bonus of ${maps.length} &times; ${money(BONUS)} = ${money(maps.length * BONUS)}.
+
+    Longer solutions will receive proportionally smaller bonuses. The average bonus will be ${money(maps.length * BONUS / 2)}.
+    `),
+    {
+      type: 'LightbotTask',
+      ...maps[0],
+      editorOptions: {
+        message: markdown(`
+        New features have been unlocked for you! You can use these for the rest of the experiment.
+
+        - You can use up to **4 processes**.
+        - If Run is taking too long, then try **Quick Run⚡️**.
+        - If the puzzle is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
+        `),
+        showLengthCounter: true,
+      },
+    },
+    {
+      type: 'LightbotTask',
+      ...maps[1],
+      editorOptions: {
+        showLengthCounter: true,
+      },
+    },
+
+    makeSimpleInstruction(`
+    Great job! Now, we have ${orderTaskTimeline.length} short questions for you. In these short questions, we'll show you a program
+    and then ask you what order lightbot activates the lights. This is the last part of the study before we ask for your feedback.
+
+    If your answer is correct, you will get a bonus of **${money(ORDER_BONUS)}** for each question. That means you have the opportunity to
+    receive a total of **${money(ORDER_BONUS*orderTaskTimeline.length)}** if you answer all questions correctly.
+    `),
+    {
+      type: 'LightbotLightOrderTask',
+      timeline: orderTaskTimeline,
+    },
+    { type: 'fullscreen', fullscreen_mode: false },
+    debrief(),
+  ]);
 }
 
 /*

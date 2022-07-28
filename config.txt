@@ -32,8 +32,8 @@ secret_key = 'this is my secret key which is hard to guess, i should change this
 adserver_revproxy_host = cocosci-lightbot.herokuapp.com
 
 [Task Parameters]
-experiment_code_version = 0.2
-num_conds = 1
+experiment_code_version = 0.3
+num_conds = 4
 num_counters = 1
 
 [Shell Parameters]

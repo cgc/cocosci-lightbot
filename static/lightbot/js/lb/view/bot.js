@@ -143,6 +143,36 @@ const botView = {
     ctx.drawImage(sprites, srcX, srcY, this.animation.width, this.animation.height, Math.floor(dX), Math.floor(dY), this.animation.width, this.animation.height);
   },
 
+  drawPath(ctx, projection) {
+    let prev = this.trajectory[0];
+    for (const curr of this.trajectory.slice(1)) {
+      const {position: prevPosition, direction: prevDirection} = prev;
+      const {position, direction} = curr;
+
+      const box = this.map.mapRef[position.x][position.y];
+      const prevBox = this.map.mapRef[prevPosition.x][prevPosition.y];
+
+      const p = box => projection.project(
+        (box.x + 0.5) * box.getEdgeLength(),
+        box.getHeight() * box.getEdgeLength(),
+        (box.y + 0.5) * box.getEdgeLength());
+
+      const p1 = p(prevBox);
+      const p2 = p(box);
+
+      ctx.strokeStyle = 'rgb(7, 192, 195)';
+      //ctx.strokeStyle = 'rgb(241, 202, 25)';
+      ctx.beginPath();
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+      ctx.lineTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      prev = curr;
+    }
+  },
+
   setAnimation(a) {
     this.animation = a;
     this.currentStep = 0;
@@ -233,4 +263,4 @@ export const animations = {
 // Code for making animations shorter
 for (const entry of Object.values(animations)) {
   entry.duration = Math.round(entry.duration * .75);
-};
+}

@@ -1,0 +1,878 @@
+[
+  {
+    "program": "111DDBD1|CEBA|||",
+    "light_order": [
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        11
+      ],
+      "type": "generated",
+      "program": "111DDBD1|CEBA|||"
+    }
+  },
+  {
+    "program": "EBABADBEBADBADBABDBA||||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        12
+      ],
+      "type": "human",
+      "program": "EBABADBEBADBADBABDBA||||"
+    }
+  },
+  {
+    "program": "1CE1EB1|BAECCA|||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        15
+      ],
+      "type": "generated",
+      "program": "1CE1EB1|BAECCA|||"
+    }
+  },
+  {
+    "program": "1E1BA|BCDCABDC|||",
+    "light_order": [
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        7
+      ],
+      "type": "generated",
+      "program": "1E1BA|BCDCABDC|||"
+    }
+  },
+  {
+    "program": "EBABBABDBADCCACCAEBEBABBA||||",
+    "light_order": [
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        4,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        8
+      ],
+      "type": "human",
+      "program": "EBABBABDBADCCACCAEBEBABBA||||"
+    }
+  },
+  {
+    "program": "EBABDCCCADBBA||||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        8
+      ],
+      "type": "human",
+      "program": "EBABDCCCADBBA||||"
+    }
+  },
+  {
+    "program": "B1CD1A|BABDC|||",
+    "light_order": [
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        14
+      ],
+      "type": "generated",
+      "program": "B1CD1A|BABDC|||"
+    }
+  },
+  {
+    "program": "BDCACEBAECBA||||",
+    "light_order": [
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        14
+      ],
+      "type": "human",
+      "program": "BDCACEBAECBA||||"
+    }
+  },
+  {
+    "program": "1CCC1DBBA|EBAD|||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        8
+      ],
+      "type": "generated",
+      "program": "1CCC1DBBA|EBAD|||"
+    }
+  },
+  {
+    "program": "EBA1ABDBABDBA1ABDBADCCA|BB|||",
+    "light_order": [
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        8
+      ],
+      "type": "human",
+      "program": "EBA1ABDBABDBA1ABDBADCCA|BB|||"
+    }
+  },
+  {
+    "program": "CEBACBEBAEBACDBA||||",
+    "light_order": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        11
+      ],
+      "type": "human",
+      "program": "CEBACBEBAEBACDBA||||"
+    }
+  },
+  {
+    "program": "1DCD1|BABECAEBBA|||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        15
+      ],
+      "type": "generated",
+      "program": "1DCD1|BABECAEBBA|||"
+    }
+  },
+  {
+    "program": "BCDCABCCDBCABDCBA||||",
+    "light_order": [
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        7
+      ],
+      "type": "human",
+      "program": "BCDCABCCDBCABDCBA||||"
+    }
+  },
+  {
+    "program": "EBABADBEBADBADBADBEBA||||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        12
+      ],
+      "type": "human",
+      "program": "EBABADBEBADBADBADBEBA||||"
+    }
+  },
+  {
+    "program": "1BDCE1BCD1|BCDCA|||",
+    "light_order": [
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        7
+      ],
+      "type": "human",
+      "program": "1BDCE1BCD1|BCDCA|||"
+    }
+  },
+  {
+    "program": "E1BDCCCADB1|BA|||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        8
+      ],
+      "type": "generated",
+      "program": "E1BDCCCADB1|BA|||"
+    }
+  },
+  {
+    "program": "1B1BE1DCDCA|BABEBA|||",
+    "light_order": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        8
+      ],
+      "type": "generated",
+      "program": "1B1BE1DCDCA|BABEBA|||"
+    }
+  },
+  {
+    "program": "CEBAEBBADDBECABA||||",
+    "light_order": [
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        11
+      ],
+      "type": "human",
+      "program": "CEBAEBBADDBECABA||||"
+    }
+  },
+  {
+    "program": "E1DBD1EBE1|CACCA|||",
+    "light_order": [
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        15
+      ],
+      "type": "human",
+      "program": "E1DBD1EBE1|CACCA|||"
+    }
+  },
+  {
+    "program": "11ECBA|DCEBA|||",
+    "light_order": [
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        14
+      ],
+      "type": "generated",
+      "program": "11ECBA|DCEBA|||"
+    }
+  },
+  {
+    "program": "12DB211EB2|E2|BA||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        12
+      ],
+      "type": "generated",
+      "program": "12DB211EB2|E2|BA||"
+    }
+  },
+  {
+    "program": "EBA11D11A|BADB|||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        12
+      ],
+      "type": "generated",
+      "program": "EBA11D11A|BADB|||"
+    }
+  },
+  {
+    "program": "1EBE1DBD1|CCCA|||",
+    "light_order": [
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        8
+      ],
+      "type": "human",
+      "program": "1EBE1DBD1|CCCA|||"
+    }
+  },
+  {
+    "program": "BAECCACEBAECCAEBBAECCA||||",
+    "light_order": [
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        15
+      ],
+      "type": "human",
+      "program": "BAECCACEBAECCAEBBAECCA||||"
+    }
+  },
+  {
+    "program": "BBABDCCDBABDCA||||",
+    "light_order": [
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        14
+      ],
+      "type": "human",
+      "program": "BBABDCCDBABDCA||||"
+    }
+  },
+  {
+    "program": "C1CB11DC1|EBA|||",
+    "light_order": [
+      [
+        1,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        11
+      ],
+      "type": "generated",
+      "program": "C1CB11DC1|EBA|||"
+    }
+  },
+  {
+    "program": "D11BA|CECBADBDC|||",
+    "light_order": [
+      [
+        2,
+        5
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "maps",
+        7
+      ],
+      "type": "generated",
+      "program": "D11BA|CECBADBDC|||"
+    }
+  },
+  {
+    "program": "BA1BBA111DD1|BEBA|||",
+    "light_order": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "addToData": {
+      "source": [
+        "cgcMaps",
+        8
+      ],
+      "type": "generated",
+      "program": "BA1BBA111DD1|BEBA|||"
+    }
+  }
+]

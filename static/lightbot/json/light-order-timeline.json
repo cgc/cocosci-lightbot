@@ -20,6 +20,7 @@
     "addToData": {"source": ["cgcMaps", 15], "typical": true}
   },
   {
+    "__program": "NOTE: this program is a bit problematic b/c it has a noop, but there's a better version",
     "program": "1CC1DBBA|EBADC|||",
     "addToData": {"source": ["maps", 8], "typical": false}
   }

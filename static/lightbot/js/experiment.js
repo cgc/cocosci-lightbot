@@ -3,7 +3,7 @@ import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from 
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
-import {filterTimelineForTesting, makeTimeline} from './timeline';
+import {filterTimelineForTesting, makeTimeline, makeLightOrderTimeline} from './timeline';
 import { assetsLoaded } from './lb/view/game.js';
 
 const QUERY = new URLSearchParams(location.search);
@@ -42,7 +42,8 @@ async function initializeExperiment() {
   console.log('cond', CONDITION, 'configuration', configuration)
   */
 
-  let timeline = makeTimeline({});
+  //let timeline = makeTimeline({});
+  let timeline = makeLightOrderTimeline({});
 
   timeline = filterTimelineForTesting(timeline);
 

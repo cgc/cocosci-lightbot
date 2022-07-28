@@ -16,6 +16,8 @@ const fpsDelay = 1000 / fps;
 // distance between lowest point in the map and the bottom edge
 const offsetY = 150;
 
+const drawTrajectory = QUERY.get('drawTrajectory');
+
 const bgTilePromise = loadImage(new URL('../../../images/pattern.png', import.meta.url));
 let bgTile;
 bgTilePromise.then(b => {
@@ -144,6 +146,15 @@ export class Game {
   }
 
   reset() {
+    if (drawTrajectory) {
+      // Big hack! We avoid resetting the trajectory since we want to draw it
+      const trajectory = this.bot.trajectory;
+      this.bot.reset();
+      this.bot.trajectory = trajectory;
+      this.map.reset();
+      return;
+    }
+
     this.bot.reset();
     this.map.reset();
   }
@@ -223,5 +234,9 @@ export class Game {
     }
 
     this.flourish.draw(this.ctx, this.projection);
+
+    if (drawTrajectory) {
+      this.bot.drawPath(this.ctx, this.projection);
+    }
   }
 }

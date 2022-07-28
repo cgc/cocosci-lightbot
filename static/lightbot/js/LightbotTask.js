@@ -12,6 +12,7 @@ import Sortable from 'sortablejs';
 import { CameraControls } from './lb/view/CameraControls.js';
 import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
 import { LightBox } from './lb/box.js';
+import { money, ORDER_BONUS } from './timeline.js';
 
 /*
 
@@ -599,6 +600,8 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
     data.trialConfig = trial.addToData;
 }));
 
+let correctTotal = 0;
+
 addPlugin('LightbotLightOrderTask', trialErrorHandling(async function (root, trial) {
     const {editor, data} = Editor.newEditorWithAnalytics(root, {
         map: trial.map,
@@ -649,10 +652,10 @@ addPlugin('LightbotLightOrderTask', trialErrorHandling(async function (root, tri
 
     function render() {
       const allLightsOn = map.allLightsOn();
-      const button = allLightsOn ? '<button class="btn btn-success">Continue</button>' : '';
+      const button = allLightsOn ? '<button class="btn btn-success">Submit</button>' : '';
       const reset = data.boxes.length ?  '<button class="btn btn-default">Reset</button>' : '';
       const msg = allLightsOn ? `
-      Submit your response with **Continue**. Or, **Reset** if you want to change your answer.
+      Submit your response with **Submit**. Or, **Reset** if you want to change your answer.
       ` : `
       This program solves the task. But in what order will lightbot activate the lights?
 
@@ -671,7 +674,25 @@ addPlugin('LightbotLightOrderTask', trialErrorHandling(async function (root, tri
         render();
       });
       button && message.querySelector('.btn-success').addEventListener('click', (e) => {
-        done();
+        const correct = _.isEqual(data.boxes.map(({x,y}) => [x, y]), trial.light_order);
+        if (correct) {
+          correctTotal += 1;
+        }
+        const msg = (correct ? `
+        # Correct!
+
+        Your answer is right! You'll get a bonus of **${money(ORDER_BONUS)}** for this problem.` : `
+        # Incorrect
+
+        Your response was incorrect.`) + `
+
+        So far, you have answered ${correctTotal} correctly. There are ${trial.leftToGo} questions left.
+
+        To see lightbot run it, use this button: <button class="btn btn-default" onclick="document.querySelector('.Editor-play').click()">Play/Reset</button>
+        `;
+        completeModal(msg, {continueLabel: 'Continue'}).then((continueToNext) => {
+            done();
+        });
       });
     }
 

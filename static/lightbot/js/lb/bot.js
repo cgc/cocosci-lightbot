@@ -20,6 +20,7 @@ export class Bot {
     this.direction = this.startingDirection;
     this.instructionQueue = [];
     this.executionQueue = [];
+    this.trajectory = [{position: {...this.startingPos}, direction: this.startingDirection}];
     this.executionMode = false;
     this.actionCounter = 0;
   }
@@ -44,6 +45,11 @@ export class Bot {
     this.executionQueue = Array.from(this.instructionQueue); // copy instructionQueue into executionQueue
   }
 
+  recordAction() {
+    this.actionCounter++;
+    this.trajectory.push({position: {...this.currentPos}, direction: this.direction});
+  }
+
   // executes and returns the next instruction
   executeNextInstruction() {
     if (!this.executionQueue.length) {
@@ -56,23 +62,23 @@ export class Bot {
     switch (instruction.name) {
       case instructions.WalkInstruction.instructionName:
         this.walk();
-        this.actionCounter++;
+        this.recordAction();
         break;
       case instructions.JumpInstruction.instructionName:
         this.jump();
-        this.actionCounter++;
+        this.recordAction();
         break;
       case instructions.LightInstruction.instructionName:
         this.light();
-        this.actionCounter++;
+        this.recordAction();
         break;
       case instructions.TurnLeftInstruction.instructionName:
         this.turnLeft();
-        this.actionCounter++;
+        this.recordAction();
         break;
       case instructions.TurnRightInstruction.instructionName:
         this.turnRight();
-        this.actionCounter++;
+        this.recordAction();
         break;
       /*
     case instructions.RepeatInstruction.instructionName:
