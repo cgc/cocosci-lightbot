@@ -2,7 +2,7 @@ import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
 
-import { markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant, waitForSpace, completeModal, elementEventPromise } from '../../optdisco/js/utils.js';
+import { markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, setTimeoutPromise, addPlugin, documentEventPromise, invariant, waitForSpace, completeModal, elementEventPromise, QUERY } from '../../optdisco/js/utils.js';
 import { Game } from "./lb/view/game";
 import { Map } from './lb/map';
 import { Bot } from './lb/bot';
@@ -12,7 +12,82 @@ import Sortable from 'sortablejs';
 import { CameraControls } from './lb/view/CameraControls.js';
 import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
 import { LightBox } from './lb/box.js';
-import { money, ORDER_BONUS } from './timeline.js';
+import { BONUS, money, ORDER_BONUS } from './timeline.js';
+
+
+export function humanizeDuration(duration, strings) {
+    if (!strings) {
+      strings = {
+        minutes: 'm',
+        seconds: 's',
+      };
+    } else if (strings == 'long') {
+      strings = {
+        minutes: ' minute$ ',
+        seconds: ' second$ ',
+      };
+    }
+    const durationSeconds = Math.round(duration / 1000);
+    const minutes = Math.floor(durationSeconds/60);
+    // this is only useful when rendering mm:ss
+    //const seconds = (durationSeconds % 60).toString().padStart(2, '0');
+    const seconds = (durationSeconds % 60);
+    let res = '';
+
+    function addseg(value, string) {
+      if (value) {
+        res += `${value}${string.replace('$', value == 1 ? '' : 's')}`;
+      }
+    }
+    addseg(minutes, strings.minutes);
+    addseg(seconds, strings.seconds);
+    return res.trim();
+}
+
+
+class Timer {
+  constructor() {
+    this.reset();
+  }
+  elapsed() {
+    const current = this.time ? Date.now() - this.time : 0;
+    return this.total + current;
+  }
+  start() {
+    if (this.time) {
+      console.log('start() called twice')
+      return;
+    }
+    console.log('Timer: start.')
+    this.time = Date.now();
+  }
+  pause() {
+    if (!this.time) {
+      console.log('paused but no this.time')
+      return;
+    }
+    console.log('Timer: pause.')
+    this.total += Date.now() - this.time;
+    this.time = null;
+  }
+  reset() {
+    this.pause();
+    this.total = 0;
+    this.start();
+  }
+}
+
+const TIMER = new Timer();
+
+document.addEventListener('visibilitychange', (e) => {
+  if (document.visibilityState == 'visible') {
+    TIMER.start();
+  } else {
+    TIMER.pause();
+  }
+});
+
+export const DELAY = parseInt(QUERY.get('delay') || 3.5 * 60 * 1000, 10);
 
 /*
 
@@ -190,6 +265,7 @@ function programFromILs(ilsByName) {
 
 class Editor {
     constructor(root, options) {
+        this.options = options;
         this.root = root;
         root.innerHTML = `
         <div class="Editor">
@@ -199,6 +275,9 @@ class Editor {
                         <button class="Editor-play btn btn-primary btn-lg"></button>
                         <button class="Editor-check btn btn-info btn-lg">Quick Run⚡️</button>
                         <!--<button class="Editor-continue btn btn-success btn-lg hide">Continue</button>-->
+                        <div class="Editor-skipContainer hide" data-toggle="tooltip" data-placement="bottom" title="Problem can be skipped in ...">
+                          <button class="Editor-skip btn btn-default btn-lg" disabled>Skip</button>
+                        </div>
                     </div>
                     <div class="Editor-clearButtons">
                     </div>
@@ -323,9 +402,52 @@ class Editor {
         if (options.showLengthCounter) {
             root.querySelector('.Counter.is-length').classList.remove('hide');
         }
+
+        if (options.showSkipButton) {
+          this.initSkip();
+        }
+    }
+
+    initSkip() {
+        TIMER.reset();
+
+        const handler = (e) => {
+          const dur = humanizeDuration(DELAY - TIMER.elapsed());
+          // https://stackoverflow.com/questions/9501921/change-twitter-bootstrap-tooltip-content-on-click
+          sc.setAttribute('data-original-title', `Problem can be skipped in ${dur}`);
+          t.tooltip('show');
+        };
+
+        const sc = this.root.querySelector('.Editor-skipContainer');
+        const s = sc.querySelector('.Editor-skip');
+        const t = $(sc).tooltip();
+
+        sc.classList.remove('hide');
+        sc.addEventListener('mouseenter', handler);
+
+        this.destroySkip = () => {
+          s.removeAttribute('disabled');
+          t.tooltip('destroy');
+          sc.removeEventListener('mouseenter', handler);
+        };
+
+        // Start loop
+        this.tick();
+
+        s.addEventListener('click', (e) => {
+          this.options.onSkip();
+        });
+    }
+    tick = () => {
+        if (TIMER.elapsed() > DELAY) {
+          this.destroySkip();
+        } else {
+          this.timeout = setTimeout(this.tick, 500);
+        }
     }
 
     destroy() {
+        clearTimeout(this.timeout);
         for (const il of this.ils) {
             il.destroy();
         }
@@ -401,6 +523,7 @@ class Editor {
             programUpdates: [],
             clicks: [],
             complete: [],
+            skip: [],
         };
 
         const editor = new Editor(root, {
@@ -409,7 +532,12 @@ class Editor {
                 data.complete.push({success, time: Date.now(), program: programFromILs(editor.ilsByName)});
                 options.onComplete && options.onComplete(success);
             },
+            onSkip() {
+                data.skip.push({time: Date.now(), program: programFromILs(editor.ilsByName)});
+                options.onSkip && options.onSkip();
+            },
             onProgramUpdate(e) {
+                // Keeping this console.log since it's handy when debugging.
                 console.log(e);
                 data.programUpdates.push(e);
             },
@@ -573,6 +701,13 @@ addPlugin('LightbotTutorial', trialErrorHandling(async function (root, trial) {
 }));
 
 addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
+    function done() {
+        editor.destroy();
+
+        data.end = Date.now();
+        jsPsych.finishTrial(data);
+    }
+
     const {editor, data} = Editor.newEditorWithAnalytics(root, {
         map: trial.map,
         onComplete(success) {
@@ -589,10 +724,20 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
                 if (!continueToNext) {
                     return;
                 }
-                editor.destroy();
+                done();
+            });
+        },
+        onSkip() {
+            completeModal(`
+            ### Skip this problem?
 
-                data.end = Date.now();
-                jsPsych.finishTrial(data);
+            Skipped problems are **not eligible** for a bonus.
+            `, {cancelLabel: 'Back to Problem', continueLabel: 'Skip', continueClass: 'btn btn-danger'}).then((skip) => {
+                if (!skip) {
+                    return;
+                }
+                data.skip[data.skip.length - 1].skipped = true;
+                done();
             });
         },
         ...trial.editorOptions,

@@ -42,8 +42,7 @@ async function initializeExperiment() {
   console.log('cond', CONDITION, 'configuration', configuration)
   */
 
-  //let timeline = makeTimeline({});
-  let timeline = makeLightOrderTimeline({});
+  let timeline = makeTimeline({});
 
   timeline = filterTimelineForTesting(timeline);
 

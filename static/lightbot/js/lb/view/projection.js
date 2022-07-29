@@ -2,7 +2,7 @@ import { Box } from '../box';
 import './box'; // HACK: need this so box has right prototype
 
 export const startingView = {
-  horizontal: 35 / 180 * Math.PI,
+  horizontal: 30 / 180 * Math.PI,
   vertical: 45 / 180 * Math.PI,
 };
 
@@ -98,7 +98,7 @@ export class Projection {
       | 0,707  0     -0,707 |
       | 0,321  0,891  0,321 |
       | 0,630 -0,453  0,630 |
- 
+
       Additional offset!
       Y Axis is inverted.
      */

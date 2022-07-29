@@ -78,6 +78,7 @@ export function makePromise() {
 
 export function completeModal(md, {
   continueLabel='Continue',
+  continueClass='btn btn-success',
   // By default, Enter (code=13) and Space (code=32) submits.
   keyCodeSubmit=[13, 32],
   cancelLabel,
@@ -92,7 +93,7 @@ export function completeModal(md, {
   const keyCodeSubmitSet = new Set(keyCodeSubmit);
 
   const button = $('<button>', {
-    class: 'btn btn-success',
+    class: continueClass,
     text: continueLabel,
     click() {
       cleanup(true);
