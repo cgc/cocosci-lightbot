@@ -452,7 +452,7 @@ export function makeTutorial() {
 
       If some lights are still off, then lightbot will get stuck looping. You can always stop lightbot by clicking **Stop**.
 
-      You can see the **Stop** button on this page if you click **Continue**, then **Reset**, then **Run**.
+      You can see the **Stop** button on this page if you click **Reset** then **Run**.
       `,
     }),
 
