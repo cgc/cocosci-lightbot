@@ -142,6 +142,8 @@ function lengthTutorial() {
   const header = `
   The **Instruction Count** is the total number of instructions listed under **Main** and all
   **Process** frames. Every instruction counts!
+
+  In all these examples, lightbot takes exactly 8 steps. But, the bonus will be based on the **Instruction Count**, not steps.
   `;
 
   const t = [
@@ -160,7 +162,7 @@ function lengthTutorial() {
           message: `
           ${header}
 
-          Solving this problem without processes takes **8** instructions.
+          Solving this problem without processes takes **8 instructions**.
           `,
           program: ['walk', 'light', 'walk', 'light', 'walk', 'light', 'walk', 'light'],
         },
@@ -168,7 +170,7 @@ function lengthTutorial() {
           message: `
           ${header}
 
-          Clever use of processes can help you reduce down to **6** instructions.
+          Clever use of processes can help you reduce down to **6 instructions**. This solution would receive a **high bonus**.
           `,
           program: {
             main: ['process1', 'process1', 'process1', 'process1'],
@@ -179,7 +181,7 @@ function lengthTutorial() {
           message: `
           ${header}
 
-          An even shorter solution is possible if you make a loop! This only uses **4** instructions.
+          An even shorter solution is possible if you make a loop! This only uses **4 instructions**. This solution would receive the **full bonus**.
           `,
           program: {
             main: ['process1'],
@@ -190,7 +192,7 @@ function lengthTutorial() {
           message: `
           ${header}
 
-          Remember that we count **all** instructions, so a program like this uses an extra instruction, for a total of **9** instructions.
+          Remember that we count **all** instructions, so a program like this uses an extra instruction. It has a total of **9 instructions** and would receive a **small bonus**.
           `,
           program: {
             main: ['process1'],
