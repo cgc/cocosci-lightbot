@@ -5,6 +5,21 @@
   --instruction-list-padding: 3px;
 }
 
+/*
+Making sure we have scrollbars.
+https://stackoverflow.com/questions/7492062/css-overflow-scroll-always-show-vertical-scroll-bar
+*/
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+
 .InstructionList {
   border: 1px solid #ccc;
   height: var(--instruction-list-height);
@@ -357,7 +372,6 @@
     display: block;
     position: fixed; /* Stay in place */
     z-index: 10; /* Sit on top */
-    padding-top: 200px; /* Location of the box */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -374,6 +388,15 @@
    text-align: center;
    border: 1px solid #888;
    width: 40%;
+
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   transform: translateX(-50%) translateY(-50%);
+}
+.modal-content-inner {
+   max-height: 80vh;
+   overflow: scroll;
 }
 
 #jspsych-target {

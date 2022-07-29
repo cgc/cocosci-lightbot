@@ -100,7 +100,7 @@ export function completeModal(md, {
     }
   });
 
-  let el = $('<div>').add($('<div>', {html: markdown(md)}));
+  let el = $('<div>', {class: 'modal-content-inner', html: markdown(md)});
 
   if (cancelLabel) {
     el = el.add(

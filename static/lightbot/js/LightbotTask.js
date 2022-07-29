@@ -12,7 +12,7 @@ import Sortable from 'sortablejs';
 import { CameraControls } from './lb/view/CameraControls.js';
 import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
 import { LightBox } from './lb/box.js';
-import { BONUS, money, ORDER_BONUS } from './timeline.js';
+import { BONUS, makeTutorial, money, ORDER_BONUS } from './timeline.js';
 
 
 export function humanizeDuration(duration, strings) {
@@ -138,6 +138,28 @@ class InstructionList {
                 </div>
             </div>
         `);
+        if (this.source) {
+          const button = parseHTML(`
+          <button class="btn btn-sm btn-default InstructionList-reviewTutorial hide">Review tutorial</button>
+          `);
+          button.addEventListener('click', (e) => {
+            const t = makeTutorial();
+            completeModal(t.timeline.map(t => {
+                let msg = t.msgIntro;
+                if (msg.trim().startsWith('Now,')) {
+                  // This is hacky. Gets rid of "Now, ..." which is in the interactive parts.
+                  return '';
+                }
+                if (t.msgOutro.startsWith(t.msgIntro)) {
+                  // This detects cases where the outro differs from the intro -- have to check with startsWith since we append text.
+                  // this returns for most entries except the very first.
+                  return msg;
+                }
+                return msg + '\n\n' + t.msgOutro;
+            }).filter(x => x).join('<hr />'), { continueLabel: "Back" });
+          });
+          el.querySelector('.InstructionList-header').appendChild(button);
+        }
 
         $(el).on('click', '.InstructionList-close', (e) => {
             e.preventDefault();
@@ -405,6 +427,10 @@ class Editor {
 
         if (options.showSkipButton) {
           this.initSkip();
+        }
+
+        if (options.showReviewTutorialButton) {
+          this.root.querySelector('.InstructionList-reviewTutorial').classList.remove('hide');
         }
     }
 
@@ -709,6 +735,7 @@ addPlugin('LightbotTask', trialErrorHandling(async function (root, trial) {
     }
 
     const {editor, data} = Editor.newEditorWithAnalytics(root, {
+        showReviewTutorialButton: true,
         map: trial.map,
         onComplete(success) {
             if (!success) {

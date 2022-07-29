@@ -259,7 +259,7 @@ function stepCountTutorial() {
   return { type: 'LightbotTutorial', timeline: t };
 }
 
-function makeTutorial() {
+export function makeTutorial() {
 
   const editingIntro = `
   Drag instructions under **Main** for lightbot.
@@ -448,9 +448,11 @@ function makeTutorial() {
       },
       ui: 'normalInstructionsEditorWithProcess1',
       msgIntro: `
-      You can also call a process within itself to define a **looped process**. It will loop until one of two things happen:
-      - All the lights are lit 💡.
-      - You click **Stop** to interrupt the loop.
+      You can also call a process within itself to define a **looped process**. The loop will repeat until all the lights are on 💡.
+
+      If some lights are still off, then lightbot will get stuck looping. You can always stop lightbot by clicking **Stop**.
+
+      You can see the **Stop** button on this page if you click **Continue**, then **Reset**, then **Run**.
       `,
     }),
 
@@ -486,6 +488,7 @@ export function makeTimeline(configuration) {
         - You can use up to **4 processes**.
         - If Run is taking too long, then try **Quick Run⚡️**.
         - If the problem is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
+        - You can review the tutorial by clicking **Review tutorial** in the lower right.
 
         <br />
         Good luck with the practice problem!
@@ -607,6 +610,7 @@ export function makeLightOrderTimeline(configuration) {
         - You can use up to **4 processes**.
         - If Run is taking too long, then try **Quick Run⚡️**.
         - If the problem is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
+        - You can review the tutorial by clicking **Review tutorial** in the lower right.
         `),
         showLengthCounter: true,
       },
