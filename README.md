@@ -34,6 +34,8 @@ In place of the Procfile runner, you can run the two processes you need to run t
 Now, try out the [entire experiment](http://localhost:5000/) or demo specific plugins:
 - [LightbotTutorial](http://localhost:5000/testexperiment?type=LightbotTutorial)
 - [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask)
+- [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask&mapSource=maps&mapIdx=7) - With specified task.
+- [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask&drawTrajectory=1&mapSource=maps&mapIdx=7&program=1DCE1|BCDCAB|||) - With specified task, and draws trajectories when run. Snapshot of trajectory for a supplied program can be downloaded when `window.SNAPSHOT()` is called.
 
 Push to heroku once you've set it as a git remote:
 ```

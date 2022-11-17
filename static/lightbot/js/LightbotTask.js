@@ -13,7 +13,9 @@ import { CameraControls } from './lb/view/CameraControls.js';
 import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
 import { LightBox } from './lb/box.js';
 import { BONUS, makeTutorial, money, ORDER_BONUS } from './timeline.js';
+import { snapshot } from './lb/view/snapshot.js';
 
+const drawTrajectory = QUERY.get('drawTrajectory');
 
 export function humanizeDuration(duration, strings) {
     if (!strings) {
@@ -431,6 +433,10 @@ class Editor {
 
         if (options.showReviewTutorialButton) {
           this.root.querySelector('.InstructionList-reviewTutorial').classList.remove('hide');
+        }
+
+        if (drawTrajectory) {
+          window.SNAPSHOT = () => snapshot(this, game);
         }
     }
 

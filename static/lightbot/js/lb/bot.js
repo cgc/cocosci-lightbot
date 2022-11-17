@@ -3,6 +3,14 @@ import { LightBox } from "./box";
 import { directions } from "./constants";
 import instructions from './instructions';
 
+// TODO: rewrite below logic to use this.
+export const DIRECTION_TO_DELTA = {
+  [directions.se]: {dx: 0, dy: -1},
+  [directions.ne]: {dx: +1, dy: 0},
+  [directions.nw]: {dx: 0, dy: +1},
+  [directions.sw]: {dx: -1, dy: 0},
+};
+
 export class Bot {
   constructor(map, position, direction) {
     this.map = map;

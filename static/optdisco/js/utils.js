@@ -453,11 +453,27 @@ export function clip(i, min, max) {
 }
 
 export function easeInOutCubic(x){
-  // https://easings.net/#easeInOutCubic
+  // Copied from https://easings.net/#easeInOutCubic
   /*
   Below you see the code of this easing function written in TypeScript. The variable x
   represents the absolute progress of the animation in the bounds of 0 (beginning of the
   animation) and 1 (end of animation).
   */
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+export function saveBlob(name, blob) {
+  var blobUrl = URL.createObjectURL(blob);
+
+  var link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = name;
+  link.innerHTML = "Click here to download the file"; // Not sure why we need this?
+  link.click();
+
+  setTimeout(() => {
+    // Doing this in next event loop helps with large files & MS edge
+    // https://stackoverflow.com/a/48968694
+    URL.revokeObjectURL(blobUrl);
+  }, 0);
 }

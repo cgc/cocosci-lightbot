@@ -22,7 +22,7 @@ import './LightbotTask';
 import { normalInstructions, instructionsByName, instructionsByActionCode } from './lb/instructions.js';
 import { DELAY, humanizeDuration, renderInstructionToHTML } from './LightbotTask';
 
-function parseSerializedProgram(p) {
+export function parseSerializedProgram(p) {
   const [main, process1, process2, process3, process4] = p.split('|');
   const rv = {main, process1, process2, process3, process4};
   for (const k of Object.keys(rv)) {

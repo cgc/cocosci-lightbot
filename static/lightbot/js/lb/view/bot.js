@@ -1,6 +1,6 @@
 import { loadImage } from "../../../../optdisco/js/utils";
 import instructions from "../instructions";
-import { Bot } from "../bot";
+import { Bot, DIRECTION_TO_DELTA } from "../bot";
 
 export const spritePromise = loadImage(new URL('../../../images/sprites.png', import.meta.url));
 
@@ -144,30 +144,60 @@ const botView = {
   },
 
   drawPath(ctx, projection) {
+    const relFromCenter = 0.2;
     let prev = this.trajectory[0];
     for (const curr of this.trajectory.slice(1)) {
       const {position: prevPosition, direction: prevDirection} = prev;
       const {position, direction} = curr;
+      const isTurn = prevDirection != direction;
 
       const box = this.map.mapRef[position.x][position.y];
       const prevBox = this.map.mapRef[prevPosition.x][prevPosition.y];
 
-      const p = box => projection.project(
-        (box.x + 0.5) * box.getEdgeLength(),
+      const p = (box, relOffset) => projection.project(
+        (box.x + 0.5 + relOffset.dx) * box.getEdgeLength(),
         box.getHeight() * box.getEdgeLength(),
-        (box.y + 0.5) * box.getEdgeLength());
+        (box.y + 0.5 + relOffset.dy) * box.getEdgeLength());
 
-      const p1 = p(prevBox);
-      const p2 = p(box);
+      // eslint-disable-next-line no-inner-declarations
+      function projectForDirection(box, direction) {
+        const delta = DIRECTION_TO_DELTA[direction];
+        let relOffsetKey, noMoveRelOffsetKey;
+        if (delta.dx == 0) {
+          [relOffsetKey, noMoveRelOffsetKey] = ['dx', 'dy'];
+        } else {
+          [relOffsetKey, noMoveRelOffsetKey] = ['dy', 'dx'];
+        }
+        return [
+          p(box, {[relOffsetKey]: -relFromCenter, [noMoveRelOffsetKey]: 0}),
+          p(box, {[relOffsetKey]: +relFromCenter, [noMoveRelOffsetKey]: 0}),
+        ];
+      }
+      let p1, p2, p3, p4;
+      if (isTurn) {
+        // In order to make a sharp corner, we have to draw a box.
+        p1 = p(box, {dx: -relFromCenter, dy: -relFromCenter});
+        p2 = p(box, {dx: +relFromCenter, dy: -relFromCenter});
+        p3 = p(box, {dx: +relFromCenter, dy: +relFromCenter});
+        p4 = p(box, {dx: -relFromCenter, dy: +relFromCenter});
+        // Another alternative was to draw a diamond, so that turns make 45degree angles. You can do that
+        // using the p{1-4} from the else block below, with a different lineTo ordering of [p3, p2, p4, p1]
+      } else {
+        [p1, p2] = projectForDirection(prevBox, prevDirection);
+        [p4, p3] = projectForDirection(box, direction);
+      }
 
-      ctx.strokeStyle = 'rgb(7, 192, 195)';
-      //ctx.strokeStyle = 'rgb(241, 202, 25)';
       ctx.beginPath();
-      ctx.lineWidth = 10;
-      ctx.lineCap = 'round';
-      ctx.lineTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.stroke();
+      ctx.moveTo(p1.x, p1.y);
+      for (const p of [p2, p3, p4, p1]) {
+        ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+
+      ctx.fillStyle = 'rgb(7, 192, 195)';
+      //ctx.fillStyle = 'rgb(241, 202, 25)';
+      ctx.lineWidth = 1;
+      ctx.fill();
 
       prev = curr;
     }
