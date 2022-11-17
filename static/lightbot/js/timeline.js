@@ -465,9 +465,7 @@ export function makeTutorial() {
 export const BONUS = 0.40;
 
 export function makeTimeline(configuration) {
-  const condition = QUERY.get('condition') || window.CONDITION || 0;
-  console.log('condition', condition);
-  const mapTimeline = mapTimelineConditions[condition];
+  const mapTimeline = mapTimelineConditions[CONDITION];
   const maps = mapTimeline.map(([source, idx]) => ({
     map: mapSources[source][idx],
     addToData: {source: [source, idx], practice: false},
@@ -565,7 +563,7 @@ export function makeTimeline(configuration) {
 
 export const ORDER_BONUS = 0.10;
 export function makeLightOrderTimeline(configuration) {
-  const lot = [lot0, lot1, lot2, lot3][QUERY.get('condition') || window.CONDITION || 0];
+  const lot = [lot0, lot1, lot2, lot3][CONDITION];
   const orderTaskTimeline = lot.map((t, idx) => ({
     map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
     ...t,
