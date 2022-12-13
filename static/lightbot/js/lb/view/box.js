@@ -22,7 +22,7 @@ const colorTopLightOffOverlay = "#4c81ff";
 
 // pulse values (pulse is the lighter color in the middle of the top face)
 const pulseSize = 0.5; // this represents the minimum percentage of surface that will be covered (0=disappears completely,1=always entire face), same for all lightboxes
-const animationFrames = 30; // # of frames for the pulse to fully grow/shrink, same for all lightboxes
+export const animationFrames = 30; // # of frames for the pulse to fully grow/shrink, same for all lightboxes
 
 LightBox.prototype.pulseGrowing = true; // controls the growth/shrink of the pulse animation
 LightBox.prototype.currentAnimationFrame = 0; // current animation frame, used internally to control the animation

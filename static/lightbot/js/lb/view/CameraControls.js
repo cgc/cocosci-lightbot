@@ -2,7 +2,7 @@ import { clip, easeInOutCubic } from "../../../../optdisco/js/utils";
 import { startingView } from "./projection";
 
 const frames = 20;
-const deg2rad = Math.PI / 180;
+export const deg2rad = Math.PI / 180;
 
 export class CameraControls {
   constructor(root, {game}) {

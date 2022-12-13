@@ -1,5 +1,8 @@
 import { QUERY, saveBlob } from "../../../../optdisco/js/utils";
 import { parseSerializedProgram } from "../../timeline";
+import { animationFrames } from "./box";
+import { deg2rad } from "./CameraControls";
+import { startingView } from "./projection";
 
 export async function snapshot(editor, game) {
   const programStr = QUERY.get('program');
@@ -21,8 +24,10 @@ export async function snapshot(editor, game) {
   game.reset();
   // Reset state of each light so that's consistent.
   game.map.forEachBox(box => {
-    box.currentAnimationFrame = 0; // 0 looks better than 30/animationFrames
+    box.currentAnimationFrame = animationFrames;
   });
+  // Set the camera
+  game.projection.setRotation({ vertical: startingView.vertical, horizontal: startingView.horizontal + 10 * deg2rad });
   // Now draw to canvas.
   game.update();
 
