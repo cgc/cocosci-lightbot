@@ -558,7 +558,7 @@ export function makeTimeline(configuration) {
     */
 }
 
-export const ORDER_BONUS = 0.25;
+export const ORDER_BONUS = 0.20;
 
 export function makeLightOrderTimeline() {
   const config = configForCondition(lightOrderConfig, CONDITION);
