@@ -86,7 +86,33 @@ function configureProgress(timeline) {
   }
 }
 
+function hasNecessaryCanvasSupport() {
+  // This checks to see if we can run getImageData().
+  // This is sometimes blocked to avoid browser fingerprinting,
+  // but it's the way we map clicks to objects, so it's necessary.
+  // Can test this with Firefox by enabling privacy.resistFingerprinting in about:config
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = 'rgb(2,3,4)';
+  ctx.fillRect(0, 0, 1, 1);
+  const img = ctx.getImageData(0, 0, 1, 1);
+  // Checking more values is a good idea since fingerprinting prevention
+  // sometimes returns random noise.
+  return (
+    img.width == 1 &&
+    img.height == 1 &&
+    img.data[0] == 2 &&
+    img.data[1] == 3 &&
+    img.data[2] == 4
+  );
+}
+
 $(window).on('load', function() {
+  if (!hasNecessaryCanvasSupport()) {
+    $('#welcome').text('This experiment is incompatible with your browser. Please try again with another browser, or return the experiment.');
+    return;
+  }
+
   return Promise.all([requestSaveData(), assetsLoaded]).then(function() {
     $('#welcome').hide();
     return initializeExperiment();
