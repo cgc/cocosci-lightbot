@@ -394,6 +394,10 @@ https://stackoverflow.com/questions/7492062/css-overflow-scroll-always-show-vert
    top: 50%;
    transform: translateX(-50%) translateY(-50%);
 }
+.modal.align-top .modal-content {
+  top: 10%;
+  transform: translateX(-50%);
+}
 .modal-content-inner {
    max-height: 80vh;
    overflow: scroll;

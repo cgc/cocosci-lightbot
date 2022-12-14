@@ -8,7 +8,7 @@ import { assetsLoaded } from './lb/view/game.js';
 
 const QUERY = new URLSearchParams(location.search);
 
-function configForCondition(allconfig, condition, mapper=(f, v) => v) {
+export function configForCondition(allconfig, condition, mapper=(f, v) => v) {
   allconfig = jsPsych.utils.deepCopy(allconfig);
   let keyidx = [];
   for (const [factor, values] of Object.entries(allconfig.conditionToFactors)) {
@@ -42,7 +42,7 @@ async function initializeExperiment() {
   console.log('cond', CONDITION, 'configuration', configuration)
   */
 
-  let timeline = makeTimeline({});
+  let timeline = makeLightOrderTimeline();
 
   timeline = filterTimelineForTesting(timeline);
 

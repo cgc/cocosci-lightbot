@@ -7,11 +7,7 @@ import mapData from '../json/maps.json';
 import originalMaps from '../json/original-maps.json';
 import cgcMaps from '../json/cgc-maps.json';
 import mapTimelineConditions from '../json/map-timeline.conditions.json';
-
-import lot0 from '../json/light-order-timeline.random0.json';
-import lot1 from '../json/light-order-timeline.random1.json';
-import lot2 from '../json/light-order-timeline.random2.json';
-import lot3 from '../json/light-order-timeline.random3.json';
+import lightOrderConfig from '../json/light-order-configuration.json';
 
 import jsPsych from '../../lib/jspsych-exported.js';
 import '../../lib/jspsych-6.0.1/plugins/jspsych-survey-text.js';
@@ -21,6 +17,7 @@ import '../../lib/jspsych-6.0.1/plugins/jspsych-fullscreen.js';
 import './LightbotTask';
 import { normalInstructions, instructionsByName, instructionsByActionCode } from './lb/instructions.js';
 import { DELAY, humanizeDuration, renderInstructionToHTML } from './LightbotTask';
+import { configForCondition } from './experiment.js';
 
 export function parseSerializedProgram(p) {
   const [main, process1, process2, process3, process4] = p.split('|');
@@ -561,19 +558,24 @@ export function makeTimeline(configuration) {
     */
 }
 
-export const ORDER_BONUS = 0.10;
-export function makeLightOrderTimeline(configuration) {
-  const lot = [lot0, lot1, lot2, lot3][CONDITION];
-  const orderTaskTimeline = lot.map((t, idx) => ({
-    map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
-    ...t,
-    program: parseSerializedProgram(t.program),
-    leftToGo: lot.length - idx - 1,
-  }));
+export const ORDER_BONUS = 0.25;
+
+export function makeLightOrderTimeline() {
+  const config = configForCondition(lightOrderConfig, CONDITION);
+  console.log(config);
+  const lot = config.mdp_order;
+  const orderTaskTimeline = lot.map((mdp, idx) => {
+    const t = config.tasks[mdp];
+    return {
+      map: mapSources[t.addToData.source[0]][t.addToData.source[1]],
+      ...t,
+      program: parseSerializedProgram(t.program),
+      leftToGo: lot.length - idx - 1,
+    };
+  });
 
   const maps = [
     ["maps", 1],
-    ["maps", 6],
   ].map(([source, idx]) => ({
     map: mapSources[source][idx],
     addToData: {source: [source, idx], practice: false},
@@ -585,20 +587,7 @@ export function makeLightOrderTimeline(configuration) {
     makeSimpleInstruction(`
     Now we will begin the study.
 
-    You will complete ${maps.length} problems. After you complete the problems, we'll ask you ${orderTaskTimeline.length} quick questions about solutions that others have written.
-
-    For these ${maps.length} problems, your goal is to write the **shortest solutions** you can.
-    The shorter your solutions, the **bigger your bonus**!
-
-    On the next pages, we'll explain how the length of a solution is calculated. Then, we'll explain how the bonus is calculated.
-    `),
-    lengthTutorial(),
-    makeSimpleInstruction(`
-    For each problem, the participants who find one of the shortest possible solutions based on **Instruction Count** will receive a full bonus of ${money(BONUS)}.
-
-    Since there are ${maps.length} total problems, there is an opportunity for a total bonus of ${maps.length} &times; ${money(BONUS)} = ${money(maps.length * BONUS)}.
-
-    Longer solutions will receive proportionally smaller bonuses. The average bonus will be ${money(maps.length * BONUS / 2)}.
+    You will complete ${maps.length} problem. After you complete the problem, we'll ask you ${orderTaskTimeline.length} quick questions about solutions that others have written.
     `),
     {
       type: 'LightbotTask',
@@ -612,14 +601,7 @@ export function makeLightOrderTimeline(configuration) {
         - If the problem is confusing, you can **adjust the view** by clicking the arrows/triangles around the 🎦 icon.
         - You can review the tutorial by clicking **Review tutorial** in the lower right.
         `),
-        showLengthCounter: true,
-      },
-    },
-    {
-      type: 'LightbotTask',
-      ...maps[1],
-      editorOptions: {
-        showLengthCounter: true,
+        // showLengthCounter: true,
       },
     },
 

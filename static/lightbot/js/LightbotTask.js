@@ -871,6 +871,8 @@ addPlugin('LightbotLightOrderTask', trialErrorHandling(async function (root, tri
         completeModal(msg, {continueLabel: 'Continue'}).then((continueToNext) => {
             done();
         });
+        // HACK: Would be nice to pass this as an argument to modal, but this is good enough.
+        $('.modal').addClass('align-top');
       });
     }
 
