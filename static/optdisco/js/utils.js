@@ -169,11 +169,11 @@ export function loadImage(src) {
   });
 }
 
-const images = graphics.map(function(emoji) {
-  return loadImage(graphicsUrl(emoji));
-});
+// const images = graphics.map(function(emoji) {
+//   return loadImage(graphicsUrl(emoji));
+// });
 
-export const graphicsLoading = Promise.all(images);
+// export const graphicsLoading = Promise.all(images);
 
 export function trialErrorHandling(trial) {
   return async function() {

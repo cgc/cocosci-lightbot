@@ -31,7 +31,7 @@
 }
 img.centered {
   display: block;
-  margin-left: auto; 
+  margin-left: auto;
   margin-right: auto
 }
 img.display {
@@ -90,12 +90,12 @@ img.display {
 }
 
 @-webkit-keyframes animatebottom {
-  from { bottom:-40px; opacity:0 } 
+  from { bottom:-40px; opacity:0 }
   to { bottom:0px; opacity:1 }
 }
 
-@keyframes animatebottom { 
-  from{ bottom:-40px; opacity:0 } 
+@keyframes animatebottom {
+  from{ bottom:-40px; opacity:0 }
   to{ bottom:0; opacity:1 }
 }
 
@@ -125,7 +125,7 @@ h1 {
 
 /* text styling */
 strong {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 ul {

@@ -12,7 +12,7 @@
     "watch": "parcel watch --public-url /dist"
   },
   "engines": {
-    "node": "14.x"
+    "node": "18.x"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "repository": {
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/cgc/cocosci-lightbot#readme",
   "devDependencies": {
     "eslint": "^8.18.0",
-    "parcel": "^2.6.1",
+    "parcel": "^2.8.1",
     "process": "^0.11.10"
   }
 }

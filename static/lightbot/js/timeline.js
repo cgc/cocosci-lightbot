@@ -1,4 +1,4 @@
-import { invariant, markdown, graphics, graphicsLoading, random, QUERY } from '../../optdisco/js/utils.js';
+import { invariant, markdown, graphics, random, QUERY } from '../../optdisco/js/utils.js';
 import { handleError, psiturk, requestSaveData, startExperiment, CONDITION } from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
