@@ -1,0 +1,1708 @@
+{
+  "tasks": {
+    "cgcMaps-8": [
+      {
+        "program": "1E11E1E1BA22A|BAB|EC||",
+        "light_order": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            8
+          ],
+          "type": "behavior-hier",
+          "program": "1E11E1E1BA22A|BAB|EC||"
+        }
+      },
+      {
+        "program": "BAECECADDCCAEECDCACECADDCCAEECDCA||||",
+        "light_order": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            5,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            8
+          ],
+          "type": "behavior-flat",
+          "program": "BAECECADDCCAEECDCACECADDCCAEECDCA||||"
+        }
+      },
+      {
+        "program": "11BECCA|2E22E|BAB||",
+        "light_order": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            8
+          ],
+          "type": "gen-hier",
+          "program": "11BECCA|2E22E|BAB||"
+        }
+      },
+      {
+        "program": "BAECCACCAEBEBABBAECCAEBBA||||",
+        "light_order": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            8
+          ],
+          "type": "gen-flat",
+          "program": "BAECCACCAEBEBABBAECCAEBBA||||"
+        }
+      }
+    ],
+    "cgcMaps-11": [
+      {
+        "program": "C1CB11CDBA|EBA|||",
+        "light_order": [
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            11
+          ],
+          "type": "behavior-hier",
+          "program": "C1CB11CDBA|EBA|||"
+        }
+      },
+      {
+        "program": "CEBACBEBAEBACDBA||||",
+        "light_order": [
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            11
+          ],
+          "type": "behavior-flat",
+          "program": "CEBACBEBAEBACDBA||||"
+        }
+      },
+      {
+        "program": "C1CB11DC1|EBA|||",
+        "light_order": [
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            11
+          ],
+          "type": "gen-hier",
+          "program": "C1CB11DC1|EBA|||"
+        }
+      },
+      {
+        "program": "CEBACBEBAEBADCEBA||||",
+        "light_order": [
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            11
+          ],
+          "type": "gen-flat",
+          "program": "CEBACBEBAEBADCEBA||||"
+        }
+      }
+    ],
+    "cgcMaps-12": [
+      {
+        "program": "E11DBE1D1D1BD1|BA|||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            12
+          ],
+          "type": "behavior-hier",
+          "program": "E11DBE1D1D1BD1|BA|||"
+        }
+      },
+      {
+        "program": "EBABADBEBADBADBABDBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            12
+          ],
+          "type": "behavior-flat",
+          "program": "EBABADBEBADBADBABDBA||||"
+        }
+      },
+      {
+        "program": "EBA11D11A|BADB|||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            12
+          ],
+          "type": "gen-hier",
+          "program": "EBA11D11A|BADB|||"
+        }
+      },
+      {
+        "program": "EBABADBBAEBAEBAEBBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            12
+          ],
+          "type": "gen-flat",
+          "program": "EBABADBBAEBAEBAEBBA||||"
+        }
+      }
+    ],
+    "cgcMaps-14": [
+      {
+        "program": "BDCACE1EC1|BA|||",
+        "light_order": [
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            14
+          ],
+          "type": "behavior-hier",
+          "program": "BDCACE1EC1|BA|||"
+        }
+      },
+      {
+        "program": "BBABDCCDBABDCA||||",
+        "light_order": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            14
+          ],
+          "type": "behavior-flat",
+          "program": "BBABDCCDBABDCA||||"
+        }
+      },
+      {
+        "program": "1E1DDCBA|BDCA|||",
+        "light_order": [
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            14
+          ],
+          "type": "gen-hier",
+          "program": "1E1DDCBA|BDCA|||"
+        }
+      },
+      {
+        "program": "BBADDBECACEBA||||",
+        "light_order": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            14
+          ],
+          "type": "gen-flat",
+          "program": "BBADDBECACEBA||||"
+        }
+      }
+    ],
+    "cgcMaps-15": [
+      {
+        "program": "E1DBD1EBE1|CACCA|||",
+        "light_order": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            15
+          ],
+          "type": "behavior-hier",
+          "program": "E1DBD1EBE1|CACCA|||"
+        }
+      },
+      {
+        "program": "ECACCADBDCACCAEBECACCA||||",
+        "light_order": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            15
+          ],
+          "type": "behavior-flat",
+          "program": "ECACCADBDCACCAEBECACCA||||"
+        }
+      },
+      {
+        "program": "1CE1EB1|BAECCA|||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            15
+          ],
+          "type": "gen-hier",
+          "program": "1CE1EB1|BAECCA|||"
+        }
+      },
+      {
+        "program": "BABECACCAEBBAECCAEBECA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "cgcMaps",
+            15
+          ],
+          "type": "gen-flat",
+          "program": "BABECACCAEBBAECCAEBECA||||"
+        }
+      }
+    ],
+    "maps-6": [
+      {
+        "program": "12121|BBA|DCE||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            6,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            6
+          ],
+          "type": "behavior-hier",
+          "program": "12121|BBA|DCE||"
+        }
+      },
+      {
+        "program": "BBADCEBBADCEBBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            6,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            6
+          ],
+          "type": "behavior-flat",
+          "program": "BBADCEBBADCEBBA||||"
+        }
+      },
+      {
+        "program": "1BCD2CE1|B2|BA||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            6,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            6
+          ],
+          "type": "gen-hier",
+          "program": "1BCD2CE1|B2|BA||"
+        }
+      },
+      {
+        "program": "BBABDCEBACBDBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            6,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            6
+          ],
+          "type": "gen-flat",
+          "program": "BBABDCEBACBDBA||||"
+        }
+      }
+    ],
+    "maps-7": [
+      {
+        "program": "1DCE1CD1|BCDCAB|||",
+        "light_order": [
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            7
+          ],
+          "type": "behavior-hier",
+          "program": "1DCE1CD1|BCDCAB|||"
+        }
+      },
+      {
+        "program": "BCDCABDCCBAEBCEBA||||",
+        "light_order": [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            7
+          ],
+          "type": "behavior-flat",
+          "program": "BCDCABDCCBAEBCEBA||||"
+        }
+      },
+      {
+        "program": "1E1BA|BCDCABDC|||",
+        "light_order": [
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            7
+          ],
+          "type": "gen-hier",
+          "program": "1E1BA|BCDCABDC|||"
+        }
+      },
+      {
+        "program": "BCDCADBCCEBABECDBA||||",
+        "light_order": [
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            7
+          ],
+          "type": "gen-flat",
+          "program": "BCDCADBCCEBABECDBA||||"
+        }
+      }
+    ],
+    "maps-8": [
+      {
+        "program": "1EBE1DBD1|CCCA|||",
+        "light_order": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            8
+          ],
+          "type": "behavior-hier",
+          "program": "1EBE1DBD1|CCCA|||"
+        }
+      },
+      {
+        "program": "EBABDCCCADBBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            8
+          ],
+          "type": "behavior-flat",
+          "program": "EBABDCCCADBBA||||"
+        }
+      },
+      {
+        "program": "1CCC1DBBA|EBAD|||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            8
+          ],
+          "type": "gen-hier",
+          "program": "1CCC1DBBA|EBAD|||"
+        }
+      },
+      {
+        "program": "EBADDBECCCAEBBA||||",
+        "light_order": [
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "addToData": {
+          "source": [
+            "maps",
+            8
+          ],
+          "type": "gen-flat",
+          "program": "EBADDBECCCAEBBA||||"
+        }
+      }
+    ]
+  },
+  "mdp_order": [
+    [
+      "cgcMaps-8",
+      "maps-7",
+      "cgcMaps-11",
+      "maps-8",
+      "maps-6",
+      "cgcMaps-14",
+      "cgcMaps-15",
+      "cgcMaps-12"
+    ],
+    [
+      "maps-8",
+      "cgcMaps-8",
+      "cgcMaps-14",
+      "cgcMaps-11",
+      "maps-7",
+      "cgcMaps-12",
+      "maps-6",
+      "cgcMaps-15"
+    ],
+    [
+      "cgcMaps-15",
+      "maps-8",
+      "cgcMaps-12",
+      "cgcMaps-11",
+      "maps-6",
+      "maps-7",
+      "cgcMaps-14",
+      "cgcMaps-8"
+    ],
+    [
+      "cgcMaps-11",
+      "maps-6",
+      "cgcMaps-8",
+      "maps-7",
+      "maps-8",
+      "cgcMaps-14",
+      "cgcMaps-12",
+      "cgcMaps-15"
+    ],
+    [
+      "maps-8",
+      "maps-7",
+      "cgcMaps-15",
+      "cgcMaps-12",
+      "cgcMaps-14",
+      "maps-6",
+      "cgcMaps-11",
+      "cgcMaps-8"
+    ],
+    [
+      "cgcMaps-14",
+      "maps-6",
+      "cgcMaps-8",
+      "cgcMaps-15",
+      "maps-8",
+      "cgcMaps-11",
+      "maps-7",
+      "cgcMaps-12"
+    ],
+    [
+      "cgcMaps-14",
+      "cgcMaps-15",
+      "cgcMaps-8",
+      "cgcMaps-12",
+      "maps-8",
+      "maps-7",
+      "cgcMaps-11",
+      "maps-6"
+    ],
+    [
+      "cgcMaps-15",
+      "cgcMaps-14",
+      "maps-8",
+      "cgcMaps-8",
+      "cgcMaps-12",
+      "maps-6",
+      "cgcMaps-11",
+      "maps-7"
+    ],
+    [
+      "cgcMaps-12",
+      "cgcMaps-14",
+      "maps-8",
+      "maps-6",
+      "cgcMaps-15",
+      "cgcMaps-8",
+      "cgcMaps-11",
+      "maps-7"
+    ],
+    [
+      "maps-7",
+      "cgcMaps-14",
+      "maps-8",
+      "cgcMaps-12",
+      "cgcMaps-15",
+      "maps-6",
+      "cgcMaps-8",
+      "cgcMaps-11"
+    ],
+    [
+      "cgcMaps-12",
+      "cgcMaps-8",
+      "cgcMaps-11",
+      "maps-7",
+      "cgcMaps-15",
+      "maps-8",
+      "cgcMaps-14",
+      "maps-6"
+    ],
+    [
+      "maps-6",
+      "maps-8",
+      "cgcMaps-14",
+      "maps-7",
+      "cgcMaps-8",
+      "cgcMaps-11",
+      "cgcMaps-15",
+      "cgcMaps-12"
+    ],
+    [
+      "maps-7",
+      "maps-6",
+      "cgcMaps-11",
+      "cgcMaps-15",
+      "cgcMaps-14",
+      "maps-8",
+      "cgcMaps-8",
+      "cgcMaps-12"
+    ],
+    [
+      "cgcMaps-15",
+      "maps-7",
+      "cgcMaps-14",
+      "cgcMaps-12",
+      "maps-8",
+      "cgcMaps-11",
+      "maps-6",
+      "cgcMaps-8"
+    ],
+    [
+      "cgcMaps-12",
+      "cgcMaps-11",
+      "cgcMaps-15",
+      "maps-7",
+      "maps-8",
+      "cgcMaps-14",
+      "maps-6",
+      "cgcMaps-8"
+    ]
+  ],
+  "conditionToFactors": {
+    "tasks.cgcMaps-8": [
+      3,
+      0,
+      2,
+      1,
+      0,
+      2,
+      1,
+      3,
+      1,
+      0,
+      2,
+      3,
+      1,
+      2,
+      0,
+      3,
+      1,
+      0,
+      3,
+      2,
+      2,
+      1,
+      3,
+      0,
+      1,
+      0,
+      2,
+      3,
+      1,
+      2,
+      3,
+      0,
+      0,
+      2,
+      3,
+      1,
+      3,
+      1,
+      2,
+      0,
+      0,
+      2,
+      1,
+      3,
+      3,
+      1,
+      0,
+      2,
+      1,
+      3,
+      2,
+      0,
+      3,
+      1,
+      0,
+      2,
+      3,
+      1,
+      2,
+      0
+    ],
+    "tasks.cgcMaps-11": [
+      2,
+      0,
+      1,
+      3,
+      0,
+      3,
+      2,
+      1,
+      0,
+      3,
+      1,
+      2,
+      0,
+      2,
+      3,
+      1,
+      1,
+      0,
+      3,
+      2,
+      3,
+      0,
+      1,
+      2,
+      0,
+      3,
+      2,
+      1,
+      2,
+      0,
+      3,
+      1,
+      0,
+      3,
+      2,
+      1,
+      2,
+      3,
+      1,
+      0,
+      3,
+      1,
+      0,
+      2,
+      0,
+      3,
+      1,
+      2,
+      1,
+      0,
+      2,
+      3,
+      2,
+      0,
+      1,
+      3,
+      1,
+      3,
+      2,
+      0
+    ],
+    "tasks.cgcMaps-12": [
+      1,
+      0,
+      3,
+      2,
+      1,
+      3,
+      2,
+      0,
+      1,
+      3,
+      0,
+      2,
+      0,
+      3,
+      1,
+      2,
+      0,
+      2,
+      3,
+      1,
+      2,
+      1,
+      3,
+      0,
+      0,
+      3,
+      2,
+      1,
+      1,
+      0,
+      3,
+      2,
+      1,
+      2,
+      0,
+      3,
+      2,
+      1,
+      3,
+      0,
+      3,
+      1,
+      2,
+      0,
+      2,
+      1,
+      0,
+      3,
+      3,
+      0,
+      2,
+      1,
+      3,
+      2,
+      0,
+      1,
+      2,
+      0,
+      3,
+      1
+    ],
+    "tasks.cgcMaps-14": [
+      0,
+      3,
+      2,
+      1,
+      3,
+      1,
+      2,
+      0,
+      1,
+      2,
+      3,
+      0,
+      3,
+      2,
+      1,
+      0,
+      3,
+      1,
+      0,
+      2,
+      2,
+      0,
+      3,
+      1,
+      2,
+      3,
+      0,
+      1,
+      3,
+      1,
+      0,
+      2,
+      0,
+      1,
+      3,
+      2,
+      0,
+      2,
+      1,
+      3,
+      1,
+      0,
+      3,
+      2,
+      1,
+      0,
+      3,
+      2,
+      0,
+      3,
+      1,
+      2,
+      2,
+      0,
+      1,
+      3,
+      1,
+      2,
+      3,
+      0
+    ],
+    "tasks.cgcMaps-15": [
+      2,
+      3,
+      0,
+      1,
+      2,
+      1,
+      3,
+      0,
+      2,
+      1,
+      0,
+      3,
+      1,
+      2,
+      0,
+      3,
+      3,
+      2,
+      0,
+      1,
+      1,
+      0,
+      2,
+      3,
+      0,
+      1,
+      2,
+      3,
+      2,
+      1,
+      3,
+      0,
+      1,
+      2,
+      0,
+      3,
+      0,
+      1,
+      2,
+      3,
+      2,
+      3,
+      1,
+      0,
+      3,
+      0,
+      1,
+      2,
+      2,
+      0,
+      3,
+      1,
+      1,
+      2,
+      3,
+      0,
+      0,
+      3,
+      2,
+      1
+    ],
+    "tasks.maps-6": [
+      0,
+      2,
+      3,
+      1,
+      0,
+      1,
+      2,
+      3,
+      2,
+      0,
+      1,
+      3,
+      2,
+      3,
+      1,
+      0,
+      0,
+      2,
+      1,
+      3,
+      0,
+      1,
+      3,
+      2,
+      0,
+      3,
+      1,
+      2,
+      3,
+      2,
+      0,
+      1,
+      0,
+      3,
+      1,
+      2,
+      0,
+      1,
+      2,
+      3,
+      1,
+      2,
+      3,
+      0,
+      1,
+      3,
+      0,
+      2,
+      1,
+      3,
+      0,
+      2,
+      3,
+      1,
+      0,
+      2,
+      1,
+      3,
+      2,
+      0
+    ],
+    "tasks.maps-7": [
+      3,
+      0,
+      2,
+      1,
+      0,
+      3,
+      2,
+      1,
+      3,
+      0,
+      2,
+      1,
+      1,
+      0,
+      3,
+      2,
+      1,
+      3,
+      0,
+      2,
+      3,
+      2,
+      0,
+      1,
+      0,
+      1,
+      3,
+      2,
+      3,
+      1,
+      0,
+      2,
+      2,
+      3,
+      0,
+      1,
+      3,
+      0,
+      2,
+      1,
+      1,
+      2,
+      0,
+      3,
+      1,
+      0,
+      2,
+      3,
+      3,
+      2,
+      1,
+      0,
+      1,
+      2,
+      0,
+      3,
+      0,
+      1,
+      2,
+      3
+    ],
+    "tasks.maps-8": [
+      1,
+      3,
+      2,
+      0,
+      2,
+      3,
+      1,
+      0,
+      2,
+      0,
+      1,
+      3,
+      0,
+      3,
+      2,
+      1,
+      1,
+      2,
+      0,
+      3,
+      3,
+      2,
+      1,
+      0,
+      1,
+      2,
+      0,
+      3,
+      1,
+      0,
+      3,
+      2,
+      3,
+      0,
+      2,
+      1,
+      0,
+      1,
+      2,
+      3,
+      2,
+      3,
+      1,
+      0,
+      0,
+      3,
+      2,
+      1,
+      1,
+      2,
+      0,
+      3,
+      3,
+      2,
+      0,
+      1,
+      1,
+      0,
+      3,
+      2
+    ],
+    "mdp_order": [
+      3,
+      8,
+      12,
+      10,
+      13,
+      5,
+      4,
+      9,
+      14,
+      1,
+      2,
+      6,
+      0,
+      7,
+      11,
+      9,
+      0,
+      11,
+      14,
+      2,
+      5,
+      10,
+      1,
+      7,
+      3,
+      13,
+      4,
+      8,
+      6,
+      12,
+      6,
+      1,
+      12,
+      4,
+      7,
+      9,
+      13,
+      14,
+      3,
+      0,
+      10,
+      8,
+      5,
+      2,
+      11,
+      7,
+      1,
+      5,
+      0,
+      13,
+      8,
+      6,
+      9,
+      14,
+      10,
+      4,
+      12,
+      3,
+      2,
+      11
+    ]
+  }
+}
