@@ -1,6 +1,9 @@
 # cocosci-lightbot
 
-Experiment to examine how people algorithmically structure their solutions. Based on Lightbot, a game used to teach programming. Code draws heavily from https://github.com/haan/Lightbot.
+Experiment to examine how people algorithmically structure their plans.
+Based on [Lightbot](https://lightbot.com/), a game used to teach programming developed by SpriteBox LLC.
+This codebase draws heavily from Laurent Haan's [open source implementation](https://github.com/haan/Lightbot).
+[Icon](https://opengameart.org/content/botty) by Carl Olsson is in the public domain.
 
 Test out the entire experiment [here](https://cocosci-lightbot.herokuapp.com) or try out specific tasks:
 - [LightbotTutorial](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTutorial)

@@ -462,6 +462,7 @@ export function makeTutorial() {
 export const BONUS = 0.40;
 
 export function makeTimeline(configuration) {
+  // HACK CHECK THIS
   const mapTimeline = mapTimelineConditions[CONDITION];
   const maps = mapTimeline.map(([source, idx]) => ({
     map: mapSources[source][idx],
@@ -561,6 +562,7 @@ export function makeTimeline(configuration) {
 export const ORDER_BONUS = 0.20;
 
 export function makeLightOrderTimeline() {
+  // TODO: add practice round!!!!!
   const config = configForCondition(lightOrderConfig, CONDITION);
   console.log(config);
   const lot = config.mdp_order;
@@ -610,7 +612,7 @@ export function makeLightOrderTimeline() {
     and then ask you what order lightbot activates the lights. This is the last part of the study before we ask for your feedback.
 
     If your answer is correct, you will get a bonus of **${money(ORDER_BONUS)}** for each question. That means you have the opportunity to
-    receive a total of **${money(ORDER_BONUS*orderTaskTimeline.length)}** if you answer all questions correctly.
+    receive a total bonus of **${money(ORDER_BONUS*orderTaskTimeline.length)}** if you answer all questions correctly.
     `),
     {
       type: 'LightbotLightOrderTask',
