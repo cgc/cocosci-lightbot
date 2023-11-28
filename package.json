@@ -2,14 +2,21 @@
   "name": "cocosci-lightbot",
   "version": "1.0.0",
   "description": "Experiment to examine how people algorithmically structure their solutions.",
-  "source": "templates/exp.template.html",
+  "targets": {
+    "default": {
+      "context": "browser",
+      "source": "templates/exp.template.html",
+      "publicUrl": "/dist"
+    }
+  },
   "dependencies": {
     "sortablejs": "^1.15.0"
   },
   "scripts": {
-    "__build": "parcel build --no-scope-hoist --public-url /dist",
-    "build": "parcel build --public-url /dist",
-    "watch": "parcel watch --public-url /dist"
+    "build": "parcel build",
+    "watch": "parcel watch",
+    "demo-build": "cd static/lightbot-demo && npm run build",
+    "demo-serve": "cd static/lightbot-demo && npm run serve"
   },
   "engines": {
     "node": "18.x"
@@ -27,7 +34,7 @@
   "homepage": "https://github.com/cgc/cocosci-lightbot#readme",
   "devDependencies": {
     "eslint": "^8.18.0",
-    "parcel": "^2.8.1",
+    "parcel": "^2.10.3",
     "process": "^0.11.10"
   }
 }

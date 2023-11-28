@@ -1,5 +1,5 @@
 import {invariant} from '../../optdisco/js/utils.js';
-import {handleError, psiturk, requestSaveData, startExperiment, CONDITION} from '../../js/setup.js';
+import {handleError, getPsiturk, requestSaveData, startExperiment, CONDITION, initializePsiTurk} from '../../js/setup.js';
 import _ from '../../lib/underscore-min.js';
 import $ from '../../lib/jquery-min.js';
 import jsPsych from '../../lib/jspsych-exported.js';
@@ -32,7 +32,7 @@ export function configForCondition(allconfig, condition, mapper=(f, v) => v) {
 }
 
 async function initializeExperiment() {
-  psiturk.recordUnstructuredData('browser', window.navigator.userAgent);
+  getPsiturk().recordUnstructuredData('browser', window.navigator.userAgent);
 
   /*
   const configuration = configForCondition(allconfig, CONDITION, function(factorName, condValue) {
@@ -60,7 +60,7 @@ async function initializeExperiment() {
   });
 }
 
-function configureProgress(timeline) {
+export function configureProgress(timeline) {
   let done = 0;
   function on_finish() {
     done++;
@@ -86,7 +86,7 @@ function configureProgress(timeline) {
   }
 }
 
-function hasNecessaryCanvasSupport() {
+export function hasNecessaryCanvasSupport() {
   // This checks to see if we can run getImageData().
   // This is sometimes blocked to avoid browser fingerprinting,
   // but it's the way we map clicks to objects, so it's necessary.
@@ -107,20 +107,23 @@ function hasNecessaryCanvasSupport() {
   );
 }
 
-$(window).on('load', function() {
-  if (!hasNecessaryCanvasSupport()) {
-    $('#welcome').text('This experiment is incompatible with your browser. Please try again with another browser, or return the experiment.');
-    return;
-  }
+export function configureExperimentLoad() {
+  initializePsiTurk();
+  $(window).on('load', function() {
+    if (!hasNecessaryCanvasSupport()) {
+      $('#welcome').text('This experiment is incompatible with your browser. Please try again with another browser, or return the experiment.');
+      return;
+    }
 
-  return Promise.all([requestSaveData(), assetsLoaded]).then(function() {
-    $('#welcome').hide();
-    return initializeExperiment();
-  }).catch(handleError);
-});
+    return Promise.all([requestSaveData(), assetsLoaded]).then(function() {
+      $('#welcome').hide();
+      return initializeExperiment();
+    }).catch(handleError);
+  });
+}
 
 const errors = [];
-function recordError(e) {
+export function recordError(e) {
   try {
     if (!e) {
       // Sometimes window.onerror passes in empty errors?
@@ -128,7 +131,7 @@ function recordError(e) {
     }
     // Since error instances seem to disappear over time (as evidenced by lists of null values), we immediately serialize them here.
     errors.push(JSON.stringify([e.message, e.stack]));
-    psiturk.recordUnstructuredData('error2', JSON.stringify(errors));
+    getPsiturk().recordUnstructuredData('error2', JSON.stringify(errors));
     requestSaveData().catch(() => {}); // Don't throw an error here to avoid infinite loops.
   } catch(inner) {
     console.log('Error happened while recording error', inner.stack);

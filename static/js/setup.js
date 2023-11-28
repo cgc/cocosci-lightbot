@@ -38,7 +38,9 @@ if (DEBUG) {
 }
 
 // ---------- Initialize PsiTurk ---------- #
-psiturk = new PsiTurk(window.uniqueId, window.adServerLoc, window.mode);
+export function initializePsiTurk() {
+  psiturk = new PsiTurk(window.uniqueId, window.adServerLoc, window.mode);
+}
 
 saveData = function() {
   console.log(Date.now(), 'saveData(): Start.');
@@ -169,4 +171,8 @@ handleError = function(e) {
   return $('#submit').click(submitHit);
 };
 
-export {psiturk, saveData, startExperiment, LOG_DEBUG, CONDITION, handleError};
+export function getPsiturk() {
+  return psiturk;
+}
+
+export {saveData, startExperiment, LOG_DEBUG, CONDITION, handleError};

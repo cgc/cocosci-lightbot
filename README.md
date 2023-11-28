@@ -45,6 +45,18 @@ Push to heroku once you've set it as a git remote:
 git push heroku master
 ```
 
+### Demo page
+
+Build demo page with
+```
+npm run demo-build
+```
+
+Run it with the following, then access at http://localhost:1234/cocosci-lightbot/
+```
+npm run demo-serve
+```
+
 ### Errors
 
 If you're seeing an `Library not loaded: @rpath/libssl.1.1.dylib ... Reason: image not found` error when running `./bin/psiturk-herokudb', you may need to `pip uninstall psycopg2` and run the following:

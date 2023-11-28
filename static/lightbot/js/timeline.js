@@ -61,7 +61,7 @@ function formWithValidation({ stimulus, validate }) {
   };
 }
 
-const debrief = () => [{
+export const debrief = () => [{
   type: 'survey-multi-choice',
   preamble: markdown(`
   # Experiment complete
@@ -127,7 +127,7 @@ function _instDemo(config) {
   };
 }
 
-function lengthTutorial() {
+export function lengthTutorial() {
   const processMap = {
     ...originalMaps[8],
     map: updatedMap(originalMaps[8].map, (cell, x, y) =>

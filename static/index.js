@@ -13,4 +13,6 @@ import './lib/jspsych-exported.js';
 import './js/psiturk.js';
 import './js/setup.js';
 
-import './lightbot/js/experiment.js';
+import {configureExperimentLoad} from './lightbot/js/experiment.js';
+
+configureExperimentLoad();

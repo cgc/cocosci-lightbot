@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "build": "mkdir -p ../../gh-pages && touch ../../gh-pages/.nojekyll && parcel build",
+    "watch": "parcel watch",
+    "serve": "parcel serve --public-url /cocosci-lightbot"
+  },
+  "targets": {
+    "demo": {
+      "context": "browser",
+      "source": "index.html",
+      "distDir": "../../gh-pages",
+      "publicUrl": "/cocosci-lightbot"
+    }
+  }
+}
