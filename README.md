@@ -1,18 +1,15 @@
 # cocosci-lightbot
 
-Experiment to examine how people algorithmically structure their plans.
+Experiment to examine how people algorithmically structure their plans. Try this [playable demo](https://carlos.correa.me/cocosci-lightbot/).
+
 Based on [Lightbot](https://lightbot.com/), a game used to teach programming developed by SpriteBox LLC.
 This codebase draws heavily from Laurent Haan's [open source implementation](https://github.com/haan/Lightbot).
-[Icon](https://opengameart.org/content/botty) by Carl Olsson is in the public domain.
-
-Test out the entire experiment [here](https://cocosci-lightbot.herokuapp.com) or try out specific tasks:
-- [LightbotTutorial](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTutorial)
-- [LightbotTask](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask)
-- [specific maps](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask&mapSource=maps&mapIdx=8)
-
-Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
+[Icon](https://opengameart.org/content/botty) by Carl Olsson is in the public domain. Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
 
 ## Quickstart
+
+### Setup
+
 Project uses Python 3. Install dependencies (here, in a virtualenv)
 ```
 virtualenv env
@@ -25,6 +22,8 @@ It also uses Parcel to bundle JavaScript and CSS, which requires installation:
 npm install
 ```
 
+### Local development
+
 You can run the development stack using a Procfile runner (like forego, `brew install forego`):
 ```
 make dev
@@ -32,41 +31,38 @@ make dev
 
 In place of the Procfile runner, you can run the two processes you need to run the server: the Python server (with `make dev-python`) and the JavaScript bundler (with `npm run watch`).
 
-### Try it out!
-
 Now, try out the [entire experiment](http://localhost:5000/) or demo specific plugins:
 - [LightbotTutorial](http://localhost:5000/testexperiment?type=LightbotTutorial)
 - [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask)
 - [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask&mapSource=maps&mapIdx=7) - With specified task.
 - [LightbotTask](http://localhost:5000/testexperiment?type=LightbotTask&drawTrajectory=1&mapSource=maps&mapIdx=7&program=1DCE1|BCDCAB|||) - With specified task, and draws trajectories when run. Snapshot of trajectory for a supplied program can be downloaded when `window.SNAPSHOT()` is called.
 
+### Deploy to heroku
+
 Push to heroku once you've set it as a git remote:
 ```
 git push heroku master
 ```
 
-### Demo page
+Test out the experiment on Heroku [here](https://cocosci-lightbot.herokuapp.com) or try out specific trial types:
+- [LightbotTutorial](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTutorial)
+- [LightbotTask](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask)
+- [specific maps](https://cocosci-lightbot.herokuapp.com/testexperiment?type=LightbotTask&mapSource=maps&mapIdx=8)
+
+### Build demo page
 
 Build demo page with
 ```
 npm run demo-build
 ```
+To update the live demo page, commit and push the `gh-pages` folder. It is live [here](https://carlos.correa.me/cocosci-lightbot/).
 
-Run it with the following, then access at http://localhost:1234/cocosci-lightbot/
+Run it locally with the following, then access [here](http://localhost:1234/cocosci-lightbot/).
 ```
 npm run demo-serve
 ```
 
-### Errors
-
-If you're seeing an `Library not loaded: @rpath/libssl.1.1.dylib ... Reason: image not found` error when running `./bin/psiturk-herokudb', you may need to `pip uninstall psycopg2` and run the following:
-```
-pip install --global-option=build_ext \
-            --global-option="-I/usr/local/opt/openssl/include" \
-            --global-option="-L/usr/local/opt/openssl/lib" -r requirements.txt
-```
-
-## Experiment workflow
+## Heroku workflow for AMT
 1. Prep code! Make sure cost on consent screen (`templates/consent.html`) is up to date.
 2. Update `experiment_code_version` and make a git tag marking commit the code was run with.
 3. Scale up Heroku: `heroku ps:scale --app cocosci-lightbot web=1:Hobby`.
@@ -75,8 +71,3 @@ pip install --global-option=build_ext \
 6. Pay/Approve workers for a HIT with `worker approve --hit $HIT`. See HITs with `hit list --active`.
 7. Verify all workers have been paid with `worker list --submitted`.
 8. Download data with `PORT= ON_HEROKU=1 DATABASE_URL=$(heroku config:get DATABASE_URL) bin/fetch_data.py $CODE_VERSION`.
-
-
-## Adding new OpenMoji
-
-To add new OpenMoji, you need to edit `static/lightbot/images/openmoji/copyscript.py` by adding in the new emoji to copy in. You'll first have to download the OpenMoji SVG Color pack from [their site](https://openmoji.org/) and change paths in the script to work for your installation. Then run `copyscript.py`.
