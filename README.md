@@ -1,10 +1,12 @@
 # cocosci-lightbot
 
-Experiment to examine how people algorithmically structure their plans. Try this [playable demo](https://carlos.correa.me/cocosci-lightbot/).
+Experiment to examine how people algorithmically structure their plans. Try this [playable demo](https://carlos.correa.me/cocosci-lightbot/). The experiment we ran for *Exploring the hierarchical structure of human plans via program generation* is a previous version that you can access [here](https://github.com/cgc/cocosci-lightbot/releases/tag/v0.4).
 
 Based on [Lightbot](https://lightbot.com/), a game used to teach programming developed by SpriteBox LLC.
 This codebase draws heavily from Laurent Haan's [open source implementation](https://github.com/haan/Lightbot).
-[Icon](https://opengameart.org/content/botty) by Carl Olsson is in the public domain. Adapted from Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
+[Icon](https://opengameart.org/content/botty) by Carl Olsson is in the public domain.
+
+Experiment is based on Fred Callaway's [PsiTurk + Heroku](https://github.com/fredcallaway/psirokuturk) starter repository.
 
 ## Quickstart
 
