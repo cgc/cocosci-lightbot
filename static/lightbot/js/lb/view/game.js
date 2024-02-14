@@ -27,10 +27,11 @@ bgTilePromise.then(b => {
 export const assetsLoaded = Promise.all([bgTilePromise, spritePromise]);
 
 export class Game {
-  constructor(canvas, bot, { onComplete, onStep }) {
+  constructor(canvas, bot, { onComplete, onStep, onPreDrawMap }) {
     this.canvas = canvas;
     this.onComplete = onComplete;
     this.onStep = onStep;
+    this.onPreDrawMap = onPreDrawMap;
 
     this.bot = bot;
     invariant(this.bot);
@@ -121,7 +122,7 @@ export class Game {
         if (instruction) {
           var newPos = this.bot.currentPos; // get the new position
           this.bot.animate(instruction, oldPos, newPos);
-          this.onStep && this.onStep();
+          this.onStep && this.onStep(instruction);
         } else {
           // This is a weird case that can really only happen when you're calling an empty process
           // TODO: consider changing things so we only queue flat programs without processes??
@@ -192,6 +193,8 @@ export class Game {
     // background
     this.ctx.fillStyle = this.bg;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.onPreDrawMap && this.onPreDrawMap();
 
     const quad = this.projection.viewQuadrant;
     for (var i = 0; i < this.map.levelSize.x; i++) {

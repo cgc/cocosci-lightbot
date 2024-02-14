@@ -88,7 +88,8 @@ https://stackoverflow.com/questions/7492062/css-overflow-scroll-always-show-vert
   background: white;
   margin: 1px;
   padding: 2px 4px;
-  transition: background var(--transition-speed);
+  /* box-shadow is only used when highlighting the execution trace */
+  transition: background var(--transition-speed), box-shadow var(--transition-speed);
   display: inline-block;
 
   font-size: 18px;
@@ -470,6 +471,13 @@ ul {
   height: 0;
 }
 
+.simple-glow {
+  /* We only use this when highlighting the currently executed instruction. */
+  /* Made this much smaller than original to avoid clipping */
+  box-shadow: 0 0 4px 2px #0066cc;
+  position: relative;
+  z-index: 10;
+}
 .glow {
   /* from https://stackoverflow.com/questions/21240973/glow-animation-effect-in-css3-html5 */
   animation: pulse 3s infinite linear;

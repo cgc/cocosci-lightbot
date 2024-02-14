@@ -248,9 +248,10 @@ function instructionsFromILs(ilsByHeader) {
     const max = 1000;
     let count = 0;
     const main = ilsByHeader['Main'].sortable.toArray();
-    function getInstructions(insts) {
+    function getInstructions(parent, insts) {
         const rv = [];
-        for (const instruction of insts) {
+        for (let i = 0; i < insts.length; i++) {
+            const instruction = insts[i];
             if (count > max) {
                 return rv;
             }
@@ -264,17 +265,21 @@ function instructionsFromILs(ilsByHeader) {
                 case instructions.Process3Instruction.instructionName:
                 case instructions.Process4Instruction.instructionName: {
                     const sr = ilsByHeader[cls.label].sortable.toArray();
-                    rv.push(new cls(getInstructions(sr)));
+                    rv.push(new cls(getInstructions(ilsByHeader[cls.label], sr)));
                     break;
                 }
                 default:
                     rv.push(new cls());
                     break
             }
+            // NOTE: This holds a reference to the parent DOM element and this child's index in
+            // order to make instructions light up during execution.
+            const el = rv[rv.length-1];
+            el.source = {parent, index: i};
         }
         return rv;
     }
-    return getInstructions(main);
+    return getInstructions(ilsByHeader['Main'], main);
 }
 
 function programFromILs(ilsByName) {
@@ -287,7 +292,7 @@ function programFromILs(ilsByName) {
 
 
 
-class Editor {
+export class Editor {
     constructor(root, options) {
         this.options = options;
         this.root = root;
