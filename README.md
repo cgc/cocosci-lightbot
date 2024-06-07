@@ -53,8 +53,9 @@ Test out the experiment on Heroku [here](https://cocosci-lightbot.herokuapp.com)
 
 ### Build demo page
 
-Build demo page with
+Build demo page and delete the old one with
 ```
+rm -r gh-pages
 npm run demo-build
 ```
 To update the live demo page, commit and push the `gh-pages` folder. It is live [here](https://carlos.correa.me/cocosci-lightbot/).
