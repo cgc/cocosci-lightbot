@@ -9,6 +9,7 @@ import { Bot } from './lb/bot';
 import instructions, { allInstructions, instructionsByName, processInstructions } from './lb/instructions';
 
 import Sortable from 'sortablejs';
+Sortable.supportPointer = false;
 import { CameraControls } from './lb/view/CameraControls.js';
 import { MapCoordinateContext } from './lb/view/MapCoordinateContext.js';
 import { LightBox } from './lb/box.js';
